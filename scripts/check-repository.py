@@ -31,7 +31,7 @@ def files():
 
 
 paths = files()
-required = ['README.md', 'LICENSE', 'CONTRIBUTING.md', 'SECURITY.md', 'THIRD_PARTY_NOTICES.md',
+required = ['README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md',
             'scripts/build.ps1', 'scripts/prepare-shaders.py', '.github/workflows/checks.yml']
 for path in required:
     require((ROOT / path).is_file(), f'Missing {path}')

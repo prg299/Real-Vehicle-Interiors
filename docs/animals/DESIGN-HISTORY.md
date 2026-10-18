@@ -96,4 +96,4 @@ Not tested, and why:
 
 Merging into Real Vehicle Interiors: copy the Lua (it uses only the main mod's public functions and wraps four of
 them), the translations and the Java classes (`me.lens.animals` into `me.lens.rv`, the Cutaway reflection becoming a
-plain call), and coordinate with Codex, who works on the main mod at the same time.
+plain call), on the separate Animals branch.

@@ -1,7 +1,7 @@
 {
   "date": "2026-10-18",
   "origin": "Claude Animals project; merged-into-main-20261018 snapshot",
-  "branch": "codex/animals-support",
+  "branch": "animals-support",
   "sourceSha256": {
     "java/Animals.java": "d6502eae353f4966ba7adf88326cc95780a579c1d959ed4ff81f00aa5334ffcc",
     "java/Cutaway.java": "3f8fa89cb9b64d2e7d3a53c05cce86f4d9b230f8f8fdfc282636ce8462b35d03",
