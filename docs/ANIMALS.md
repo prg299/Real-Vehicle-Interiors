@@ -2,7 +2,7 @@
 
 Branch: `animals-support`. Unreleased and kept separate from `main` and the Workshop mod.
 
-Includes animals inside vehicles, carry/drop/pickup, food and water, and Companion Dogs entry/exit. The integrated Java/Lua snapshot, seven translation sets and developer drivers are preserved. The original hashes and the animation-state variable compile fix are recorded in [IMPORT.json](animals/IMPORT.json); [design and earlier test notes](animals/DESIGN-HISTORY.md) are retained for reference.
+Includes animals inside vehicles, carry/drop/pickup, food and water, and Companion Dogs entry/exit. The integrated Java/Lua snapshot, seven translation sets and developer drivers are preserved. The animation-state variable has a compile fix; the feature remains work in progress.
 
 Optional dependency: [Companion Dogs](https://steamcommunity.com/sharedfiles/filedetails/?id=3740052292), mod ID `CompanionDogs`.
 

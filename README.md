@@ -6,8 +6,6 @@ Walk around inside KI5 campers, B700 buses and F700 box trucks in **Project Zomb
 
 **Current release: 2.0.8 (beta).** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541) · [Animals WIP branch](https://github.com/prg299/Real-Vehicle-Interiors/tree/animals-support)
 
-![Real Vehicle Interiors](mod/RealVehicleInteriors/poster.png)
-
 ## Requirements
 
 Enable these dependencies before `RealVehicleInteriors`:
@@ -40,7 +38,6 @@ Output: `build/rv/package/RealVehicleInteriors`. Game files and Workshop downloa
 - `scripts/` — build, checks, install and upload tools
 - `tools-src/` — asset generators, shader edits and regression fixtures
 - `dev/` — isolated test helpers
-- `assets/` — artwork masters and provenance
 - `release/` — Workshop metadata
 
 The `MELens` and `me.lens.rv` identifiers remain for save and add-on compatibility. Animals support is unreleased and kept on `animals-support`, separate from `main`.
@@ -49,4 +46,4 @@ Back up saves before changing mods. Known beta gaps include intermittent multipl
 
 ## License
 
-[MIT](LICENSE) for authored contributions. See [third-party notices](THIRD_PARTY_NOTICES.md) for external dependencies and generated shaders. Existing art prompts and masters are retained as provenance.
+[MIT](LICENSE) for authored contributions. See [third-party notices](THIRD_PARTY_NOTICES.md) for external dependencies and generated shaders.

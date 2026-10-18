@@ -1,7 +1,5 @@
 """Game-independent repository checks; native gameplay and engine tests run separately."""
 import ast
-import argparse
-import hashlib
 import json
 from pathlib import Path
 import re
@@ -12,9 +10,7 @@ from urllib.parse import unquote
 ROOT = Path(__file__).resolve().parents[1]
 EXCLUDED = {'.git', 'build', '.tools', '.local', '.cache', '__pycache__'}
 errors = []
-parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('--published-baseline', action='store_true', help='Also require exact imported 2.0.8 production bytes')
-args = parser.parse_args()
+
 
 
 def require(condition, message):
@@ -70,27 +66,15 @@ for p in paths:
                 continue
             require((p.parent / unquote(target)).exists(), f'{relative}: broken local link {target}')
 
-manifest = json.loads((ROOT / 'docs/releases/published-2.0.8.json').read_text('utf-8'))['files']
-source = ROOT / 'mod/RealVehicleInteriors'
-for p in source.rglob('*'):
-    if not p.is_file():
-        continue
-    key = p.relative_to(source).as_posix().lower()
-    if args.published_baseline:
-        require(key in manifest, f'Unexpected file outside published baseline: {key}')
-    if args.published_baseline and key in manifest:
-        require(hashlib.sha256(p.read_bytes()).hexdigest() == manifest[key], f'Published production source differs: {key}')
 for path in (ROOT / 'tools-src/shaders').glob('*.json'):
     recipe = json.loads(path.read_text('utf-8'))
     require(recipe['schema'] == 1 and recipe['base'] == Path(recipe['base']).name
             and recipe['output'] == Path(recipe['output']).name and len(recipe['outputSha256']) == 64,
             f'Invalid shader recipe: {path.name}')
-    if args.published_baseline:
-        require(recipe['outputSha256'] == manifest.get('common/media/shaders/' + recipe['output']),
-            f'Shader recipe differs from release: {path.name}')
+
 
 if errors:
     print('\n'.join(errors), file=sys.stderr)
     sys.exit(1)
-print(f'Repository checks passed: {len(paths)} files; JSON, Python syntax, current doc links, credential patterns and shader recipes; publishedBaseline={args.published_baseline}')
+print(f'Repository checks passed: {len(paths)} files; JSON, Python syntax, current doc links, credential patterns and shader recipes')
 print('Native/gameplay/input/multiplayer/visual acceptance is not established by this check.')

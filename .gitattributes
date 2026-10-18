@@ -4,7 +4,7 @@
 *.ps1 text eol=lf
 *.java text eol=lf
 *.yml text eol=lf
-# Preserve the exact published payload, including its line endings.
+# Preserve runtime asset and script bytes, including their line endings.
 mod/** -text
 *.png binary
 *.jpg binary
