@@ -3,6 +3,7 @@ package me.lens.rv;
 import java.util.Set;
 import me.zed_0xff.zombie_buddy.Exposer;
 import zombie.characters.IsoGameCharacter;
+import zombie.characters.animals.IsoAnimal;
 import zombie.inventory.InventoryItem;
 import zombie.vehicles.BaseVehicle;
 import zombie.scripting.objects.VehicleScript;
@@ -660,5 +661,38 @@ public final class RV {
     /** Try compiling the cutaway shaders again (after a failed compile was fixed on disk). */
     public static void retryShaders() {
         Cutaway.retryShaders();
+    }
+
+    // ------------------------------------------------------------------ animals inside (see Animals)
+
+    /** The animals inside the vehicle you are in, once a tick: begin, one add per animal, end. */
+    public static void beginAnimals(BaseVehicle vehicle, double floorY) {
+        Animals.begin(vehicle, floorY);
+    }
+
+    /** One animal: where it stands (passenger space), which way it faces (radians, as the standing player), anim state and idle action. */
+    public static void addAnimal(IsoAnimal animal, double x, double z, double facing, String state, String action) {
+        Animals.add(animal, x, z, facing, state, action);
+    }
+
+    public static void endAnimals() {
+        Animals.end();
+    }
+
+    public static void clearAnimals() {
+        Animals.clear();
+    }
+
+    public static String animalsStatus() {
+        return Animals.status();
+    }
+
+    /** Diagnostics: draw the animals in the cabin depth (default) or in their own. */
+    public static void setAnimalsDepth(boolean on) {
+        Animals.depthOn = on;
+    }
+
+    public static void retryAnimals() {
+        Animals.retry();
     }
 }

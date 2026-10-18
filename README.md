@@ -1,11 +1,13 @@
-# Real Vehicle Interiors
+# Real Vehicle Interiors — Animals WIP
+
+**Development branch: `codex/animals-support`.** Includes Claude's in-progress animal rendering, carry/drop/pickup, food/water and Companion Dogs integration. This is unreleased and not ready for ordinary saves. See [Animals status and remaining checks](docs/ANIMALS.md).
 
 [![Repository checks](https://github.com/prg299/Real-Vehicle-Interiors/actions/workflows/checks.yml/badge.svg)](https://github.com/prg299/Real-Vehicle-Interiors/actions/workflows/checks.yml)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Walk around inside KI5 campers, B700 buses and F700 box trucks in **Project Zomboid Build 42.21**. Furnish a camper, sleep, cook, wash, store supplies, place loose items and take your base with you. The roof and upper walls cut away while you are inside.
 
-**Public beta: 2.0.8.** Multiplayer is supported with known limitations. Back up saves before changing mods. Animals support is work in progress on [`codex/animals-support`](https://github.com/prg299/Real-Vehicle-Interiors/tree/codex/animals-support); it is excluded from `main` and the published mod.
+**Public beta: 2.0.8.** Multiplayer is supported with known limitations. Back up saves before changing mods. Animals support is work in progress on [`codex/animals-support`](https://github.com/prg299/Real-Vehicle-Interiors/tree/codex/animals-support); it remains excluded from `main` and the published mod.
 
 ![Real Vehicle Interiors poster](mod/RealVehicleInteriors/poster.png)
 

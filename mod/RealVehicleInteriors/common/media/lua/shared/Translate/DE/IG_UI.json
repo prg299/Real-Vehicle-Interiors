@@ -112,5 +112,7 @@
     "IGUI_MELens_NoPropane": "Kein Propangas: Baue einen Tank ein.",
     "IGUI_MELens_PropaneFull": "Die Tanks sind voll.",
     "IGUI_MELens_ItemsFell": "Sachen sind heruntergerutscht und auf den Boden gefallen.",
-    "IGUI_MELens_ReasonTall": "Das ist zu hoch für dieses Regal."
+    "IGUI_MELens_ReasonTall": "Das ist zu hoch für dieses Regal.",
+    "IGUI_MELens_AnimalNoRoom": "Hier drin ist kein Platz mehr dafür.",
+    "IGUI_MELens_AnimalNotAlive": "Es lebt nicht."
 }

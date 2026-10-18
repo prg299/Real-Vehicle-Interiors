@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-18",
+  "origin": "Claude Animals project; merged-into-main-20261018 snapshot",
+  "branch": "codex/animals-support",
+  "sourceSha256": {
+    "java/Animals.java": "d6502eae353f4966ba7adf88326cc95780a579c1d959ed4ff81f00aa5334ffcc",
+    "java/Cutaway.java": "3f8fa89cb9b64d2e7d3a53c05cce86f4d9b230f8f8fdfc282636ce8462b35d03",
+    "java/Hooks.java": "b5bf4336053d1a8f3086302eca0b5abb29f1cdbfc1d829c5795639f9202dee15",
+    "java/Main.java": "1f00f7e73718a9d021b9233f0f766c5c3ed3c80f3745efc71a635c859f3181d0",
+    "java/RV.java": "3c5053e958615235bd3bef6f713232c1598217ced64882b546597b90eab26c48",
+    "lua/client/MELens_AnimalsUI.lua": "a182dd17db0a895e302a968d1ea6c6fc5e1dde86ddb324d038db026d4dbcf61e",
+    "lua/shared/MELens_Animals.lua": "0315c11be30b1b254a36519283b7a3d980573e7994820a1e019ac37922663a95",
+    "lua/shared/TimedActions/MELens_AnimalActions.lua": "3e55fbd2e40be1260b7cb7a019deb276761a5ff2e4649bfb672e596715c004e2"
+  },
+  "integration": "Seven snapshot files copied without code edits; Animals.java animation-state variable renamed to repair a Java compile collision; translation keys adapted to integrated names; dev paths made repository-relative.",
+  "nativeAcceptanceThisImport": false,
+  "releaseReady": false,
+  "validation": {
+    "javaBuild": "passed",
+    "luaSyntaxFiles": 34,
+    "productionLuaAssertions": 1112,
+    "nativeAnimalsAcceptance": "not rerun",
+    "jarSha256": "cd28894138c1f5301266a3a8f672b15e840b3dd132a50083f06423794fe0b595"
+  }
+}

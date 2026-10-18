@@ -263,6 +263,11 @@ public final class Cutaway {
     private static volatile Object depthVehicle;
     private static volatile float vehicleDepth;
 
+    /** The depth a passenger inside {@code vehicle} is drawn in this frame (see {@link #alignCabinDepth}), or NaN. */
+    static float cabinDepth(Object vehicle) {
+        return vehicle != null && depthVehicle == vehicle ? vehicleDepth - 1.0E-4f : Float.NaN;
+    }
+
     /**
      * Characters inside the camper you are in are drawn in the camper's depth. The game
      * places a passenger's model depth by the passenger's own square, which in a long
