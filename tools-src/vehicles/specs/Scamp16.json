@@ -1,0 +1,98 @@
+{
+    "key": "Scamp16",
+    "vehicles": [
+        "Base.Trailer87Scamp16"
+    ],
+    "title": "Scamp 16",
+    "kind": "camper",
+    "measure": "measure_Scamp16.json",
+    "scripts": [
+        "campers.json",
+        "Trailer87Scamp16"
+    ],
+    "texture": "scamp16",
+    "floorOutline": { "inset": 0.012, "band": 0.06 },
+    "floorY": -0.32,
+    "hide": {
+        "TrailerKI5camperScamp16Interior": "ceiling",
+        "87scampCamperSeatfl": true,
+        "87scampCamperSeatfr": true,
+        "87scampCamperSeatrl": true,
+        "87scampCamperSeatrr": true,
+        "87scampCamperBed1": true,
+        "87scampCamperBed2": true
+    },
+    "entry": {
+        "object": "scamp16_door_fr",
+        "wall": "right",
+        "part": "DoorFrontRight",
+        "area": "SeatFrontRight",
+        "panel": "front",
+        "outsideFrom": "FrontL"
+    },
+    "openings": [
+        "scamp16_door_fr",
+        "scamp16_window_bl",
+        "scamp16_window_br",
+        "scamp16_window_fr",
+        "scamp16_window_rl",
+        "scamp16_window_rr",
+        "scamp16_windshield_rear"
+    ],
+    "wheelWells": [
+        {
+            "z": 0.18,
+            "inner": 0.56
+        }
+    ],
+    "spots": [
+        {
+            "wall": "back",
+            "at": 0.0,
+            "length": 1.5,
+            "depth": 0.55,
+            "default": "bed",
+            "seats": [
+                "BackL"
+            ],
+            "head": "right"
+        },
+        {
+            "wall": "front",
+            "at": 0.18,
+            "length": 1.12,
+            "depth": 0.55,
+            "default": "dinette",
+            "seats": [
+                "FrontL",
+                "FrontR"
+            ],
+            "empty": true
+        },
+        {
+            "wall": "left",
+            "at": 0.6,
+            "length": 1.12,
+            "depth": 0.55,
+            "default": "dinette",
+            "seats": [
+                "RearL",
+                "RearR"
+            ]
+        },
+        {
+            "wall": "left",
+            "at": -0.25,
+            "length": 0.52,
+            "depth": 0.52,
+            "default": "fridge"
+        },
+        {
+            "wall": "right",
+            "at": -0.13,
+            "length": 1.0,
+            "depth": 0.52,
+            "default": "kitchen"
+        }
+    ]
+}

@@ -1,0 +1,262 @@
+{
+    "key": "B700",
+    "vehicles": [
+        "Base.87fordB700school",
+        "Base.87fordB700prison",
+        "Base.87fordB700military"
+    ],
+    "title": "B700 Bus",
+    "kind": "bus",
+    "measure": "measure_B700school.json",
+    "scripts": [
+        "b700.json",
+        "87fordB700school"
+    ],
+    "texture": "b700",
+    "box": {
+        "x": 1.08,
+        "z": [
+            -4.93,
+            2.02
+        ]
+    },
+    "ceiling": 1.1,
+    "hide": {
+        "87fordB700Interior": "ceiling",
+        "mesh:b700_interior_bus": "ceiling",
+        "87fordB700Seatl": true,
+        "87fordB700Seatr": true,
+        "87fordB700Sidela": true,
+        "87fordB700Sidera": true,
+        "87fordB700Sidelap": true,
+        "87fordB700Siderap": true,
+        "87fordB700Windowfla": true,
+        "87fordB700Windowfra": true,
+        "87fordB700Windowfrap": true,
+        "87fordB700Windowrla": true,
+        "87fordB700Windowrlap": true,
+        "87fordB700Windowrra": true,
+        "87fordB700Windowrrap": true,
+        "mesh:b700_window_fl": true,
+        "mesh:b700_window_fr": true,
+        "mesh:b700_window_rl": true,
+        "mesh:b700_window_rr": true,
+        "mesh:b700_windows": true,
+        "mesh:b700_windshield_rear": true,
+        "87fordB700reara": true,
+        "87fordB700Windshield": true,
+        "87fordB700Windshielda": true,
+        "mesh:b700_door_r_a": true,
+        "mesh:b700_windshield": true,
+        "mesh:b700_windshield_a": true,
+        "87fordB700Doorr": {
+            "plane": [
+                0,
+                0,
+                -1,
+                -0.89
+            ]
+        },
+        "87fordB700Doora": true,
+        "mesh:b700_door_fr_a": true
+    },
+    "cutFront": 2.24,
+    "entry": {
+        "object": "b700_door_fr",
+        "wall": "right",
+        "part": "DoorFrontRight",
+        "area": "SeatFrontRight",
+        "outsideFrom": "P1"
+    },
+    "vanillaSeats": [
+        "FrontLeft"
+    ],
+    "driver": {
+        "seat": "FrontLeft",
+        "x1": 0.27,
+        "x2": 0.86,
+        "z1": 1.17,
+        "z2": 1.68
+    },
+    "blocked": [
+        {
+            "x": [
+                0.22,
+                1.08
+            ],
+            "z": [
+                1.12,
+                2.02
+            ]
+        },
+        {
+            "x": [
+                -1.08,
+                1.08
+            ],
+            "z": [
+                1.94,
+                2.02
+            ]
+        }
+    ],
+    "openings": [
+        "b700_door_fr"
+    ],
+    "windowBoxes": [
+        {
+            "x": [
+                0.55,
+                1.3
+            ],
+            "y": [
+                0.52,
+                1.13
+            ],
+            "z": [
+                -4.5,
+                1.13
+            ]
+        },
+        {
+            "x": [
+                -1.3,
+                -0.55
+            ],
+            "y": [
+                0.52,
+                1.13
+            ],
+            "z": [
+                -4.5,
+                1.13
+            ]
+        },
+        {
+            "x": [
+                -1.41,
+                -1.12
+            ],
+            "y": [
+                0.45,
+                1.22
+            ],
+            "z": [
+                2.0,
+                2.18
+            ]
+        },
+        {
+            "x": [
+                1.12,
+                1.41
+            ],
+            "y": [
+                0.45,
+                1.22
+            ],
+            "z": [
+                2.0,
+                2.18
+            ]
+        }
+    ],
+    "wheelWells": [
+        {
+            "z": -2.47,
+            "inner": 0.64
+        }
+    ],
+    "waterTank": 100,
+    "fuelTank": 30,
+    "spots": [
+        {
+            "wall": "left",
+            "at": 0.35,
+            "length": 1.5,
+            "depth": 0.8,
+            "default": "busseat2",
+            "seats": [
+                "P3",
+                "P1"
+            ]
+        },
+        {
+            "wall": "left",
+            "at": -1.15,
+            "length": 1.5,
+            "depth": 0.8,
+            "default": "busseat2",
+            "seats": [
+                "P7",
+                "P5"
+            ]
+        },
+        {
+            "wall": "left",
+            "at": -2.65,
+            "length": 1.5,
+            "depth": 0.8,
+            "default": "busseat2",
+            "seats": [
+                "P11",
+                "P9"
+            ]
+        },
+        {
+            "wall": "left",
+            "at": -3.775,
+            "length": 0.75,
+            "depth": 0.8,
+            "default": "busseat",
+            "seats": [
+                "P13"
+            ]
+        },
+        {
+            "wall": "right",
+            "at": 0.3,
+            "length": 1.5,
+            "depth": 0.8,
+            "default": "busseat2",
+            "seats": [
+                "P2",
+                "P4"
+            ]
+        },
+        {
+            "wall": "right",
+            "at": -1.2,
+            "length": 1.5,
+            "depth": 0.8,
+            "default": "busseat2",
+            "seats": [
+                "P6",
+                "P8"
+            ]
+        },
+        {
+            "wall": "right",
+            "at": -2.7,
+            "length": 1.5,
+            "depth": 0.8,
+            "default": "busseat2",
+            "seats": [
+                "P10",
+                "P12"
+            ]
+        },
+        {
+            "wall": "right",
+            "at": -3.825,
+            "length": 0.75,
+            "depth": 0.8,
+            "default": "busseat",
+            "seats": [
+                "P14"
+            ]
+        }
+    ],
+    "cutFrontTop": 0.55,
+    "openingPad": 0.06
+}

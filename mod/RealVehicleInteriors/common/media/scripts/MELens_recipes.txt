@@ -1,0 +1,357 @@
+module Base
+{
+    /*
+     * ME: LENS: building RV furniture from vanilla materials, and taking it apart again. A
+     * piece is built in the inventory (or from the floor) and placed in a camper with
+     * "Place furniture" (MELens_Placement.lua). Dismantling gives back about half.
+     */
+
+    craftRecipe MELensBuildRVBed
+    {
+        timedAction = Making,
+        time = 400,
+        Tags = InHandCraft;CanBeDoneFromFloor;Carpentry,
+        category = Carpentry,
+        xpAward = Woodwork:25,
+        SkillRequired = Woodwork:3,
+        inputs
+        {
+            item 1 tags[base:hammer] mode:keep flags[MayDegradeVeryLight],
+            item 1 tags[base:saw;base:smallsaw] mode:keep flags[MayDegradeLight;Prop1],
+            item 6 [Base.Plank] flags[Prop2],
+            item 10 [Base.Nails],
+            item 1 [Base.Mattress;Base.Sheet],
+        }
+        outputs
+        {
+            item 1 Base.MELensRV_Bed,
+        }
+    }
+
+    craftRecipe MELensBuildRVDinette
+    {
+        timedAction = Making,
+        time = 400,
+        Tags = InHandCraft;CanBeDoneFromFloor;Carpentry,
+        category = Carpentry,
+        xpAward = Woodwork:25,
+        SkillRequired = Woodwork:3,
+        inputs
+        {
+            item 1 tags[base:hammer] mode:keep flags[MayDegradeVeryLight],
+            item 1 tags[base:saw;base:smallsaw] mode:keep flags[MayDegradeLight;Prop1],
+            item 6 [Base.Plank] flags[Prop2],
+            item 10 [Base.Nails],
+            item 2 [Base.Sheet;Base.RippedSheets],
+            item 1 [Base.MetalPipe],
+        }
+        outputs
+        {
+            item 1 Base.MELensRV_Dinette,
+        }
+    }
+
+    craftRecipe MELensBuildRVKitchen
+    {
+        timedAction = Making,
+        time = 600,
+        Tags = InHandCraft;CanBeDoneFromFloor;Carpentry,
+        category = Carpentry,
+        xpAward = Woodwork:30,
+        SkillRequired = Woodwork:4,
+        inputs
+        {
+            item 1 tags[base:hammer] mode:keep flags[MayDegradeVeryLight],
+            item 1 tags[base:saw;base:smallsaw] mode:keep flags[MayDegradeLight;Prop1],
+            item 1 tags[base:screwdriver] mode:keep flags[MayDegradeVeryLight],
+            item 6 [Base.Plank] flags[Prop2],
+            item 10 [Base.Nails],
+            item 2 [Base.SmallSheetMetal],
+            item 1 [Base.MetalPipe],
+            item 2 [Base.Hinge],
+            item 2 [Base.ElectronicsScrap],
+        }
+        outputs
+        {
+            item 1 Base.MELensRV_Kitchen,
+        }
+    }
+
+    craftRecipe MELensBuildRVFridge
+    {
+        timedAction = Making,
+        time = 600,
+        Tags = InHandCraft;CanBeDoneFromFloor;Electrical,
+        category = Electrical,
+        xpAward = Electricity:30,
+        SkillRequired = Electricity:4,
+        inputs
+        {
+            item 1 tags[base:screwdriver] mode:keep flags[MayDegradeVeryLight],
+            item 2 [Base.SheetMetal],
+            item 8 [Base.Screws],
+            item 4 [Base.ElectronicsScrap],
+            item 2 [Base.ElectricWire],
+            item 1 [Base.Hinge],
+        }
+        outputs
+        {
+            item 1 Base.MELensRV_Fridge,
+        }
+    }
+
+    craftRecipe MELensBuildRVCabinet
+    {
+        timedAction = Making,
+        time = 300,
+        Tags = InHandCraft;CanBeDoneFromFloor;Carpentry,
+        category = Carpentry,
+        xpAward = Woodwork:15,
+        SkillRequired = Woodwork:2,
+        inputs
+        {
+            item 1 tags[base:hammer] mode:keep flags[MayDegradeVeryLight],
+            item 1 tags[base:saw;base:smallsaw] mode:keep flags[MayDegradeLight;Prop1],
+            item 4 [Base.Plank] flags[Prop2],
+            item 8 [Base.Nails],
+            item 1 [Base.Hinge],
+        }
+        outputs
+        {
+            item 1 Base.MELensRV_Cabinet,
+        }
+    }
+
+    craftRecipe MELensBuildRVShelf
+    {
+        timedAction = Making,
+        time = 250,
+        Tags = InHandCraft;CanBeDoneFromFloor;Carpentry,
+        category = Carpentry,
+        xpAward = Woodwork:10,
+        SkillRequired = Woodwork:2,
+        inputs
+        {
+            item 1 tags[base:hammer] mode:keep flags[MayDegradeVeryLight],
+            item 1 tags[base:saw;base:smallsaw] mode:keep flags[MayDegradeLight;Prop1],
+            item 4 [Base.Plank] flags[Prop2],
+            item 8 [Base.Nails],
+        }
+        outputs
+        {
+            item 1 Base.MELensRV_Shelf,
+        }
+    }
+
+    craftRecipe MELensBuildRVWardrobe
+    {
+        timedAction = Making,
+        time = 400,
+        Tags = InHandCraft;CanBeDoneFromFloor;Carpentry,
+        category = Carpentry,
+        xpAward = Woodwork:20,
+        SkillRequired = Woodwork:3,
+        inputs
+        {
+            item 1 tags[base:hammer] mode:keep flags[MayDegradeVeryLight],
+            item 1 tags[base:saw;base:smallsaw] mode:keep flags[MayDegradeLight;Prop1],
+            item 5 [Base.Plank] flags[Prop2],
+            item 10 [Base.Nails],
+            item 2 [Base.Hinge],
+            item 1 [Base.Doorknob],
+        }
+        outputs
+        {
+            item 1 Base.MELensRV_Wardrobe,
+        }
+    }
+
+    craftRecipe MELensBuildRVWashroom
+    {
+        timedAction = Making,
+        time = 500,
+        Tags = InHandCraft;CanBeDoneFromFloor;Carpentry,
+        category = Carpentry,
+        xpAward = Woodwork:20,
+        SkillRequired = Woodwork:3,
+        inputs
+        {
+            item 1 tags[base:hammer] mode:keep flags[MayDegradeVeryLight],
+            item 1 tags[base:saw;base:smallsaw] mode:keep flags[MayDegradeLight;Prop1],
+            item 1 tags[base:screwdriver] mode:keep flags[MayDegradeVeryLight],
+            item 4 [Base.Plank] flags[Prop2],
+            item 8 [Base.Nails],
+            item 1 [Base.SmallSheetMetal],
+            item 2 [Base.MetalPipe],
+            item 1 [Base.Hinge],
+        }
+        outputs
+        {
+            item 1 Base.MELensRV_Washroom,
+        }
+    }
+
+    craftRecipe MELensBuildRVHeater
+    {
+        timedAction = Making,
+        time = 400,
+        Tags = InHandCraft;CanBeDoneFromFloor;Electrical,
+        category = Electrical,
+        xpAward = Electricity:20,
+        SkillRequired = Electricity:3,
+        inputs
+        {
+            item 1 tags[base:screwdriver] mode:keep flags[MayDegradeVeryLight],
+            item 1 [Base.SheetMetal],
+            item 6 [Base.Screws],
+            item 2 [Base.ElectronicsScrap],
+            item 1 [Base.ElectricWire],
+        }
+        outputs
+        {
+            item 1 Base.MELensRV_Heater,
+        }
+    }
+
+    craftRecipe MELensBuildBusSeat
+    {
+        timedAction = Making,
+        time = 300,
+        Tags = InHandCraft;CanBeDoneFromFloor,
+        category = Assembly,
+        xpAward = Mechanics:15,
+        SkillRequired = Mechanics:2,
+        inputs
+        {
+            item 1 tags[base:wrench] mode:keep flags[MayDegradeVeryLight],
+            item 1 tags[base:screwdriver] mode:keep flags[MayDegradeVeryLight],
+            item 2 [Base.MetalPipe],
+            item 6 [Base.Screws],
+            item 2 [Base.Sheet;Base.RippedSheets],
+            item 1 [Base.Plank] flags[Prop2],
+        }
+        outputs
+        {
+            item 1 Base.MELensRV_Busseat,
+        }
+    }
+
+    craftRecipe MELensJoinBusSeats
+    {
+        timedAction = Making,
+        time = 120,
+        Tags = InHandCraft;CanBeDoneFromFloor,
+        category = Assembly,
+        xpAward = Mechanics:5,
+        inputs
+        {
+            item 1 tags[base:wrench] mode:keep flags[MayDegradeVeryLight],
+            item 2 [Base.MELensRV_Busseat],
+            item 4 [Base.Screws],
+        }
+        outputs
+        {
+            item 1 Base.MELensRV_Busseat2,
+        }
+    }
+
+    craftRecipe MELensBuildCargoBox
+    {
+        timedAction = Making,
+        time = 120,
+        Tags = InHandCraft;CanBeDoneFromFloor,
+        category = Carpentry,
+        xpAward = Woodwork:5,
+        inputs
+        {
+            item 1 [Base.Mov_CardboardBox],
+            item 1 [Base.DuctTape] flags[DontRecordInput],
+        }
+        outputs
+        {
+            item 1 Base.MELensRV_Box,
+        }
+    }
+
+    /* Taking furniture apart (it must be empty, see MELens_Actions.lua's Pick up). */
+
+    craftRecipe MELensDismantleRVWoodFurniture
+    {
+        timedAction = Making,
+        time = 250,
+        Tags = InHandCraft;CanBeDoneFromFloor;Carpentry,
+        category = Carpentry,
+        xpAward = Woodwork:5,
+        inputs
+        {
+            item 1 tags[base:hammer] mode:keep flags[MayDegradeLight],
+            item 1 [Base.MELensRV_Bed;Base.MELensRV_Dinette;Base.MELensRV_Cabinet;Base.MELensRV_Wardrobe;Base.MELensRV_Shelf] mode:destroy,
+        }
+        outputs
+        {
+            item 3 Base.Plank,
+            item 4 Base.Nails,
+        }
+    }
+
+    craftRecipe MELensDismantleRVPlumbedFurniture
+    {
+        timedAction = Making,
+        time = 300,
+        Tags = InHandCraft;CanBeDoneFromFloor;Carpentry,
+        category = Carpentry,
+        xpAward = Woodwork:5,
+        inputs
+        {
+            item 1 tags[base:hammer] mode:keep flags[MayDegradeLight],
+            item 1 tags[base:screwdriver] mode:keep flags[MayDegradeVeryLight],
+            item 1 [Base.MELensRV_Kitchen;Base.MELensRV_Washroom] mode:destroy,
+        }
+        outputs
+        {
+            item 3 Base.Plank,
+            item 4 Base.Nails,
+            item 1 Base.MetalPipe,
+        }
+    }
+
+    craftRecipe MELensDismantleRVAppliance
+    {
+        timedAction = DismantleElectrical,
+        time = 300,
+        Tags = InHandCraft;CanBeDoneFromFloor;Electrical,
+        category = Electrical,
+        xpAward = Electricity:10,
+        inputs
+        {
+            item 1 tags[base:screwdriver] mode:keep flags[MayDegradeVeryLight],
+            item 1 [Base.MELensRV_Fridge;Base.MELensRV_Heater] mode:destroy,
+        }
+        outputs
+        {
+            item 1 Base.SheetMetal,
+            item 2 Base.ElectronicsScrap,
+            item 3 Base.Screws,
+        }
+    }
+
+    craftRecipe MELensDismantleBusSeat
+    {
+        timedAction = Making,
+        time = 200,
+        Tags = InHandCraft;CanBeDoneFromFloor,
+        category = Assembly,
+        xpAward = Mechanics:5,
+        inputs
+        {
+            item 1 tags[base:wrench] mode:keep flags[MayDegradeVeryLight],
+            item 1 [Base.MELensRV_Busseat;Base.MELensRV_Busseat2] mode:destroy,
+        }
+        outputs
+        {
+            item 1 Base.MetalPipe,
+            item 3 Base.Screws,
+            item 1 Base.RippedSheets,
+        }
+    }
+}

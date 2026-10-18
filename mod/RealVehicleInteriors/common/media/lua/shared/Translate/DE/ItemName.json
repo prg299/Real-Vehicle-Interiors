@@ -1,0 +1,14 @@
+{
+    "Base.MELensRV_Bed": "Wohnwagen-Bett",
+    "Base.MELensRV_Dinette": "Wohnwagen-Sitzecke",
+    "Base.MELensRV_Kitchen": "Wohnwagen-Küchenzeile",
+    "Base.MELensRV_Fridge": "Wohnwagen-Kühlschrank",
+    "Base.MELensRV_Cabinet": "Wohnwagen-Schrank",
+    "Base.MELensRV_Wardrobe": "Wohnwagen-Kleiderschrank",
+    "Base.MELensRV_Washroom": "Wohnwagen-Nasszelle",
+    "Base.MELensRV_Heater": "Wohnwagen-Heizung",
+    "Base.MELensRV_Box": "Frachtkiste",
+    "Base.MELensRV_Busseat": "Bussitz",
+    "Base.MELensRV_Busseat2": "Bussitze (Paar)",
+    "Base.MELensRV_Shelf": "Wohnwagen-Regal"
+}

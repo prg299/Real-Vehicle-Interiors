@@ -1,0 +1,118 @@
+{
+    "measure": "build/rv/floorplans/measure_B700_box.json",
+    "object": "shell_b700",
+    "floorY": -0.24,
+    "top": 1.1,
+    "refHeight": 0.2,
+    "lowestOutline": 0.0,
+    "segments": 72,
+    "inset": 0.03,
+    "wall": "wall_panel",
+    "floor": "floor_planks",
+    "openings": [
+        {
+            "x": [
+                -1.2,
+                -0.55
+            ],
+            "y": [
+                -0.847,
+                1.094
+            ],
+            "z": [
+                1.291,
+                1.937
+            ]
+        }
+    ],
+    "grid": {
+        "name": "MELens.B700.shell",
+        "file": "B700_Shell",
+        "cell": 0.025,
+        "xRange": [
+            -1.13,
+            1.13
+        ],
+        "zRange": [
+            -4.98,
+            2.07
+        ],
+        "radius": 0.15,
+        "headroom": 1.05,
+        "floorTolerance": 0.04
+    },
+    "texture": "b700",
+    "seed": 11,
+    "style": {
+        "flat": false,
+        "floorArt": "rubberfloor",
+        "floorTile": 1.0,
+        "floorTint": [
+            0.2,
+            0.2,
+            0.21
+        ],
+        "wallArt": "wall_paint",
+        "wallTile": 0.8,
+        "wallTint": [
+            0.78,
+            0.76,
+            0.7
+        ],
+        "panelWidth": 0.75,
+        "baseboard": 0.05,
+        "baseboardArt": "darkmetal",
+        "baseboardColour": [
+            0.22,
+            0.22,
+            0.23
+        ],
+        "wallSize": [
+            2048,
+            256
+        ],
+        "floorSize": [
+            512,
+            2048
+        ]
+    },
+    "wheelWells": [
+        {
+            "x": [
+                0.64,
+                1.1
+            ],
+            "z": [
+                -2.81,
+                -2.13
+            ],
+            "top": 0.0,
+            "bottom": -0.4
+        },
+        {
+            "x": [
+                -0.64,
+                -1.1
+            ],
+            "z": [
+                -2.81,
+                -2.13
+            ],
+            "top": 0.0,
+            "bottom": -0.4
+        }
+    ],
+    "panel": {
+        "x": -1.05,
+        "depth": 0.02,
+        "y": [
+            0.0,
+            0.11
+        ],
+        "z": [
+            1.111,
+            1.181
+        ]
+    },
+    "sharpCorners": true
+}

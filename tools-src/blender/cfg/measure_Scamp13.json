@@ -1,0 +1,13 @@
+{
+    "name": "Base.Trailer87Scamp13",
+    "fbx": "C:/SteamLibrary/steamapps/workshop/content/108600/3670064951/mods/KI5campers/common/media/models_X/vehicles/Trailers_KI5campers_Body.fbx",
+    "body": "scamp13_body",
+    "interior": [
+        "scamp13_interior"
+    ],
+    "prefix": [
+        "scamp13_",
+        "scamp16_"
+    ],
+    "out": "build/rv/floorplans/measure_Scamp13.json"
+}

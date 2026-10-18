@@ -1,0 +1,18 @@
+{
+    "MELensBuildRVBed": "Wohnwagen-Bett bauen",
+    "MELensBuildRVDinette": "Wohnwagen-Sitzecke bauen",
+    "MELensBuildRVKitchen": "Wohnwagen-Küchenzeile bauen",
+    "MELensBuildRVFridge": "Wohnwagen-Kühlschrank bauen",
+    "MELensBuildRVCabinet": "Wohnwagen-Schrank bauen",
+    "MELensBuildRVWardrobe": "Wohnwagen-Kleiderschrank bauen",
+    "MELensBuildRVWashroom": "Wohnwagen-Nasszelle bauen",
+    "MELensBuildRVHeater": "Wohnwagen-Propanheizung bauen",
+    "MELensBuildBusSeat": "Bussitz bauen",
+    "MELensJoinBusSeats": "Bussitze verbinden",
+    "MELensBuildCargoBox": "Frachtkiste herstellen",
+    "MELensDismantleRVWoodFurniture": "Wohnwagen-Möbel zerlegen",
+    "MELensDismantleRVPlumbedFurniture": "Wohnwagen-Küchenzeile oder -Nasszelle zerlegen",
+    "MELensDismantleRVAppliance": "Wohnwagen-Gerät zerlegen",
+    "MELensDismantleBusSeat": "Bussitz zerlegen",
+    "MELensBuildRVShelf": "Wohnwagen-Regal bauen"
+}

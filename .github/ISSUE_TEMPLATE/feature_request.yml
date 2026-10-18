@@ -1,0 +1,15 @@
+name: Feature or vehicle support
+description: Propose an improvement or a compatible vehicle
+labels: [enhancement]
+body:
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior and player benefit
+    validations:
+      required: true
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Vehicle/dependency details and constraints
+      description: Include Workshop IDs, mod IDs and save compatibility considerations where relevant.

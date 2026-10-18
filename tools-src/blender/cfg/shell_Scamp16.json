@@ -1,0 +1,121 @@
+{
+    "measure": "build/rv/floorplans/measure_Scamp16.json",
+    "object": "shell_scamp16",
+    "floorY": -0.32,
+    "top": 1.11,
+    "refHeight": 0.12,
+    "lowestOutline": -0.08,
+    "segments": 72,
+    "inset": 0.03,
+    "wall": "wall_panel",
+    "floor": "floor_planks",
+    "openings": [
+        {
+            "x": [
+                -1.2,
+                -0.55
+            ],
+            "y": [
+                -0.403,
+                1.158
+            ],
+            "z": [
+                0.974,
+                1.53
+            ]
+        }
+    ],
+    "grid": {
+        "name": "MELens.Scamp16.shell",
+        "file": "Scamp16_Shell",
+        "cell": 0.025,
+        "xRange": [
+            -0.9,
+            0.9
+        ],
+        "zRange": [
+            -1.45,
+            1.98
+        ],
+        "radius": 0.15,
+        "headroom": 1.05,
+        "floorTolerance": 0.2
+    },
+    "texture": "scamp16",
+    "seed": 11,
+    "style": {
+        "flat": false,
+        "floorArt": "floor_planks",
+        "floorTile": 0.9,
+        "floorTint": [
+            0.38,
+            0.27,
+            0.19
+        ],
+        "wallArt": "wall_paint",
+        "wallTile": 0.8,
+        "wallTint": [
+            0.8,
+            0.76,
+            0.66
+        ],
+        "panelWidth": 0.6,
+        "baseboard": 0.07,
+        "baseboardArt": "wood_dark",
+        "baseboardColour": [
+            0.3,
+            0.2,
+            0.13
+        ],
+        "wallSize": [
+            2048,
+            256
+        ],
+        "floorSize": [
+            512,
+            1024
+        ]
+    },
+    "wheelWells": [
+        {
+            "x": [
+                0.56,
+                0.867
+            ],
+            "z": [
+                -0.16,
+                0.52
+            ],
+            "top": -0.08,
+            "bottom": -0.48
+        },
+        {
+            "x": [
+                -0.56,
+                -0.867
+            ],
+            "z": [
+                -0.16,
+                0.52
+            ],
+            "top": -0.08,
+            "bottom": -0.48
+        }
+    ],
+    "panel": {
+        "x": -0.75,
+        "depth": 0.02,
+        "y": [
+            -0.08,
+            0.03
+        ],
+        "z": [
+            1.62,
+            1.69
+        ]
+    },
+    "floorOutline": {
+        "inset": 0.012,
+        "band": 0.06
+    }
+}

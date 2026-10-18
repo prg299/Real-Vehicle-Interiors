@@ -1,0 +1,12 @@
+{
+    "name":  "Base.87fordF700box",
+    "fbx":  "C:/SteamLibrary/steamapps/workshop/content/108600/3110911330/mods/87fordB700/common/media/models_X/vehicles/Vehicles_87fordB700_Body.fbx",
+    "body":  "f700_body_box",
+    "interior":  [
+                     "f700_interior_box"
+                 ],
+    "prefix":  [
+                   "f700_"
+               ],
+    "out":  "build/rv/floorplans/measure_F700box.json"
+}

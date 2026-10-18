@@ -1,0 +1,18 @@
+{
+    "MELensBuildRVBed": "Construire un lit de caravane",
+    "MELensBuildRVDinette": "Construire un coin repas de caravane",
+    "MELensBuildRVKitchen": "Construire une kitchenette de caravane",
+    "MELensBuildRVFridge": "Construire un frigo de caravane",
+    "MELensBuildRVCabinet": "Construire un placard de caravane",
+    "MELensBuildRVWardrobe": "Construire une armoire de caravane",
+    "MELensBuildRVWashroom": "Construire une salle d'eau de caravane",
+    "MELensBuildRVHeater": "Construire un chauffage au propane de caravane",
+    "MELensBuildBusSeat": "Construire un siège de bus",
+    "MELensJoinBusSeats": "Assembler des sièges de bus",
+    "MELensBuildCargoBox": "Fabriquer une caisse de chargement",
+    "MELensDismantleRVWoodFurniture": "Démonter un meuble de caravane",
+    "MELensDismantleRVPlumbedFurniture": "Démonter une kitchenette ou une salle d'eau de caravane",
+    "MELensDismantleRVAppliance": "Démonter un appareil de caravane",
+    "MELensDismantleBusSeat": "Démonter un siège de bus",
+    "MELensBuildRVShelf": "Construire une étagère de caravane"
+}

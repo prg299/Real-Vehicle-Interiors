@@ -1,0 +1,128 @@
+-- Production initialization contracts with isolated engine doubles, not native save/MP proof.
+local M, P, U = MELens, MELens.Parts, MELens.Utilities
+local old = { isClient = isClient, instanceItem = instanceItem, SandboxVars = SandboxVars,
+    applyPiece = P.applyPiece, fillFurniture = P.fillFurniture, canReach = P.canReach }
+local client, made, fills = false, 0, 0
+local function empty(values)
+    for _ in pairs(values) do return false end
+    return true
+end
+isClient = function() return client end
+SandboxVars = { MELens = { StartFurnished = true, FurnitureLoot = true } }
+instanceItem = function(full)
+    made = made + 1
+    return { getFullType = function() return full end }
+end
+P.applyPiece = function() end -- Model visibility/capacity is outside these initialization contracts.
+P.fillFurniture = function() fills = fills + 1 end
+
+local vehicle = { getScript = function() return { getFullName = function() return "Base.Trailer54FlyingCloud22" end } end }
+local function part(item, data, contents, condition)
+    local c = { items = contents or {}, explored = false }
+    function c:isEmpty() return #self.items == 0 end
+    function c:isExplored() return self.explored end
+    local p = { item = item, data = data or {}, container = c, condition = condition or -1, conditionSets = 0 }
+    function p:getId() return "MELensSpot1" end
+    function p:getInventoryItem() return self.item end
+    function p:setInventoryItem(value) self.item = value end
+    function p:getItemContainer() return self.container end
+    function p:getModData() return self.data end
+    function p:getCondition() return self.condition end
+    function p:setCondition(value) self.condition = value; self.conditionSets = self.conditionSets + 1 end
+    return p
+end
+
+local fresh = part()
+P.createSpot(vehicle, fresh)
+check(fresh.item and fresh.item:getFullType() == "Base.MELensRV_Bed", "new existing-vehicle spot lacks its default")
+check(fresh.data[P.INITIALIZED_KEY] == true and made == 1 and fills == 1, "new spot initialization/loot missing")
+local installed = fresh.item
+P.createSpot(vehicle, fresh)
+check(fresh.item == installed and made == 1 and fills == 1, "repeated create replaces furniture or refills loot")
+
+local savedItem = { getFullType = function() return "Base.MELensRV_Cabinet" end }
+local savedCargo = { token = "keep-original-reference" }
+local saved = part(savedItem, {}, { savedCargo })
+P.createSpot(vehicle, saved)
+check(saved.item == savedItem and saved.container.items[1] == savedCargo, "saved furniture/storage replaced")
+check(made == 1 and fills == 1, "saved furniture rerolls defaults or loot")
+
+local deliberatelyEmpty = part()
+P.initSpot(vehicle, deliberatelyEmpty)
+P.createSpot(vehicle, deliberatelyEmpty)
+check(not deliberatelyEmpty.item and deliberatelyEmpty.data[P.INITIALIZED_KEY], "old cleared spot refurnished")
+check(made == 1 and fills == 1, "old cleared spot generates items")
+local reloadedEmpty = part(nil, { [P.INITIALIZED_KEY] = deliberatelyEmpty.data[P.INITIALIZED_KEY] })
+P.createSpot(vehicle, reloadedEmpty)
+check(not reloadedEmpty.item and made == 1, "saved initialization marker does not preserve cleared layout")
+
+local orphaned = part(nil, {}, { savedCargo })
+P.createSpot(vehicle, orphaned)
+check(not orphaned.item and orphaned.container.items[1] == savedCargo and made == 1 and fills == 1,
+    "saved orphan storage gains defaults or loses contents")
+P.canReach = function() return true end
+check(P.containerTest(vehicle, orphaned, {}), "saved contents become inaccessible without furniture")
+P.canReach = function() return false end
+check(not P.containerTest(vehicle, orphaned, {}), "orphan storage bypasses reach")
+
+SandboxVars.MELens.StartFurnished = false
+local unfurnished = part()
+P.createSpot(vehicle, unfurnished)
+check(not unfurnished.item and unfurnished.data[P.INITIALIZED_KEY], "unfurnished option not retained")
+SandboxVars.MELens.StartFurnished = true
+P.createSpot(vehicle, unfurnished)
+check(not unfurnished.item and made == 1, "changed start option refurnishes initialized vehicle")
+
+client = true
+local replica = part()
+P.createSpot(vehicle, replica)
+P.initSpot(vehicle, replica)
+check(not replica.item and not replica.data[P.INITIALIZED_KEY] and made == 1 and fills == 1,
+    "client creates furniture/loot or initialization authority")
+client = false
+
+local inside = { getVehicle = function() return vehicle end }
+local outside = { getVehicle = function() return nil end }
+local oldCargo = part(nil, {}, { savedCargo }) -- explored=false deliberately
+check(P.ki5StorageTest(vehicle, oldCargo, inside), "unexplored nonempty original cargo hidden after install")
+check(not P.ki5StorageTest(vehicle, oldCargo, outside), "original cargo exposed outside the interior")
+oldCargo.container.items = {}
+check(not P.ki5StorageTest(vehicle, oldCargo, inside), "empty original cargo remains visible")
+
+local generator = part()
+U.createGenerator(vehicle, generator)
+check(generator.data.fuel == 0 and generator.data.on == false and generator.condition == 100,
+    "new generator defaults missing")
+U.createGenerator(vehicle, generator)
+check(generator.conditionSets == 1, "repeated generator create repairs condition")
+local running = part(nil, { fuel = 6.25, on = true, wear = 0.4 }, {}, 17)
+U.createGenerator(vehicle, running)
+check(running.data.fuel == 6.25 and running.data.on == true and running.data.wear == 0.4
+    and running.condition == 17 and running.conditionSets == 0, "saved generator fuel/state/condition reset")
+local broken = part(nil, {}, {}, 0)
+U.createGenerator(vehicle, broken)
+check(broken.condition == 0 and broken.conditionSets == 0, "broken generator repaired on initialization")
+local partialGenerator = part(nil, { on = true }, {}, 21)
+U.createGenerator(vehicle, partialGenerator)
+check(partialGenerator.data.fuel == 0 and partialGenerator.data.on == true
+    and partialGenerator.condition == 21, "partial generator initialization overwrites saved fields")
+
+local water = part()
+U.createWaterTank(vehicle, water)
+check(water.data.water == 0 and water.data.tainted == false, "new water tank defaults missing")
+local usedWater = part(nil, { water = 28.5, tainted = true })
+U.createWaterTank(vehicle, usedWater)
+U.createWaterTank(vehicle, usedWater)
+check(usedWater.data.water == 28.5 and usedWater.data.tainted == true, "saved tank emptied/untainted")
+local emptyWater = part(nil, { water = 0, tainted = false })
+U.createWaterTank(vehicle, emptyWater)
+check(emptyWater.data.water == 0 and emptyWater.data.tainted == false, "saved false/zero fields overwritten")
+client = true
+local clientGenerator, clientWater = part(), part()
+U.createGenerator(vehicle, clientGenerator)
+U.createWaterTank(vehicle, clientWater)
+check(empty(clientGenerator.data) and clientGenerator.conditionSets == 0 and empty(clientWater.data),
+    "client initializes authoritative utilities")
+
+isClient, instanceItem, SandboxVars = old.isClient, old.instanceItem, old.SandboxVars
+P.applyPiece, P.fillFurniture, P.canReach = old.applyPiece, old.fillFurniture, old.canReach

@@ -1,0 +1,18 @@
+{
+    "MELensBuildRVBed": "Build RV Bed",
+    "MELensBuildRVDinette": "Build RV Dinette",
+    "MELensBuildRVKitchen": "Build RV Kitchenette",
+    "MELensBuildRVFridge": "Build RV Fridge",
+    "MELensBuildRVCabinet": "Build RV Cabinet",
+    "MELensBuildRVWardrobe": "Build RV Wardrobe",
+    "MELensBuildRVWashroom": "Build RV Washroom",
+    "MELensBuildRVHeater": "Build RV Propane Heater",
+    "MELensBuildBusSeat": "Build Bus Seat",
+    "MELensJoinBusSeats": "Join Bus Seats",
+    "MELensBuildCargoBox": "Make Cargo Box",
+    "MELensDismantleRVWoodFurniture": "Dismantle RV Furniture",
+    "MELensDismantleRVPlumbedFurniture": "Dismantle RV Kitchenette or Washroom",
+    "MELensDismantleRVAppliance": "Dismantle RV Appliance",
+    "MELensDismantleBusSeat": "Dismantle Bus Seat",
+    "MELensBuildRVShelf": "Build RV Shelf Unit"
+}

@@ -1,0 +1,1 @@
+Intentionally empty: the game scans this folder on servers and logs an error when it is missing.

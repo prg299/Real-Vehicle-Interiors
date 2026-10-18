@@ -1,0 +1,21 @@
+{
+    "ContextMenu_MELens_WalkIn": "Walk into camper",
+    "ContextMenu_MELens_Dashboard": "Dashboard",
+    "ContextMenu_MELens_PickUp": "Pick up",
+    "ContextMenu_MELens_PlaceFurniture": "Place furniture",
+    "ContextMenu_MELens_Place": "Placing %1",
+    "ContextMenu_MELens_FillWaterTank": "Filling the water tank",
+    "ContextMenu_MELens_WashYourself": "Wash yourself",
+    "ContextMenu_MELens_Stove": "Stove: %1",
+    "ContextMenu_MELens_WalkInBus": "Walk into the bus",
+    "ContextMenu_MELens_WalkInCargo": "Walk into the cargo space",
+    "ContextMenu_MELens_Drive": "Drive",
+    "ContextMenu_MELens_GetUp": "Get up and walk inside",
+    "ContextMenu_MELens_UseNearby": "Use nearby furniture",
+    "ContextMenu_MELens_PlaceItem": "Place",
+    "ContextMenu_MELens_MoveItem": "Move",
+    "ContextMenu_MELens_TurnItem": "Turn",
+    "ContextMenu_MELens_GrabAllHere": "Grab all here",
+    "ContextMenu_MELens_WashClothes": "Wash clothes",
+    "ContextMenu_MELens_WashAll": "Wash all"
+}

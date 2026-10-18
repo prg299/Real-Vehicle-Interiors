@@ -1,0 +1,151 @@
+module Base
+{
+    /*
+     * ME: LENS camper furniture, placed at the furniture spots inside a walk-in camper (the
+     * MELensSpot parts, see MELens_Parts.lua). The pieces and their models come from
+     * tools-src/blender/rv_kit.py.
+     */
+
+    item MELensRV_Bed
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 12.0,
+        Icon = MELensRV_bed,
+        WorldStaticModel = MELensRV_bed_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Furniture,
+    }
+
+    item MELensRV_Dinette
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 10.0,
+        Icon = MELensRV_dinette,
+        WorldStaticModel = MELensRV_dinette_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Furniture,
+    }
+
+    item MELensRV_Kitchen
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 14.0,
+        Icon = MELensRV_kitchen,
+        WorldStaticModel = MELensRV_kitchen_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Furniture,
+    }
+
+    item MELensRV_Fridge
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 16.0,
+        Icon = MELensRV_fridge,
+        WorldStaticModel = MELensRV_fridge_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Furniture,
+    }
+
+    item MELensRV_Cabinet
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 8.0,
+        Icon = MELensRV_cabinet,
+        WorldStaticModel = MELensRV_cabinet_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Furniture,
+    }
+
+    item MELensRV_Wardrobe
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 10.0,
+        Icon = MELensRV_wardrobe,
+        WorldStaticModel = MELensRV_wardrobe_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Furniture,
+    }
+
+    item MELensRV_Washroom
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 12.0,
+        Icon = MELensRV_washroom,
+        WorldStaticModel = MELensRV_washroom_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Furniture,
+    }
+
+    item MELensRV_Heater
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 6.0,
+        Icon = MELensRV_heater,
+        WorldStaticModel = MELensRV_heater_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Furniture,
+    }
+
+    /* The item every standing place's seat part holds, so that a server accepts a player entering it (see
+       MELens_Profiles.lua, initStandingPart). It is never given out or shown. */
+    item MELensRV_Seat
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 0.0,
+        Icon = MELensRV_bed,
+        MechanicsItem = false,
+    }
+
+    item MELensRV_Shelf
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 7.0,
+        Icon = MELensRV_shelf,
+        WorldStaticModel = MELensRV_shelf_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Furniture,
+    }
+
+    item MELensRV_Box
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 3.0,
+        Icon = MELensRV_box,
+        WorldStaticModel = MELensRV_box_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Box,
+    }
+
+    item MELensRV_Busseat
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 8.0,
+        Icon = MELensRV_busseat,
+        WorldStaticModel = MELensRV_busseat_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Furniture,
+    }
+
+    item MELensRV_Busseat2
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 15.0,
+        Icon = MELensRV_busseat2,
+        WorldStaticModel = MELensRV_busseat2_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Furniture,
+    }
+}

@@ -1,0 +1,82 @@
+{
+    "key": "Scamp13",
+    "vehicles": [
+        "Base.Trailer87Scamp13"
+    ],
+    "title": "Scamp 13",
+    "kind": "camper",
+    "measure": "measure_Scamp13.json",
+    "scripts": [
+        "campers.json",
+        "Trailer87Scamp13"
+    ],
+    "texture": "scamp13",
+    "floorOutline": { "inset": 0.012, "band": 0.06, "measure": "measure_Scamp13_floor.json" },
+    "floorY": -0.32,
+    "hide": {
+        "TrailerKI5camperScamp13Interior": "ceiling",
+        "87scampCamperSeatfl": true,
+        "87scampCamperSeatfr": true,
+        "87scampCamperBed1": true,
+        "87scampCamperBed2": true
+    },
+    "entry": {
+        "object": "scamp16_door_fr",
+        "wall": "right",
+        "part": "DoorFrontRight",
+        "area": "SeatFrontRight",
+        "outsideFrom": "FrontL"
+    },
+    "openings": [
+        "scamp16_door_fr",
+        "scamp16_window_fr",
+        "scamp16_window_rl",
+        "scamp16_window_rr"
+    ],
+    "wheelWells": [
+        {
+            "z": 0.52,
+            "inner": 0.56
+        }
+    ],
+    "spots": [
+        {
+            "wall": "back",
+            "at": 0.0,
+            "length": 1.5,
+            "depth": 0.55,
+            "default": "bed",
+            "seats": [
+                "BackL"
+            ],
+            "head": "right",
+            "push": 0.03
+        },
+        {
+            "wall": "front",
+            "at": 0.18,
+            "length": 1.12,
+            "depth": 0.55,
+            "default": "dinette",
+            "seats": [
+                "FrontL",
+                "FrontR"
+            ],
+            "push": 0.04
+        },
+        {
+            "wall": "left",
+            "at": 0.68,
+            "length": 1.0,
+            "depth": 0.52,
+            "default": "kitchen"
+        },
+        {
+            "wall": "right",
+            "at": 0.42,
+            "length": 0.52,
+            "depth": 0.52,
+            "default": "fridge"
+        }
+    ]
+}

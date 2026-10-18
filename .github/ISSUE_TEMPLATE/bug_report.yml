@@ -1,0 +1,23 @@
+name: Bug report
+description: Report a reproducible gameplay or compatibility problem
+labels: [bug]
+body:
+  - type: textarea
+    id: versions
+    attributes:
+      label: Versions and setup
+      description: Game/mod versions, single player or MP, host type, dependencies, and whether server/clients load the Java component.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps, expected behavior and actual behavior
+      description: Include the vehicle, exact input and whether this is an existing save.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs and screenshots
+      description: Attach relevant errors with personal details removed. Do not post credentials or private saves.

@@ -1,0 +1,21 @@
+{
+    "ContextMenu_MELens_WalkIn": "Entrer dans la caravane",
+    "ContextMenu_MELens_Dashboard": "Tableau de bord",
+    "ContextMenu_MELens_PickUp": "Ramasser",
+    "ContextMenu_MELens_PlaceFurniture": "Placer un meuble",
+    "ContextMenu_MELens_Place": "Placement : %1",
+    "ContextMenu_MELens_FillWaterTank": "Remplissage du réservoir d'eau",
+    "ContextMenu_MELens_WashYourself": "Se laver",
+    "ContextMenu_MELens_Stove": "Cuisinière : %1",
+    "ContextMenu_MELens_WalkInBus": "Entrer dans le bus",
+    "ContextMenu_MELens_WalkInCargo": "Entrer dans l'espace de chargement",
+    "ContextMenu_MELens_Drive": "Conduire",
+    "ContextMenu_MELens_GetUp": "Se lever et circuler à l'intérieur",
+    "ContextMenu_MELens_UseNearby": "Utiliser un meuble à proximité",
+    "ContextMenu_MELens_PlaceItem": "Placer",
+    "ContextMenu_MELens_MoveItem": "Déplacer",
+    "ContextMenu_MELens_TurnItem": "Faire pivoter",
+    "ContextMenu_MELens_GrabAllHere": "Prendre tout ici",
+    "ContextMenu_MELens_WashClothes": "Laver les vêtements",
+    "ContextMenu_MELens_WashAll": "Tout laver"
+}

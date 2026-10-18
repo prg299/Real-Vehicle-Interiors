@@ -1,0 +1,6 @@
+name=ME: LENS - developer test endpoint (NOT FOR PLAY)
+id=RealVehicleInteriors_Dev
+description=Test-profile only.
+require=\ZombieBuddy
+versionMin=42.21
+modversion=1.0.0

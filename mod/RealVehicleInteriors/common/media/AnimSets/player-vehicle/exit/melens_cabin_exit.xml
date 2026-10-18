@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animNode>
+	<m_Name>melens_cabin_exit</m_Name>
+	<m_AnimName>Bob_Idle</m_AnimName>
+	<m_ConditionPriority>100</m_ConditionPriority>
+	<m_deferredBoneAxis>Y</m_deferredBoneAxis>
+	<m_Looped>false</m_Looped>
+	<m_BlendTime>0.20</m_BlendTime>
+	<m_SpeedScale>1.00</m_SpeedScale>
+	<m_Conditions>
+		<m_Name>MELensCabinSeat</m_Name>
+		<m_Type>STRING</m_Type>
+		<m_StringValue>true</m_StringValue>
+	</m_Conditions>
+	<m_Events>
+		<m_EventName>SetVariable</m_EventName>
+		<m_Time>Start</m_Time>
+		<m_ParameterValue>ExitAnimationFinished=true</m_ParameterValue>
+	</m_Events>
+</animNode>

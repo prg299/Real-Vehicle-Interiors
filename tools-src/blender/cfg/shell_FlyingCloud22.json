@@ -1,0 +1,117 @@
+{
+    "measure": "build/rv/floorplans/measure_FlyingCloud22.json",
+    "object": "shell_cloud22",
+    "floorY": -0.14,
+    "top": 1.5,
+    "refHeight": 0.3,
+    "lowestOutline": 0.1,
+    "segments": 72,
+    "inset": 0.03,
+    "wall": "wall_panel",
+    "floor": "floor_planks",
+    "openings": [
+        {
+            "x": [
+                -1.0,
+                -0.55
+            ],
+            "y": [
+                -0.3,
+                1.39
+            ],
+            "z": [
+                0.83,
+                1.41
+            ]
+        }
+    ],
+    "grid": {
+        "name": "Base.Trailer54FlyingCloud22.shell",
+        "file": "FlyingCloud22_Shell",
+        "cell": 0.025,
+        "xRange": [
+            -1,
+            1
+        ],
+        "zRange": [
+            -2.4,
+            3
+        ],
+        "radius": 0.1,
+        "headroom": 1.05,
+        "floorTolerance": 0.04
+    },
+    "texture": "cloud22",
+    "seed": 11,
+    "style": {
+        "flat": false,
+        "floorArt": "floor_planks",
+        "floorTile": 0.9,
+        "floorTint": [
+            0.38,
+            0.27,
+            0.19
+        ],
+        "wallArt": "wall_paint",
+        "wallTile": 0.8,
+        "wallTint": [
+            0.8,
+            0.76,
+            0.66
+        ],
+        "panelWidth": 0.6,
+        "baseboard": 0.07,
+        "baseboardArt": "wood_dark",
+        "baseboardColour": [
+            0.3,
+            0.2,
+            0.13
+        ],
+        "wallSize": [
+            2048,
+            256
+        ],
+        "floorSize": [
+            512,
+            1024
+        ]
+    },
+    "wheelWells": [
+        {
+            "x": [
+                0.59,
+                0.88
+            ],
+            "z": [
+                -0.37,
+                0.31
+            ],
+            "top": 0.1,
+            "bottom": -0.3
+        },
+        {
+            "x": [
+                -0.59,
+                -0.88
+            ],
+            "z": [
+                -0.37,
+                0.31
+            ],
+            "top": 0.1,
+            "bottom": -0.3
+        }
+    ],
+    "panel": {
+        "x": -0.864,
+        "depth": 0.02,
+        "y": [
+            0.1,
+            0.21
+        ],
+        "z": [
+            0.6,
+            0.74
+        ]
+    }
+}

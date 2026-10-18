@@ -1,0 +1,21 @@
+{
+    "ContextMenu_MELens_WalkIn": "Entrar no Trailer",
+    "ContextMenu_MELens_Dashboard": "Painel de Controle",
+    "ContextMenu_MELens_PickUp": "Pegar",
+    "ContextMenu_MELens_PlaceFurniture": "Colocar Móvel",
+    "ContextMenu_MELens_Place": "Colocando %1",
+    "ContextMenu_MELens_FillWaterTank": "Enchendo o Tanque de Água",
+    "ContextMenu_MELens_WashYourself": "Lavar-se",
+    "ContextMenu_MELens_Stove": "Fogão: %1",
+    "ContextMenu_MELens_WalkInBus": "Entrar no Ônibus",
+    "ContextMenu_MELens_WalkInCargo": "Entrar no Baú de Carga",
+    "ContextMenu_MELens_Drive": "Dirigir",
+    "ContextMenu_MELens_GetUp": "Levantar e Andar por Dentro",
+    "ContextMenu_MELens_UseNearby": "Usar Móvel Próximo",
+    "ContextMenu_MELens_PlaceItem": "Colocar",
+    "ContextMenu_MELens_MoveItem": "Mover",
+    "ContextMenu_MELens_TurnItem": "Girar",
+    "ContextMenu_MELens_GrabAllHere": "Pegar Tudo Aqui",
+    "ContextMenu_MELens_WashClothes": "Lavar Roupas",
+    "ContextMenu_MELens_WashAll": "Lavar Tudo"
+}

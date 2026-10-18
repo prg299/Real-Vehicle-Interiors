@@ -1,0 +1,12 @@
+{
+    "name":  "Base.TrailerKI5cargoLarge",
+    "fbx":  "C:/SteamLibrary/steamapps/workshop/content/108600/3330403100/mods/KI5trailers/common/media/models_X/vehicles/Trailers_KI5cargo_Body.fbx",
+    "body":  "damnTrailer_cargo_large_body",
+    "interior":  [
+                     "damnTrailer_cargo_large_interior"
+                 ],
+    "prefix":  [
+                   "damnTrailer_cargo_large_"
+               ],
+    "out":  "build/rv/floorplans/measure_CargoLarge.json"
+}

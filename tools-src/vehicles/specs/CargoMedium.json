@@ -1,0 +1,24 @@
+{
+    "disabled": "Too small to walk into: the cargo trailers stay as KI5 made them (no interior, their cargo is looted from outside)",
+    "key": "CargoMedium",
+    "vehicles": ["Base.TrailerKI5cargoMedium"],
+    "title": "Medium Cargo Trailer",
+    "kind": "cargo",
+    "measure": "measure_CargoMedium.json",
+    "scripts": ["trailers.json", "TrailerKI5cargoMedium"],
+    "texture": "cargomedium",
+    "box": {"x": 0.75, "z": [-1.35, 0.83]},
+    "hide": {"TrailerKI5cargoMediumInterior": "ceiling"},
+    "entry": {"object": "damnTrailer_cargo_medium_splitdoor", "wall": "back", "part": "TrunkDoor", "area": "TruckBed", "panelWall": "right"},
+    "ki5Storage": ["KI5TRCMTrunk"],
+    "loot": "cargo",
+    "openings": [],
+    "spots": [
+        {"wall": "front", "at": 0.33, "length": 0.6, "depth": 0.5, "default": "crate"},
+        {"wall": "front", "at": -0.33, "length": 0.6, "depth": 0.5, "default": "crate"},
+        {"wall": "left", "at": 0.0, "length": 0.6, "depth": 0.5, "default": "crate"},
+        {"wall": "left", "at": -0.62, "length": 0.6, "depth": 0.5, "default": "crate"},
+        {"wall": "right", "at": 0.0, "length": 0.6, "depth": 0.5, "default": "crate"},
+        {"wall": "right", "at": -0.62, "length": 0.6, "depth": 0.5, "default": "crate"}
+    ]
+}

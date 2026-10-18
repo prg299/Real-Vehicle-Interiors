@@ -1,0 +1,21 @@
+{
+    "ContextMenu_MELens_WalkIn": "Wohnwagen betreten",
+    "ContextMenu_MELens_Dashboard": "Armaturenbrett",
+    "ContextMenu_MELens_PickUp": "Aufheben",
+    "ContextMenu_MELens_PlaceFurniture": "Möbel platzieren",
+    "ContextMenu_MELens_Place": "Platziere %1",
+    "ContextMenu_MELens_FillWaterTank": "Wassertank befüllen",
+    "ContextMenu_MELens_WashYourself": "Dich waschen",
+    "ContextMenu_MELens_Stove": "Herd: %1",
+    "ContextMenu_MELens_WalkInBus": "Bus betreten",
+    "ContextMenu_MELens_WalkInCargo": "Laderaum betreten",
+    "ContextMenu_MELens_Drive": "Fahren",
+    "ContextMenu_MELens_GetUp": "Aufstehen und hineingehen",
+    "ContextMenu_MELens_UseNearby": "Möbel in der Nähe benutzen",
+    "ContextMenu_MELens_PlaceItem": "Platzieren",
+    "ContextMenu_MELens_MoveItem": "Verschieben",
+    "ContextMenu_MELens_TurnItem": "Drehen",
+    "ContextMenu_MELens_GrabAllHere": "Alles hier nehmen",
+    "ContextMenu_MELens_WashClothes": "Kleidung waschen",
+    "ContextMenu_MELens_WashAll": "Alles waschen"
+}

@@ -1,0 +1,14 @@
+{
+    "Base.MELensRV_Bed": "RV Bed",
+    "Base.MELensRV_Dinette": "RV Dinette",
+    "Base.MELensRV_Kitchen": "RV Kitchenette",
+    "Base.MELensRV_Fridge": "RV Fridge",
+    "Base.MELensRV_Cabinet": "RV Cabinet",
+    "Base.MELensRV_Wardrobe": "RV Wardrobe",
+    "Base.MELensRV_Washroom": "RV Washroom",
+    "Base.MELensRV_Heater": "RV Heater",
+    "Base.MELensRV_Box": "Cargo Box",
+    "Base.MELensRV_Busseat": "Bus Seat",
+    "Base.MELensRV_Busseat2": "Bus Seats (Pair)",
+    "Base.MELensRV_Shelf": "RV Shelf Unit"
+}

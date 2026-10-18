@@ -1,0 +1,21 @@
+{
+    "ContextMenu_MELens_WalkIn": "Войти в кемпер",
+    "ContextMenu_MELens_Dashboard": "Панель управления",
+    "ContextMenu_MELens_PickUp": "Поднять",
+    "ContextMenu_MELens_PlaceFurniture": "Поставить мебель",
+    "ContextMenu_MELens_Place": "Размещение: %1",
+    "ContextMenu_MELens_FillWaterTank": "Наполнение бака для воды",
+    "ContextMenu_MELens_WashYourself": "Помыться",
+    "ContextMenu_MELens_Stove": "Плита: %1",
+    "ContextMenu_MELens_WalkInBus": "Войти в автобус",
+    "ContextMenu_MELens_WalkInCargo": "Войти в грузовой отсек",
+    "ContextMenu_MELens_Drive": "Сесть за руль",
+    "ContextMenu_MELens_GetUp": "Встать и пройти внутрь",
+    "ContextMenu_MELens_UseNearby": "Использовать мебель рядом",
+    "ContextMenu_MELens_PlaceItem": "Поставить",
+    "ContextMenu_MELens_MoveItem": "Переместить",
+    "ContextMenu_MELens_TurnItem": "Повернуть",
+    "ContextMenu_MELens_GrabAllHere": "Взять всё отсюда",
+    "ContextMenu_MELens_WashClothes": "Постирать одежду",
+    "ContextMenu_MELens_WashAll": "Постирать всё"
+}

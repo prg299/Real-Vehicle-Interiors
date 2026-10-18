@@ -1,0 +1,21 @@
+{
+    "name": "Base.Trailer54FlyingCloud22",
+    "fbx": "C:/SteamLibrary/steamapps/workshop/content/108600/3670064951/mods/KI5campers/common/media/models_X/vehicles/Trailers_KI5campers_Body.fbx",
+    "objects": ["cloud22_interior", "cloud22_body"],
+    "map": { "sx": -90, "sy": 90, "sz": 90 },
+    "floorY": -0.14,
+    "cell": 0.025,
+    "xRange": [-1.0, 1.0],
+    "zRange": [-2.4, 3.0],
+    "radius": 0.10,
+    "headroom": 1.05,
+    "floorTolerance": 0.06,
+    "points": {
+        "door": [-0.675, 1.10],
+        "FrontB": [0.02, 2.05], "SideB": [0.20, 1.42],
+        "FrontL": [0.20, -0.18], "FrontR": [0.20, -1.06],
+        "RearL": [-0.18, -0.78], "RearR": [-0.18, -1.62]
+    },
+    "luaOut": "mod/RealVehicleInteriors/common/media/lua/shared/MELens_WalkGrid_FlyingCloud22.lua",
+    "pngOut": "build/rv/floorplans/FlyingCloud22.png"
+}

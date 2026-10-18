@@ -1,0 +1,13 @@
+{
+    "name":  "Base.87fordB700school",
+    "fbx":  "C:/SteamLibrary/steamapps/workshop/content/108600/3110911330/mods/87fordB700/common/media/models_X/vehicles/Vehicles_87fordB700_Body.fbx",
+    "body":  "b700_body",
+    "interior":  [
+                     "b700_interior_bus",
+                     "b700_interior"
+                 ],
+    "prefix":  [
+                   "b700_"
+               ],
+    "out":  "build/rv/floorplans/measure_B700school.json"
+}

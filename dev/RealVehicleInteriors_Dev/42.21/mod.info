@@ -1,0 +1,8 @@
+name=ME: LENS - developer test endpoint (NOT FOR PLAY)
+id=RealVehicleInteriors_Dev
+description=Test-profile only. Runs Lua posted to 127.0.0.1:18470 so ME: LENS test runs can be scripted. Never enable this in a normal game.
+require=\ZombieBuddy
+versionMin=42.21
+modversion=1.0.0
+javaJarFile=media/java/RealVehicleInteriors_Dev.jar
+javaPkgName=me.lens.dev

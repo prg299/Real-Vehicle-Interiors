@@ -1,0 +1,21 @@
+{
+    "ContextMenu_MELens_WalkIn": "Wejdź do kampera",
+    "ContextMenu_MELens_Dashboard": "Panel sterowania",
+    "ContextMenu_MELens_PickUp": "Podnieś",
+    "ContextMenu_MELens_PlaceFurniture": "Postaw mebel",
+    "ContextMenu_MELens_Place": "Stawianie: %1",
+    "ContextMenu_MELens_FillWaterTank": "Napełnianie zbiornika wody",
+    "ContextMenu_MELens_WashYourself": "Umyj się",
+    "ContextMenu_MELens_Stove": "Kuchenka: %1",
+    "ContextMenu_MELens_WalkInBus": "Wejdź do autobusu",
+    "ContextMenu_MELens_WalkInCargo": "Wejdź do przestrzeni ładunkowej",
+    "ContextMenu_MELens_Drive": "Prowadź",
+    "ContextMenu_MELens_GetUp": "Wstań i chodź po wnętrzu",
+    "ContextMenu_MELens_UseNearby": "Użyj pobliskiego mebla",
+    "ContextMenu_MELens_PlaceItem": "Postaw",
+    "ContextMenu_MELens_MoveItem": "Przenieś",
+    "ContextMenu_MELens_TurnItem": "Obróć",
+    "ContextMenu_MELens_GrabAllHere": "Weź wszystko stąd",
+    "ContextMenu_MELens_WashClothes": "Wypierz ubrania",
+    "ContextMenu_MELens_WashAll": "Wypierz wszystko"
+}

@@ -1,0 +1,99 @@
+{
+    "key": "Bambi16",
+    "vehicles": [
+        "Base.Trailer61Bambi16"
+    ],
+    "title": "Bambi 16",
+    "kind": "camper",
+    "measure": "measure_Bambi16.json",
+    "scripts": [
+        "campers.json",
+        "Trailer61Bambi16"
+    ],
+    "texture": "bambi16",
+    "hide": {
+        "TrailerKI5camperBambi16Interior": "ceiling",
+        "61bambiCamperSeatrl": true,
+        "61bambiCamperSeatrr": true,
+        "61bambiCamperBed1": true,
+        "61bambiCamperBed2": true
+    },
+    "entry": {
+        "object": "bambi16_door_fr",
+        "wall": "right",
+        "part": "DoorFrontRight",
+        "area": "SeatFrontRight",
+        "panel": "front",
+        "outsideFrom": "FrontB"
+    },
+    "openings": [
+        "bambi16_door_fr",
+        "bambi16_window_fl",
+        "bambi16_window_fr",
+        "bambi16_window_rl",
+        "bambi16_windshield_front",
+        "bambi16_windshield_rear"
+    ],
+    "wheelWells": [
+        {
+            "z": -0.03,
+            "inner": 0.59
+        }
+    ],
+    "spots": [
+        {
+            "wall": "front",
+            "at": 0.0,
+            "length": 1.5,
+            "depth": 0.55,
+            "default": "bed",
+            "seats": [
+                "FrontB"
+            ],
+            "head": "right"
+        },
+        {
+            "wall": "left",
+            "at": 0.55,
+            "length": 1.5,
+            "depth": 0.55,
+            "default": "bed",
+            "seats": [
+                "SideB"
+            ],
+            "head": "front"
+        },
+        {
+            "wall": "back",
+            "at": 0.0,
+            "length": 1.12,
+            "depth": 0.55,
+            "default": "dinette",
+            "seats": [
+                "RearL",
+                "RearR"
+            ]
+        },
+        {
+            "wall": "right",
+            "at": 0.28,
+            "length": 1.0,
+            "depth": 0.52,
+            "default": "kitchen"
+        },
+        {
+            "wall": "right",
+            "at": -0.48,
+            "length": 0.52,
+            "depth": 0.52,
+            "default": "fridge"
+        },
+        {
+            "wall": "left",
+            "at": -0.49,
+            "length": 0.52,
+            "depth": 0.32,
+            "default": "heater"
+        }
+    ]
+}

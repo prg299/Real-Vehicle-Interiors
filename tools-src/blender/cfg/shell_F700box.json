@@ -1,0 +1,72 @@
+{
+    "measure": "build/rv/floorplans/measure_F700box_box.json",
+    "object": "shell_f700box",
+    "floorY": 0.02,
+    "top": 1.66,
+    "refHeight": 0.46,
+    "lowestOutline": 0.26,
+    "segments": 72,
+    "inset": 0.03,
+    "wall": "wall_panel",
+    "floor": "floor_planks",
+    "openings": [],
+    "grid": {
+        "name": "MELens.F700box.shell",
+        "file": "F700box_Shell",
+        "cell": 0.025,
+        "xRange": [
+            -1.09,
+            1.09
+        ],
+        "zRange": [
+            -4.45,
+            1.15
+        ],
+        "radius": 0.15,
+        "headroom": 1.05,
+        "floorTolerance": 0.04
+    },
+    "texture": "f700box",
+    "seed": 11,
+    "style": {
+        "flat": false,
+        "floorArt": "floor_planks",
+        "floorTile": 1.0,
+        "floorTint": [
+            0.29,
+            0.23,
+            0.18
+        ],
+        "wallArt": "steel",
+        "wallTile": 1.0,
+        "wallTint": [
+            0.55,
+            0.57,
+            0.59
+        ],
+        "panelWidth": 0.5,
+        "baseboard": 0.0,
+        "wallSize": [
+            2048,
+            256
+        ],
+        "floorSize": [
+            512,
+            2048
+        ]
+    },
+    "wheelWells": [],
+    "panel": {
+        "x": -1.01,
+        "depth": 0.02,
+        "y": [
+            0.26,
+            0.37
+        ],
+        "z": [
+            -4.26,
+            -4.12
+        ]
+    },
+    "sharpCorners": true
+}

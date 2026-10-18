@@ -1,0 +1,18 @@
+{
+    "MELensBuildRVBed": "Собрать кровать для кемпера",
+    "MELensBuildRVDinette": "Собрать обеденный уголок для кемпера",
+    "MELensBuildRVKitchen": "Собрать мини-кухню для кемпера",
+    "MELensBuildRVFridge": "Собрать холодильник для кемпера",
+    "MELensBuildRVCabinet": "Собрать шкафчик для кемпера",
+    "MELensBuildRVWardrobe": "Собрать шкаф для кемпера",
+    "MELensBuildRVWashroom": "Собрать санузел для кемпера",
+    "MELensBuildRVHeater": "Собрать пропановый обогреватель для кемпера",
+    "MELensBuildBusSeat": "Собрать автобусное сиденье",
+    "MELensJoinBusSeats": "Соединить автобусные сиденья",
+    "MELensBuildCargoBox": "Сделать грузовой ящик",
+    "MELensDismantleRVWoodFurniture": "Разобрать мебель для кемпера",
+    "MELensDismantleRVPlumbedFurniture": "Разобрать мини-кухню или санузел для кемпера",
+    "MELensDismantleRVAppliance": "Разобрать прибор для кемпера",
+    "MELensDismantleBusSeat": "Разобрать автобусное сиденье",
+    "MELensBuildRVShelf": "Собрать стеллаж для кемпера"
+}

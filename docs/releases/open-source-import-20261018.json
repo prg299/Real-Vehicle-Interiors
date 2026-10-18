@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-18",
+  "sourceVersion": "2.0.8",
+  "productionPayloadComparison": {
+    "files": 155,
+    "allSha256MatchPublishedManifest": true,
+    "jarSha256": "f11659bb248f48603cb777cf52eeeadb2c5fd49c592853d3a541e45fed454e8b"
+  },
+  "automated": {
+    "productionLuaAssertions": 1112,
+    "luaFilesCompiled": 31,
+    "engineDoubles": true,
+    "shaderRecipesReconstructed": 6,
+    "powershellScriptsParsed": 62
+  },
+  "nativeGameplayThisExtraction": false,
+  "visualReviewThisExtraction": false,
+  "performanceThisExtraction": false,
+  "humanAcceptance": "not implied",
+  "notes": [
+    "Build and checks ran through the shared Windows resource guard.",
+    "No live game, save, load order, installed mod, or Workshop publication changed.",
+    "Java API, Lua globals, item/part/network IDs, modData and runtime asset paths retain compatibility names."
+  ]
+}

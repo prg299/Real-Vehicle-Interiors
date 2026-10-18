@@ -1,0 +1,21 @@
+{
+    "disabled": "Too small to walk into: the cargo trailers stay as KI5 made them (no interior, their cargo is looted from outside)",
+    "key": "CargoSmall",
+    "vehicles": ["Base.TrailerKI5cargoSmall"],
+    "title": "Small Cargo Trailer",
+    "kind": "cargo",
+    "measure": "measure_CargoSmall.json",
+    "scripts": ["trailers.json", "TrailerKI5cargoSmall"],
+    "texture": "cargosmall",
+    "box": {"x": 0.62, "z": [-1.05, 0.56]},
+    "hide": {"TrailerKI5cargoSmallInterior": "ceiling"},
+    "entry": {"object": "damnTrailer_cargo_small_door", "wall": "back", "part": "TrunkDoor", "area": "TruckBed", "panelWall": "right"},
+    "ki5Storage": ["KI5TRCSTrunk"],
+    "loot": "cargo",
+    "openings": [],
+    "spots": [
+        {"wall": "front", "at": 0.29, "length": 0.55, "depth": 0.45, "default": "crate"},
+        {"wall": "front", "at": -0.29, "length": 0.55, "depth": 0.45, "default": "crate"},
+        {"wall": "left", "at": -0.35, "length": 0.55, "depth": 0.45, "default": "crate"}
+    ]
+}

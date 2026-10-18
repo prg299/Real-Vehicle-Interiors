@@ -1,0 +1,74 @@
+module Base
+{
+    /*
+     * ME: LENS models, made by tools-src/blender/rv_kit.py. One Blender unit is one tile
+     * at scale 0.0111111 (with the vehicles' model scale of 0.9). Each has its own baked
+     * texture. They are only drawn in the vehicle you are in; MELensRV_* (furniture) is
+     * never cut by the cutaway. MELensRV_*_ghost is the same piece drawn as a see-through
+     * preview while you choose where to place furniture (Cutaway.java).
+     */
+
+    model MELensShell_cloud22_floor { mesh = vehicles/MELens_Shells|shell_cloud22_floor, texture = Vehicles/MELensShell_cloud22_floor, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_cloud22_walls { mesh = vehicles/MELens_Shells|shell_cloud22_walls, texture = Vehicles/MELensShell_cloud22_walls, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_bambi16_floor { mesh = vehicles/MELens_Shells|shell_bambi16_floor, texture = Vehicles/MELensShell_bambi16_floor, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_bambi16_walls { mesh = vehicles/MELens_Shells|shell_bambi16_walls, texture = Vehicles/MELensShell_bambi16_walls, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_airflyte_floor { mesh = vehicles/MELens_Shells|shell_airflyte_floor, texture = Vehicles/MELensShell_airflyte_floor, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_airflyte_walls { mesh = vehicles/MELens_Shells|shell_airflyte_walls, texture = Vehicles/MELensShell_airflyte_walls, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_scamp13_floor { mesh = vehicles/MELens_Shells|shell_scamp13_floor, texture = Vehicles/MELensShell_scamp13_floor, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_scamp13_walls { mesh = vehicles/MELens_Shells|shell_scamp13_walls, texture = Vehicles/MELensShell_scamp13_walls, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_scamp16_floor { mesh = vehicles/MELens_Shells|shell_scamp16_floor, texture = Vehicles/MELensShell_scamp16_floor, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_scamp16_walls { mesh = vehicles/MELens_Shells|shell_scamp16_walls, texture = Vehicles/MELensShell_scamp16_walls, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_b700_floor { mesh = vehicles/MELens_Shells|shell_b700_floor, texture = Vehicles/MELensShell_b700_floor, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_b700_walls { mesh = vehicles/MELens_Shells|shell_b700_walls, texture = Vehicles/MELensShell_b700_walls, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_f700box_floor { mesh = vehicles/MELens_Shells|shell_f700box_floor, texture = Vehicles/MELensShell_f700box_floor, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_f700box_walls { mesh = vehicles/MELens_Shells|shell_f700box_walls, texture = Vehicles/MELensShell_f700box_walls, shader = vehiclewheel, scale = 0.0111111, }
+
+    model MELensDecal { mesh = vehicles/MELens_Shells|decal, texture = Vehicles/MELensShell_cloud22_floor, shader = vehiclewheel, scale = 0.0111111, }
+
+    model MELensRV_bed { mesh = vehicles/MELens_RV|rv_bed, texture = Vehicles/MELensRV_bed, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_bed_ghost { mesh = vehicles/MELens_RV|rv_bed, texture = Vehicles/MELensRV_bed, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_dinette { mesh = vehicles/MELens_RV|rv_dinette, texture = Vehicles/MELensRV_dinette, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_dinette_ghost { mesh = vehicles/MELens_RV|rv_dinette, texture = Vehicles/MELensRV_dinette, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_kitchen { mesh = vehicles/MELens_RV|rv_kitchen, texture = Vehicles/MELensRV_kitchen, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_kitchen_ghost { mesh = vehicles/MELens_RV|rv_kitchen, texture = Vehicles/MELensRV_kitchen, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_fridge { mesh = vehicles/MELens_RV|rv_fridge, texture = Vehicles/MELensRV_fridge, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_fridge_ghost { mesh = vehicles/MELens_RV|rv_fridge, texture = Vehicles/MELensRV_fridge, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_wardrobe { mesh = vehicles/MELens_RV|rv_wardrobe, texture = Vehicles/MELensRV_wardrobe, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_wardrobe_ghost { mesh = vehicles/MELens_RV|rv_wardrobe, texture = Vehicles/MELensRV_wardrobe, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_cabinet { mesh = vehicles/MELens_RV|rv_cabinet, texture = Vehicles/MELensRV_cabinet, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_cabinet_ghost { mesh = vehicles/MELens_RV|rv_cabinet, texture = Vehicles/MELensRV_cabinet, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_washroom { mesh = vehicles/MELens_RV|rv_washroom, texture = Vehicles/MELensRV_washroom, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_washroom_ghost { mesh = vehicles/MELens_RV|rv_washroom, texture = Vehicles/MELensRV_washroom, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_heater { mesh = vehicles/MELens_RV|rv_heater, texture = Vehicles/MELensRV_heater, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_heater_ghost { mesh = vehicles/MELens_RV|rv_heater, texture = Vehicles/MELensRV_heater, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_shelf { mesh = vehicles/MELens_RV|rv_shelf, texture = Vehicles/MELensRV_shelf, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_shelf_ghost { mesh = vehicles/MELens_RV|rv_shelf, texture = Vehicles/MELensRV_shelf, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_box { mesh = vehicles/MELens_RV|rv_box, texture = Vehicles/MELensRV_box, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_box_ghost { mesh = vehicles/MELens_RV|rv_box, texture = Vehicles/MELensRV_box, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_busseat { mesh = vehicles/MELens_RV|rv_busseat, texture = Vehicles/MELensRV_busseat, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_busseat_ghost { mesh = vehicles/MELens_RV|rv_busseat, texture = Vehicles/MELensRV_busseat, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_busseat_r { mesh = vehicles/MELens_RV|rv_busseat_r, texture = Vehicles/MELensRV_busseat_r, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_busseat_r_ghost { mesh = vehicles/MELens_RV|rv_busseat_r, texture = Vehicles/MELensRV_busseat_r, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_busseat2 { mesh = vehicles/MELens_RV|rv_busseat2, texture = Vehicles/MELensRV_busseat2, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_busseat2_ghost { mesh = vehicles/MELens_RV|rv_busseat2, texture = Vehicles/MELensRV_busseat2, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_busseat2_r { mesh = vehicles/MELens_RV|rv_busseat2_r, texture = Vehicles/MELensRV_busseat2_r, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_busseat2_r_ghost { mesh = vehicles/MELens_RV|rv_busseat2_r, texture = Vehicles/MELensRV_busseat2_r, shader = vehiclewheel, scale = 0.0111111, }
+
+    /* Dropped furniture uses the same mesh and baked texture as its installed piece.
+     * Ground items use the normal item shader/depth and a 1.5x camera scale; vehicle
+     * parts use the vehicle's 0.9x scale. 0.0111111 * 0.9 / 1.5 keeps their real size.
+     * Separate model names keep the vehicle cutaway shader off outdoor drops.
+     */
+    model MELensRV_bed_ground { mesh = vehicles/MELens_RV|rv_bed, texture = Vehicles/MELensRV_bed, scale = 0.00666666, }
+    model MELensRV_dinette_ground { mesh = vehicles/MELens_RV|rv_dinette, texture = Vehicles/MELensRV_dinette, scale = 0.00666666, }
+    model MELensRV_kitchen_ground { mesh = vehicles/MELens_RV|rv_kitchen, texture = Vehicles/MELensRV_kitchen, scale = 0.00666666, }
+    model MELensRV_fridge_ground { mesh = vehicles/MELens_RV|rv_fridge, texture = Vehicles/MELensRV_fridge, scale = 0.00666666, }
+    model MELensRV_cabinet_ground { mesh = vehicles/MELens_RV|rv_cabinet, texture = Vehicles/MELensRV_cabinet, scale = 0.00666666, }
+    model MELensRV_wardrobe_ground { mesh = vehicles/MELens_RV|rv_wardrobe, texture = Vehicles/MELensRV_wardrobe, scale = 0.00666666, }
+    model MELensRV_washroom_ground { mesh = vehicles/MELens_RV|rv_washroom, texture = Vehicles/MELensRV_washroom, scale = 0.00666666, }
+    model MELensRV_heater_ground { mesh = vehicles/MELens_RV|rv_heater, texture = Vehicles/MELensRV_heater, scale = 0.00666666, }
+    model MELensRV_shelf_ground { mesh = vehicles/MELens_RV|rv_shelf, texture = Vehicles/MELensRV_shelf, scale = 0.00666666, }
+    model MELensRV_box_ground { mesh = vehicles/MELens_RV|rv_box, texture = Vehicles/MELensRV_box, scale = 0.00666666, }
+    model MELensRV_busseat_ground { mesh = vehicles/MELens_RV|rv_busseat, texture = Vehicles/MELensRV_busseat, scale = 0.00666666, }
+    model MELensRV_busseat2_ground { mesh = vehicles/MELens_RV|rv_busseat2, texture = Vehicles/MELensRV_busseat2, scale = 0.00666666, }
+}

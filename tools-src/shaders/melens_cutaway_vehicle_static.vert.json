@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "base": "vehicle_static.vert",
+  "baseSha256": "a40b35a0e096cd98a13348296ddd0b65e855298d43aeaa25012b064eed4f4f36",
+  "output": "melens_cutaway_vehicle_static.vert",
+  "outputSha256": "7a1f36f97fdde0843fc8f55e09efff8d475eb9de8dadcb902573cd027861d63a",
+  "operations": [
+    {
+      "copy": [
+        0,
+        1
+      ]
+    },
+    {
+      "insert": "// ME: LENS cabin cutaway: static vehicle meshes (body shell, windows).\n// Same inputs as the game's vehicle_multiuv_static shader, plus the untransformed\n// mesh position so the fragment shader can clip against the cut plane.\n"
+    },
+    {
+      "copy": [
+        1,
+        2
+      ]
+    },
+    {
+      "insert": "varying vec3 vertColour;\nvarying vec3 vertNormal;\nvarying vec2 texCoords;\nvarying vec2 texCoords1;\nvarying vec4 positionEye;\nvarying vec3 meLensMeshPos;\nvarying vec3 meLensMeshNormal;\n"
+    },
+    {
+      "copy": [
+        6,
+        16
+      ]
+    },
+    {
+      "copy": [
+        28,
+        30
+      ]
+    },
+    {
+      "insert": "\tvec4 position = vec4(vertex.xyz, 1.0);\n\tvec4 normal = vec4(normal.xyz, 0.0);\n"
+    },
+    {
+      "copy": [
+        32,
+        34
+      ]
+    },
+    {
+      "insert": "\ttexCoords1 = uv2.st;\n\tmeLensMeshPos = vertex.xyz;\n\tmeLensMeshNormal = normal.xyz;\n"
+    },
+    {
+      "copy": [
+        34,
+        36
+      ]
+    },
+    {
+      "insert": "\tvertColour = vec3(1.0, 1.0, 1.0);\n"
+    },
+    {
+      "copy": [
+        37,
+        39
+      ]
+    },
+    {
+      "insert": "\tpositionEye = o - vec4(-0.2, 0.2, 0.2, 0.0);\n\n\tfloat clip = ((o.z + 1.0) / 2.0);\n"
+    },
+    {
+      "copy": [
+        40,
+        41
+      ]
+    },
+    {
+      "insert": "\to.z = (clip * 2.0) - 1.0;\n"
+    },
+    {
+      "copy": [
+        42,
+        43
+      ]
+    },
+    {
+      "copy": [
+        45,
+        46
+      ]
+    }
+  ]
+}

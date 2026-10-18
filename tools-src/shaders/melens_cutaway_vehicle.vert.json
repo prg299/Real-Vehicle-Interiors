@@ -1,0 +1,147 @@
+{
+  "schema": 1,
+  "base": "aim_outline_solid.vert",
+  "baseSha256": "4cecd9a500c09f0ed65684b499b0f4caf00b991ec3750958d6011defb0452bbc",
+  "output": "melens_cutaway_vehicle.vert",
+  "outputSha256": "1d296b0d190a19ba1670dcea6a546fa71c948732a2db89b79f762993bf059925",
+  "operations": [
+    {
+      "copy": [
+        0,
+        1
+      ]
+    },
+    {
+      "insert": "// ME: LENS cabin cutaway: skinned vehicle meshes (doors). The clip test uses the\n// skinned position so an opening door is cut at the same height as the shell.\n"
+    },
+    {
+      "copy": [
+        1,
+        2
+      ]
+    },
+    {
+      "insert": "varying vec3 vertColour;\nvarying vec3 vertNormal;\n"
+    },
+    {
+      "copy": [
+        2,
+        3
+      ]
+    },
+    {
+      "insert": "varying vec2 texCoords1;\nvarying vec4 positionEye;\nvarying vec3 meLensMeshPos;\nvarying vec3 meLensMeshNormal;\n"
+    },
+    {
+      "copy": [
+        4,
+        10
+      ]
+    },
+    {
+      "insert": "layout (location = 5) in vec2 uv2;\n"
+    },
+    {
+      "copy": [
+        10,
+        12
+      ]
+    },
+    {
+      "copy": [
+        13,
+        14
+      ]
+    },
+    {
+      "insert": "uniform float targetDepth = 0.5;\n"
+    },
+    {
+      "copy": [
+        15,
+        21
+      ]
+    },
+    {
+      "insert": "\ttexCoords = uv.st;\n\ttexCoords1 = uv2.st;\n"
+    },
+    {
+      "copy": [
+        22,
+        24
+      ]
+    },
+    {
+      "insert": "\tif (boneWeights.x > 0.0)\n"
+    },
+    {
+      "copy": [
+        25,
+        26
+      ]
+    },
+    {
+      "insert": "\tif (boneWeights.y > 0.0)\n"
+    },
+    {
+      "copy": [
+        27,
+        28
+      ]
+    },
+    {
+      "insert": "\tif (boneWeights.z > 0.0)\n"
+    },
+    {
+      "copy": [
+        29,
+        30
+      ]
+    },
+    {
+      "insert": "\tif (boneWeights.w > 0.0)\n"
+    },
+    {
+      "copy": [
+        31,
+        33
+      ]
+    },
+    {
+      "insert": "\tvec4 skinned = boneEffect * position;\n\tmeLensMeshPos = skinned.xyz;\n\n"
+    },
+    {
+      "copy": [
+        33,
+        34
+      ]
+    },
+    {
+      "insert": "\tmeLensMeshNormal = normal.xyz;\n\tvertNormal = normal.xyz;\n\tvertColour = vec3(1.0, 1.0, 1.0);\n"
+    },
+    {
+      "copy": [
+        34,
+        35
+      ]
+    },
+    {
+      "insert": "\tvec4 o = ModelViewProjection * skinned;\n\tpositionEye = o - vec4(-0.2, 0.2, 0.2, 0.0);\n"
+    },
+    {
+      "copy": [
+        37,
+        38
+      ]
+    },
+    {
+      "insert": "\tfloat clip = ((o.z + 1.0) / 2.0);\n\tclip += targetDepth - 0.5;\n\to.z = (clip * 2.0) - 1.0;\n"
+    },
+    {
+      "copy": [
+        40,
+        42
+      ]
+    }
+  ]
+}

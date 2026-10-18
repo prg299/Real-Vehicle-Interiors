@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Private vulnerability report
+    url: https://github.com/prg299/Real-Vehicle-Interiors/security/advisories/new
+    about: Report exploitable issues privately.
