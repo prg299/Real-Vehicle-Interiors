@@ -39,4 +39,4 @@ With the game/server stopped, `scripts/install.ps1` copies the built package to 
 
 `python scripts/workshop_upload.py` prepares a project-local Workshop stage without logging in. Set `RVI_STEAMCMD` to your `steamcmd.exe` path if it is outside the default local installation. Only `--upload` logs in interactively and updates the recorded Workshop item; upload requires the owner's authorization and account. Credentials are entered through SteamCMD and are not stored in the repository. Forks must use their own Workshop identity and preview. Public CI never uploads or bundles game dependencies.
 
-The original published GIF/video masters and private verification receipts remain in the maintainer's local historical project. This repository includes the existing small preview and public identity, not the local media-production pipeline.
+The original native GIF/video masters and private verification receipts remain in the maintainer's local historical project. This repository includes the existing small preview, approved animated cover and public identity, not the local media-production pipeline. The upload helper defaults to that approved cover.
