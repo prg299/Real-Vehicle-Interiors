@@ -1,9 +1,9 @@
 # Developer helper: rebuild the add-on and restart the add-on's own test game (an instance of Real Vehicle
 # Interiors' test game with its own profile and Lua port, so it never meets another agent's test games), then
-# continue its latest world. Real Vehicle Interiors' package is taken as built (..\me-lens\build\rv\package).
+# continue its latest world. Uses this repository's build\rv\package output.
 #   .\dev\restart.ps1 [-Instance 4] [-NoBuild] [-Merged]
 # -Merged: the animals are in Real Vehicle Interiors itself (since 2026-10-18): Companion Dogs only, no add-on, and
-#          the main mod is built (..\me-lens\scripts\build.ps1) unless -NoBuild.
+#          the main mod is built with scripts\build.ps1 unless -NoBuild.
 param([int]$Instance = 4, [switch]$NoBuild, [switch]$Merged = $true)
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
