@@ -36,3 +36,12 @@ function Get-LensGameProcesses {
         ($_.Name -eq 'java.exe' -and $_.CommandLine -match 'zombie\.gameStates\.MainScreenState')
     }
 }
+function Get-LensPython {
+    if ($env:RVI_PYTHON) { return (Get-Command $env:RVI_PYTHON -ErrorAction Stop).Source }
+    # WindowsApps aliases can broker a process outside the caller's resource job.
+    # Resolve the real interpreter before starting a long-lived native keeper.
+    $command = (Get-Command python -ErrorAction Stop).Source
+    $resolved = (& $command -c 'import sys; print(sys.executable)').Trim()
+    if ($LASTEXITCODE -or -not (Test-Path -LiteralPath $resolved -PathType Leaf)) { throw 'Cannot resolve Python interpreter' }
+    return $resolved
+}

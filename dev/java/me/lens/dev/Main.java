@@ -33,6 +33,7 @@ public final class Main {
         me.zed_0xff.zombie_buddy.Exposer.exposeClass(Spawn.class);
         me.zed_0xff.zombie_buddy.Exposer.exposeClass(Media.class);
         me.zed_0xff.zombie_buddy.Exposer.exposeClass(TextInput.class);
+        me.zed_0xff.zombie_buddy.Exposer.exposeClass(ClientLab.class);
         int port = Integer.getInteger("melens.dev.port", 18470);
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
         server.createContext("/lua", Main::handle);

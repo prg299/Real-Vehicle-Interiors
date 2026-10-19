@@ -622,6 +622,16 @@ local function armCutaway(vehicle, profile, dt)
     if vehicle then
         local p = cutPlaneFor(profile)
         rv.setCutaway(vehicle, p[1], p[2], p[3], p[4])
+        if rv.setWeatherRoom then
+            local ring = M.RoomRings and M.RoomRings[profile.walkGrid]
+            local points = {}
+            for _, corner in ipairs(ring or {}) do
+                points[#points + 1] = string.format("%.5f,%.5f", corner[1], corner[2])
+            end
+            local top = profile.mesh and math.abs(p[3]) > 0.0001
+                and (profile.mesh.lift + p[4] / p[3]) * profile.mesh.scale or profile.floorY + 1
+            rv.setWeatherRoom(table.concat(points, ";"), profile.floorY, top)
+        end
         -- nothing ahead of the compartment is cut (a bus's hood)
         if rv.setCutFront then
             if profile.cutFront then

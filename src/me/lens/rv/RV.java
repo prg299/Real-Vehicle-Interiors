@@ -323,6 +323,7 @@ public final class RV {
     }
 
     public static void clearCutaway() {
+        Weather.clear();
         cutVehicle = null;
         wallPainted = false;
         light = Light.NONE;
@@ -334,6 +335,12 @@ public final class RV {
         windowCount = 0;
         jambCount = 0;
     }
+
+    public static void setWeatherRoom(String polygon, double floor, double ceiling) {
+        Weather.setRoom(polygon, floor, ceiling);
+    }
+
+    public static String weatherInfo() { return Weather.info(); }
 
     /**
      * Where KI5's windows are ("x0,y0,z0,x1,y1,z1;..." boxes in the body's mesh space, at most

@@ -117,9 +117,11 @@ function T.positionOutside()
     local pos=Vector3f.new()
     local outside=v:getPassengerPosition(M.cabinSeat(v),"outside")
     assert(outside,"missing outside standing-seat offset")
-    v:getWorldPos(outside:getOffset(),pos)
+    v:getPassengerPositionWorldPos(outside,pos)
     p:setX(pos:x());p:setY(pos:y());p:setLastX(pos:x());p:setLastY(pos:y())
-    p:faceLocation(v:getX(),v:getY())
+    local inside=Vector3f.new()
+    v:getPassengerPositionWorldPos(v:getPassengerPosition(M.cabinSeat(v),"inside"),inside)
+    p:faceLocation(inside:x(),inside:y())
     return {x=pos:x(),y=pos:y(),fixtureOnly=true}
 end
 return T.snapshot()
