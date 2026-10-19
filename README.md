@@ -2,7 +2,7 @@
 
 Walk around inside KI5 campers, B700 buses and F700 box trucks in **Project Zomboid Build 42.21**. Furnish your vehicle, sleep, cook, wash, store supplies and take your base with you.
 
-**Current release: 2.0.8 (beta).** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541) · [Animals WIP branch](https://github.com/prg299/Real-Vehicle-Interiors/tree/animals-support)
+**Current release: 2.0.9 (beta).** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541) · [Animals WIP branch](https://github.com/prg299/Real-Vehicle-Interiors/tree/animals-support)
 
 ## Requirements
 
