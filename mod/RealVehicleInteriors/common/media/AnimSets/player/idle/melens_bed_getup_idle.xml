@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animNode>
+    <m_Name>melens_bed_getup_idle</m_Name>
+    <m_AnimName>Bob_Idle</m_AnimName>
+    <m_ConditionPriority>200</m_ConditionPriority>
+    <m_Looped>true</m_Looped>
+    <m_BlendTime>0.00</m_BlendTime>
+    <m_BlendOutTime>0.00</m_BlendOutTime>
+    <m_Conditions>
+        <m_Name>MELensBedGetUp</m_Name>
+        <m_Type>BOOL</m_Type>
+        <m_Value>true</m_Value>
+    </m_Conditions>
+    <m_Events>
+        <m_EventName>SetVariable</m_EventName>
+        <m_Time>Start</m_Time>
+        <m_ParameterValue>MELensBedGetUpReady=true</m_ParameterValue>
+    </m_Events>
+</animNode>

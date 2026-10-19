@@ -310,11 +310,11 @@ end
 ------------------------------------------------------------------------------------
 -- Lying and sitting on the furniture
 --
--- Worked out from the bones of damnlib's poses (dev/xpose.py): "lying" on your back has
--- its root at the pelvis with the body's middle 0.064 towards the feet; "facingLeft",
--- upright on a bench with the feet on the floor, has its root at the pelvis, 0.12 in
--- front of the backrest and 0.085 above the seat. `turn` rotates the model about its
--- root: lying at 0 has the head to the front (+z), sitting at pi/2 faces the front.
+-- Beds use the game's get-in, awake, asleep and get-out clips. Their mattress
+-- contact is near 0.30 above the origin; the engine draws vehicle occupants at
+-- 1.5 scale. Align the support surface (not the pelvis) with the mattress.
+-- damnlib's facingLeft remains for benches and bus seats. Clip placement is measured
+-- from the original animation bones with dev/xpose.py.
 ------------------------------------------------------------------------------------
 
 local HEAD = { front = { 0, 1 }, back = { 0, -1 }, left = { 1, 0 }, right = { -1, 0 } }
@@ -344,8 +344,10 @@ function P.seatPose(vehicle, profile, id)
     if piece == "bed" and k == 1 then
         local head = HEAD[spot.head or ((spot.wall == "left" or spot.wall == "right") and "front" or "right")]
         local cx, cz = P.spotPoint(spot, 0, 0.272)
-        return { pose = "lying", x = cx + 0.064 * head[1], y = floor + 0.28, z = cz + 0.064 * head[2],
-                 turn = math.atan2(-head[1], head[2]) }
+        local out = P.WALLS[spot.wall].out
+        return { pose = "MELensBed", kind = "bed", x = cx + 0.45 * head[1], y = floor + 0.28 - 0.30 * 1.5,
+                 z = cz + 0.45 * head[2], turn = math.atan2(head[1], -head[2]),
+                 headX = head[1], headZ = head[2], outX = out[1], outZ = out[2] }
     elseif piece == "dinette" and k <= 2 then
         local w = P.WALLS[spot.wall]
         local sign = k == 1 and 1 or -1
@@ -373,7 +375,7 @@ end
 -- What a seat is for with what stands there: "bed", "seat" or nil.
 function P.seatKindAt(vehicle, profile, id)
     local pose = P.seatPose(vehicle, profile, id)
-    return pose and (pose.pose == "lying" and "bed" or "seat") or nil
+    return pose and (pose.kind or "seat") or nil
 end
 
 ------------------------------------------------------------------------------------

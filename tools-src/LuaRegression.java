@@ -40,7 +40,8 @@ public final class LuaRegression {
             "tools-src/regression/personalization.lua", "tools-src/regression/interior-actions.lua",
             "tools-src/regression/dashboard-setup.lua", client + "MELens_Dashboard.lua",
             "tools-src/regression/dashboard.lua", "tools-src/regression/loose-ui-setup.lua",
-            client + "MELens_LooseUI.lua", "tools-src/regression/loose-ui.lua"
+            client + "MELens_LooseUI.lua", "tools-src/regression/loose-ui.lua",
+            client + "MELens_Bed.lua", "tools-src/regression/bed.lua"
         }) {
             if (name.endsWith("/MELens_Home.lua")) {
                 var events = (KahluaTable) env.rawget("Events");
