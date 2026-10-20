@@ -6,6 +6,7 @@ do
         p.xx, p.yy = 0, 0
         function p:getPlayerNum() return 0 end
         p.SetVariable, p.ClearVariable = p.setVariable, p.clearVariable
+        p.GetVariable = p.getVariableString
         function p:triggerMusicIntensityEvent() end
         local position = { getOffset = function() return Vector3f.new() end }
         local v = { seat = 3, animations = 0, sounds = 0, transmissions = 0 }
@@ -21,7 +22,7 @@ do
         end
         function v:playPassengerSound() self.sounds = self.sounds + 1 end
         function v:playPassengerAnim(_, name)
-            check(name == "idle", "walk-in still waits for a seated entry animation")
+            self.lastAnimation = name
             self.animations = self.animations + 1
         end
         function v:setCharacterPosition() self.positioned = true end
@@ -33,21 +34,25 @@ do
     end
     local p, v, a = fixture()
     check(a:isValid(), "empty standing seat is not enterable")
-    p.vars.EnterAnimationFinished = "true"
-    a:update()
-    check(not a.forced, "stale animation event completed entry from outside")
     a:start()
-    check(a:isValid() and p.vars.EnterAnimationFinished == nil, "entry retained stale completion flag")
+    check(a:isValid() and p.vars.EnterAnimationFinished == nil, "entry fabricated a completion event")
     check(p.vars.bEnteringVehicle == "true", "entry did not set transition flag")
     local events = #entryEvents
     a:update()
     check(a.forced == 1 and a.performed == 1, "standing entry hangs without an animation event")
     check(p.vars.bEnteringVehicle == nil and p.vars.EnterAnimationFinished == nil,
         "completed entry still blocks standing sync")
-    check(v.positioned and v.transmissions == 1 and v.animations == 1,
+    check(v.positioned and v.transmissions == 1 and v.animations == 1 and v.lastAnimation == "idle",
         "entry skipped native position/idle handoff")
     check(#entryEvents == events + 1 and entryEvents[#entryEvents].name == "OnEnterVehicle",
         "entry did not notify other vehicle mods")
+
+    p, v, a = fixture()
+    p.vars.EnterAnimationFinished = "true"
+    a:start()
+    check(p.vars.EnterAnimationFinished == nil, "entry retained stale completion flag")
+    a:update()
+    check(a.forced == 1, "entry with a stale flag did not complete normally")
 
     p, v, a = fixture()
     a:start()
