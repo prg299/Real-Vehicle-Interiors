@@ -19,8 +19,10 @@ require "MELens_Parts"
 MELens = MELens or {}
 local M = MELens
 local P = M.Parts
+require "MELens_Bed"
+local B = M.Bed
 
-M.VERSION = "2.0.10"
+M.VERSION = "2.0.11"
 
 local CABIN_VAR = "MELensCabin"      -- "Idle" / "Walk": the standing poses
 local SEAT_VAR = "MELensCabinSeat"   -- "true" while entering, standing in or leaving
@@ -826,7 +828,7 @@ local function beginSession(player, vehicle, profile, seat)
     local saved = vehicle:getModData()[positionKey(vehicle, profile, seat)]
     if stand and stand.vehicle == vehicle then
         s.x, s.z = nearestWalkable(profile, stand.x, stand.z)
-        s.facing = facingFor(1, 0)
+        s.facing = stand.facing or facingFor(1, 0)
     elseif type(saved) == "table" and tonumber(saved.x) and tonumber(saved.z) then
         -- Where you stood, or the nearest free floor if furniture stands there now.
         s.x, s.z = nearestWalkable(profile, saved.x, saved.z)
@@ -1146,7 +1148,7 @@ local function update()
             standUpOnMove(player, now)
             -- keep a seated character on our furniture (also after loading a save)
             placeTimer = placeTimer + dt
-            if placeTimer > 0.5 then
+            if placeTimer > 0.5 or B.states[player] then
                 placeTimer = 0
                 M.placeSeated(player, vehicle, profile)
             end
@@ -1231,6 +1233,7 @@ function M.placeSeated(player, vehicle, profile)
     local id = script:getPassenger(seat):getId()
     local place = P.seatPose(vehicle, profile, id)
     if not place then return end
+    if place.kind == "bed" then place = B.placement(player, vehicle, seat, place) end
     -- our pose, over the one KI5 registered for its own furniture
     if place.pose and player:getVariableString("damnPosition") ~= place.pose then
         player:setVariable("damnPosition", place.pose)
@@ -1283,9 +1286,9 @@ Events.OnTick.Add(function()
     end
 end)
 
-local function switchSeat(vehicle, player, seatTo)
+local function switchSeat(vehicle, player, seatTo, animated)
     local seatFrom = vehicle:getSeat(player)
-    if seatFrom ~= seatTo then
+    if seatFrom ~= seatTo and not animated then
         hideForPoseChange(player)
     end
     vehicle:switchSeat(player, seatTo)
@@ -1296,7 +1299,36 @@ end
 
 -- Sit or lie down on one of KI5's seats (a piece of furniture's): walk to (standX,
 -- standZ) in front of it first, then take the seat; `sleep` then goes to sleep.
-function M.useSeat(player, seatId, standX, standZ, sleep)
+local vanillaSleepMenu = ISVehicleMenu.onSleep
+
+function M.confirmBedSleep(player, seatId, standX, standZ)
+    local vehicle = player:getVehicle()
+    if not vehicle or M.sleepBlocker(player, vehicle) then return end
+    local state = B.states[player]
+    if state and state.phase ~= "Awake" then return end
+    local data = getPlayerData(player:getPlayerNum())
+    if data and data.vehicleSleepModal then return end
+    vanillaSleepMenu(player, vehicle)
+    local dialog = data and data.vehicleSleepModal
+    if not dialog then return end
+    dialog.onclick = function(target, button, playerNum)
+        if data.vehicleSleepModal ~= dialog then return end
+        data.vehicleSleepModal = nil
+        if button.internal ~= "YES" or player:getVehicle() ~= vehicle or M.sleepBlocker(player, vehicle) then return end
+        local function sleepAfterAnimation()
+            if player:getVehicle() == vehicle and not M.sleepBlocker(player, vehicle) then
+                ISVehicleMenu.onConfirmSleep(target, button, playerNum, nil)
+            end
+        end
+        if vehicle:getSeat(player) == M.seatIndex(vehicle, seatId) and B.sleep(player, sleepAfterAnimation) then return end
+        M.useSeat(player, seatId, standX, standZ, false, sleepAfterAnimation)
+    end
+end
+
+function M.useSeat(player, seatId, standX, standZ, sleep, onSleep)
+    if sleep then
+        return M.confirmBedSleep(player, seatId, standX, standZ)
+    end
     M.standingThen(player, function()
         walkTo(standX, standZ, function(arrived)
             local vehicle = arrived.vehicle
@@ -1311,7 +1343,11 @@ function M.useSeat(player, seatId, standX, standZ, sleep)
             end
             M.lastStand = { vehicle = vehicle, x = arrived.x, z = arrived.z }
             savePosition(arrived)
-            switchSeat(vehicle, player, index)
+            local place = P.seatPose(vehicle, arrived.profile, seatId)
+            if place and place.kind == "bed" then
+                B.begin(player, vehicle, index, place, onSleep, arrived.x, arrived.z, arrived.profile.floorY)
+            end
+            switchSeat(vehicle, player, index, place and place.kind == "bed")
             endSession()
             local vanilla = M.isVanillaSeat(vehicle, arrived.profile, index)
             if vanilla then
@@ -1327,14 +1363,11 @@ function M.useSeat(player, seatId, standX, standZ, sleep)
                     pdata.lootInventory:refreshBackpacks()
                 end
             end
-            if sleep then
-                ISVehicleMenu.onSleep(player, vehicle)
-            end
         end)
     end)
 end
 
-function M.standUp(player)
+function M.standUp(player, bedFinished, facing)
     local vehicle = player:getVehicle()
     local profile = M.profileFor(vehicle)
     if not profile then return end
@@ -1344,6 +1377,7 @@ function M.standUp(player)
         say(player, "IGUI_MELens_Full")
         return
     end
+    if not bedFinished and B.getUp(player, function(turn) M.standUp(player, true, turn) end) then return end
     -- Stand in front of the furniture you were using.
     local seat = vehicle:getSeat(player)
     local x, z = M.seatStandPoint(vehicle, profile, seat)
@@ -1353,8 +1387,8 @@ function M.standUp(player)
     if not x then
         x, z = profile.door.x, profile.door.z
     end
-    M.pendingStand = { vehicle = vehicle, x = x, z = z }
-    switchSeat(vehicle, player, cabin)
+    M.pendingStand = { vehicle = vehicle, x = x, z = z, facing = facing }
+    switchSeat(vehicle, player, cabin, bedFinished)
     triggerEvent("OnSwitchVehicleSeat", player)
 end
 
@@ -1730,6 +1764,15 @@ end
 -- "Sleep" from the vehicle radial menu while standing: the nearest free bed.
 local vanillaOnSleep = ISVehicleMenu.onSleep
 function ISVehicleMenu.onSleep(playerObj, vehicle, ...)
+    local profile = M.profileFor(vehicle)
+    local seat = vehicle and vehicle:getSeat(playerObj)
+    if profile and seat and seat >= 0 then
+        local id = vehicle:getScript():getPassenger(seat):getId()
+        if P.seatKindAt(vehicle, profile, id) == "bed" then
+            local x, z = M.seatStandPoint(vehicle, profile, seat)
+            return M.confirmBedSleep(playerObj, id, x, z)
+        end
+    end
     local s = session
     if s and s.player == playerObj and s.vehicle == vehicle and M.Interact then
         return M.Interact.sleepInCamper(playerObj, vehicle)

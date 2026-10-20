@@ -40,6 +40,21 @@ public final class ClientLab {
         keys.put(key,System.nanoTime()+milliseconds*1000000L);
     }
     public static void releaseKeys() { keyboardOverride=true; keys.replaceAll((k,v)->0L); }
+    /** Read native bone transforms without installing any model/render probes. */
+    public static String animationBones() {
+        var p = zombie.characters.IsoPlayer.getInstance();
+        if (p == null || p.getAnimationPlayer() == null) return "none";
+        var ap = p.getAnimationPlayer();
+        var out = new StringBuilder();
+        for (String name : new String[]{"Bip01_Pelvis", "Bip01_Head", "Bip01_L_Foot", "Bip01_R_Foot"}) {
+            int index = ap.getSkinningBoneIndex(name, -1);
+            if (index < 0) continue;
+            var matrix = ap.getModelTransformAt(index);
+            out.append(name).append(':').append(matrix.m03).append(',').append(matrix.m13).append(',')
+                .append(matrix.m23).append(';');
+        }
+        return out.toString();
+    }
     /** Same native scene/weather with only the cabin mask disabled, for A/B evidence. */
     public static void weatherMask(boolean enabled) throws Exception {
         Field field=Class.forName("me.lens.rv.Weather").getDeclaredField("enabled");

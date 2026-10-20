@@ -41,6 +41,7 @@ public final class LuaRegression {
             "tools-src/regression/dashboard-setup.lua", client + "MELens_Dashboard.lua",
             "tools-src/regression/dashboard.lua", "tools-src/regression/loose-ui-setup.lua",
             client + "MELens_LooseUI.lua", "tools-src/regression/loose-ui.lua",
+            client + "MELens_Bed.lua", "tools-src/regression/bed.lua",
             "tools-src/regression/standing.lua", "tools-src/regression/entry-setup.lua",
             "game:media/lua/client/Vehicles/TimedActions/ISEnterVehicle.lua",
             client + "MELens_Cabin.lua", "tools-src/regression/entry.lua"

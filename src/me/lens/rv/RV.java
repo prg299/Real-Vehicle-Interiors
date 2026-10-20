@@ -613,6 +613,17 @@ public final class RV {
         Standing.standing.clear();
     }
 
+    /** Native clip progress keeps vehicle-relative bed motion in step with the animation. */
+    public static float animationProgress(IsoGameCharacter character, String clip) {
+        if (character == null || character.getAnimationPlayer() == null) return 0f;
+        for (var track : character.getAnimationPlayer().getMultiTrack().getTracks()) {
+            if (clip.equalsIgnoreCase(track.getName()) && track.getDuration() > 0f) {
+                return Math.min(1f, track.getCurrentTimeValue() / track.getDuration());
+            }
+        }
+        return 0f;
+    }
+
     /** Diagnostics: the animation set and state a character is in. */
     public static String animInfo(IsoGameCharacter character) {
         if (character == null || character.getActionContext() == null) {

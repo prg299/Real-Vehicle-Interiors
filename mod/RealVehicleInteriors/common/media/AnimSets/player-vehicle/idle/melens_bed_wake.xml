@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animNode>
+    <m_Name>melens_bed_wake</m_Name>
+    <m_AnimName>Bob_AsleepToAwake</m_AnimName>
+    <m_ConditionPriority>100</m_ConditionPriority>
+    <m_Looped>false</m_Looped>
+    <m_BlendTime>0.00</m_BlendTime>
+    <m_BlendOutTime>0.00</m_BlendOutTime>
+    <m_SpeedScale>1.00</m_SpeedScale>
+    <m_SyncTrackingEnabled>false</m_SyncTrackingEnabled>
+    <m_Conditions>
+        <m_Name>damnPosition</m_Name>
+        <m_Type>STRING</m_Type>
+        <m_StringValue>MELensBed</m_StringValue>
+    </m_Conditions>
+    <m_Conditions>
+        <m_Name>MELensBed</m_Name>
+        <m_Type>STRING</m_Type>
+        <m_StringValue>Wake</m_StringValue>
+    </m_Conditions>
+    <m_Events>
+        <m_EventName>SetVariable</m_EventName>
+        <m_Time>End</m_Time>
+        <m_ParameterValue>MELensBedFinished_Wake=true</m_ParameterValue>
+    </m_Events>
+</animNode>
