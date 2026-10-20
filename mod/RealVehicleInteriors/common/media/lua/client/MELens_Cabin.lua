@@ -20,7 +20,7 @@ MELens = MELens or {}
 local M = MELens
 local P = M.Parts
 
-M.VERSION = "2.0.9"
+M.VERSION = "2.0.10"
 
 local CABIN_VAR = "MELensCabin"      -- "Idle" / "Walk": the standing poses
 local SEAT_VAR = "MELensCabinSeat"   -- "true" while entering, standing in or leaving
@@ -1388,9 +1388,20 @@ MELensEnterCabin = ISEnterVehicle:derive("MELensEnterCabin")
 
 function MELensEnterCabin:isValid()
     if self.started then
-        return self.vehicle:getCharacter(self.seat) == self.character
+        return self.vehicle:getCharacter(self.seat) == self.character and self.character:getVehicle() == self.vehicle
     end
     return self.character:getVehicle() == nil and self.vehicle:getCharacter(self.seat) == nil
+end
+
+function MELensEnterCabin:update()
+    -- Walk-in passengers have no seated get-in animation. Waiting for vanilla's
+    -- EnterAnimationFinished can hang forever when another animation node wins.
+    -- It also blocks the standing-position packet that seats us on a Lua-only
+    -- server. Complete after native entry succeeds; keep vanilla perform/stop.
+    if self.vehicle:getCharacter(self.seat) ~= self.character or self.character:getVehicle() ~= self.vehicle then return end
+    self.character:ClearVariable("EnterAnimationFinished")
+    self.character:ClearVariable("bEnteringVehicle")
+    self:forceComplete()
 end
 
 function MELensEnterCabin:start()
@@ -1410,13 +1421,14 @@ function MELensEnterCabin:start()
     end
 
     self.action:setBlockMovementEtc(true)
+    self.character:ClearVariable("EnterAnimationFinished")
+    local inside = self.vehicle:getPassengerPosition(self.seat, "inside")
+    if not self.vehicle:enter(self.seat, self.character, inside:getOffset()) then return end
     self.character:setVariable(SEAT_VAR, "true")
     self.character:setVariable(CABIN_VAR, "Idle")
     -- A fresh entry starts just inside the door; the saved spot is only for loading a save.
     local door = M.profileFor(self.vehicle).door
     M.pendingStand = { vehicle = self.vehicle, x = door.x, z = door.z }
-    local inside = self.vehicle:getPassengerPosition(self.seat, "inside")
-    self.vehicle:enter(self.seat, self.character, inside:getOffset())
     self.vehicle:playPassengerSound(self.seat, "enter")
     self.character:SetVariable("bEnteringVehicle", "true")
     self.character:triggerMusicIntensityEvent("VehicleEnter")

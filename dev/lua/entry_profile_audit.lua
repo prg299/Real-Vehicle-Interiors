@@ -28,6 +28,15 @@ for name, expected in pairs(before) do
         local part = vehicle:getAllSeatParts():get(index)
         assert(part and part:getId() == "Seat" .. id, name .. ": missing " .. id)
         assert(part:getContainerSeatNumber() == index, name .. ": wrong index")
+        -- Repair the old missing-container state and retain native combat's
+        -- unguarded capacity-weight read across repeated initialization.
+        MELens.initStandingPart(vehicle, part)
+        local container = part:getItemContainer()
+        MELens.initStandingPart(vehicle, part)
+        assert(container and part:getItemContainer() == container, name .. ": unstable combat container")
+        assert(container:getCapacity() == 0 and container:getCapacityWeight() == 0,
+            name .. ": standing seat must have an empty zero-capacity container")
+        assert(not vehicle:canAccessContainer(part:getIndex(), getPlayer()), name .. ": metadata exposed as loot")
         assert(not MELens.standingContainerTest(vehicle, part, getPlayer()))
         seats[id] = index
         count = count + 1
