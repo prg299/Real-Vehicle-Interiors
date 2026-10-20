@@ -20,7 +20,7 @@ MELens = MELens or {}
 local M = MELens
 local P = M.Parts
 
-M.VERSION = "2.0.9"
+M.VERSION = "2.0.10"
 
 local CABIN_VAR = "MELensCabin"      -- "Idle" / "Walk": the standing poses
 local SEAT_VAR = "MELensCabinSeat"   -- "true" while entering, standing in or leaving
