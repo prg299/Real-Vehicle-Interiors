@@ -40,7 +40,10 @@ public final class LuaRegression {
             "tools-src/regression/personalization.lua", "tools-src/regression/interior-actions.lua",
             "tools-src/regression/dashboard-setup.lua", client + "MELens_Dashboard.lua",
             "tools-src/regression/dashboard.lua", "tools-src/regression/loose-ui-setup.lua",
-            client + "MELens_LooseUI.lua", "tools-src/regression/loose-ui.lua"
+            client + "MELens_LooseUI.lua", "tools-src/regression/loose-ui.lua",
+            "tools-src/regression/standing.lua", "tools-src/regression/entry-setup.lua",
+            "game:media/lua/client/Vehicles/TimedActions/ISEnterVehicle.lua",
+            client + "MELens_Cabin.lua", "tools-src/regression/entry.lua"
         }) {
             if (name.endsWith("/MELens_Home.lua")) {
                 var events = (KahluaTable) env.rawget("Events");
@@ -55,7 +58,8 @@ public final class LuaRegression {
                     events.rawset(eventName, event);
                 }
             }
-            var chunk = LuaCompiler.loadstring(Files.readString(root.resolve(name), StandardCharsets.UTF_8), name, env);
+            Path source = name.startsWith("game:") ? Path.of(args[1], name.substring(5)) : root.resolve(name);
+            var chunk = LuaCompiler.loadstring(Files.readString(source, StandardCharsets.UTF_8), name, env);
             Object[] result = thread.pcall(chunk, new Object[0]);
             if (!Boolean.TRUE.equals(result[0])) {
                 throw new AssertionError(name + ": " + java.util.Arrays.toString(result));
