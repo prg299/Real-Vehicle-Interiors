@@ -1,8 +1,8 @@
-2.0.10 - Weapon aiming and interior entry fixes
+2.0.11 - Bed animation and height fixes
 
-- Fixes a missing standing-seat container that could crash weapon aiming inside interiors.
-- Repairs that container on existing vehicles without replacing saved contents or seat items.
-- Fixes walk-in entry getting stuck waiting for a seated entry animation to finish.
-- Preserves normal entry completion and cancellation, and prevents failed entry from leaving pending standing state.
+- Uses vanilla bed animations for getting in, falling asleep, waking and getting out instead of snapping directly into the sleeping pose.
+- Aligns resting and sleeping poses to the mattress height.
+- Shows the normal sleep confirmation before walking to the bed; cancelling leaves the character standing.
+- Includes 2.0.10's fixes for weapon aiming crashes and stuck walk-in entry actions.
 
-Build, Lua syntax and 1,143 regression assertions passed. Dedicated-server gameplay verification remains pending; this is a beta update.
+Dedicated-server gameplay and wider bed-layout verification remain pending; this is a beta update.
