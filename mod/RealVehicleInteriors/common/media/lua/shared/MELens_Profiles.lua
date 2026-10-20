@@ -233,18 +233,20 @@ end
 
 -- Standing passengers still need a seat-container part: BaseVehicle.getAllSeatParts()
 -- indexes those parts by passenger, and other vehicle mods use that lookup on entry
--- and when changing seats. This is metadata only, not another place to store items.
+-- and when changing seats. CombatManager also reads its ItemContainer when aiming
+-- from a vehicle, even for a standing passenger. It must stay present and empty.
 function MELens.standingContainerTest(vehicle, part, chr)
     return false
 end
 
 function MELens.initStandingPart(vehicle, part)
-    -- The seat lookup uses the script's container metadata, not an ItemContainer.
-    -- Vanilla always offers the current seat's ItemContainer in the loot window,
-    -- bypassing its access test. Keep these empty metadata parts out of that UI.
+    -- Repair old saves whose init hook removed this container. Never replace an
+    -- existing container or discard its contents; native combat requires it.
     local container = part:getItemContainer()
-    if container and container:isEmpty() then
-        part:setItemContainer(nil)
+    if not container then
+        container = ItemContainer.new()
+        container:setType(part:getId())
+        part:setItemContainer(container)
     end
     -- A server enters a player into a seat with BaseVehicle.enter(seat, character) when the client's enter packet
     -- arrives, and that refuses a seat whose part holds no item: the server never knew a standing player was in the
@@ -256,6 +258,9 @@ function MELens.initStandingPart(vehicle, part)
             part:setInventoryItem(item)
         end
     end
+    container:setCapacity(0)
+    container:setExplored(true)
+    container:setAcceptItemFunction("MELens.standingContainerTest")
 end
 
 function MELens.addStandingPositions()

@@ -10,7 +10,9 @@ for i = 0, v:getMaxPassengers() - 1 do
 end
 for _, id in ipairs(MELens.standingIds(MELens.profileFor(v))) do
     local part = v:getPartById("Seat" .. id)
-    assert(part and not part:getItemContainer(), "metadata part has storage")
+    local container = part and part:getItemContainer()
+    assert(container and container:getCapacity() == 0, "standing seat needs a zero-capacity combat container")
+    assert(not v:canAccessContainer(part:getIndex(), p), "standing metadata exposed as loot")
 end
 for i = 0, v:getPartCount() - 1 do
     local part = v:getPartByIndex(i)
@@ -22,4 +24,4 @@ assert(sentinel, "stored test item lost")
 local console = UIManager.getDebugConsole()
 if console then console:setVisible(false) end
 return {standing = true, seats = seats, parts = parts, storedItemPreserved = sentinel,
-        metadataStorageAbsent = true, world = getWorld():getWorld()}
+        metadataStorageInaccessible = true, world = getWorld():getWorld()}
