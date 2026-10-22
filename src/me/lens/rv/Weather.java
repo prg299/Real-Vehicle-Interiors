@@ -71,6 +71,7 @@ public final class Weather {
     public static void beginParticles(ParticleRectangle rectangle) {
         scopes++;
         activeHull = null;
+        if (ViewpointCompat.active()) return;
         int id = (int) RECTANGLE_ID.get(rectangle);
         int playerIndex = IsoCamera.frameState.playerIndex;
         if ((id != IsoWeatherFX.snowId && id != IsoWeatherFX.rainId)

@@ -641,7 +641,13 @@ public final class RV {
         return "draws=" + Cutaway.drawCalls.get()
                 + " cut=" + Cutaway.cutDraws.get()
                 + " facing=" + Cutaway.facingCalls.get()
+                + " renderer=" + (viewpointActive() ? "Viewpoint" : "isometric")
                 + " shader=" + (Cutaway.shaderError == null ? "ok" : Cutaway.shaderError);
+    }
+
+    /** True only while Viewpoint's first/third-person renderer is active. */
+    public static boolean viewpointActive() {
+        return ViewpointCompat.active();
     }
 
     public static String shaderError() {

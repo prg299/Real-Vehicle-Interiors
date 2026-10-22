@@ -390,6 +390,9 @@ public final class Loose {
      * Public because the patch's advice is inlined into the game's own class.
      */
     public static void afterModel(ModelInstanceRenderData inst, ModelSlotRenderData slot) {
+        if (ViewpointCompat.active()) {
+            return;
+        }
         if (slot == null || slot.object == null || slot.object != RV.cutVehicle || slot.renderToTexture) {
             return;
         }
