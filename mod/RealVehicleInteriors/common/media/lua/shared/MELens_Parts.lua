@@ -39,6 +39,7 @@ P.WATER = "MELensWaterTank"
 P.OVEN = "MELensOven"
 P.REACH = 0.45        -- tiles between you and a piece's front for its storage and use
 P.INITIALIZED_KEY = "MELensInitialized"
+P.EMPTY_ITEM = "Base.MELensRV_Seat" -- harmless repair placeholder; keeps empty spots serializable
 
 ------------------------------------------------------------------------------------
 -- Furniture pieces (tools-src/blender/rv_kit.py makes the models and MELens_RVKit.lua)
@@ -498,7 +499,47 @@ end
 P.shown = {}
 P.ghosts = {}
 
+-- The engine can rebuild container stats after installing, loading or repairing a part.
+-- Repair both the installed item's source capacity and the live container, without replacing either.
+function P.syncCapacity(part)
+    if not part then return end
+    local item = part:getInventoryItem()
+    if item and item:getFullType() == P.EMPTY_ITEM and not isClient() then
+        -- The engine clears a loaded installed item when the script has no itemType.
+        -- A placeholder gives bare slots a save contract without furnishing them on repair().
+        part:setInventoryItem(nil)
+        item = nil
+        if isServer() then part:getVehicle():transmitPartItem(part) end
+    end
+    local kit = P.kit(P.pieceAt(part))
+    local capacity = kit and kit.capacity or 0
+    local container = part:getItemContainer()
+    if item and item:getMaxCapacity() ~= capacity then item:setMaxCapacity(capacity) end
+    if container and container:getCapacity() ~= capacity then part:setContainerCapacity(capacity) end
+end
+
+-- Added furniture seats are installed only while an appropriate piece exists at their spot.
+function P.syncFurnitureSeats(vehicle)
+    local profile = M.profileFor(vehicle)
+    if isClient() or not profile then return end
+    for _, id in ipairs(profile.extraSeats or {}) do
+        local seat = vehicle:getPartById("Seat" .. id)
+        if seat then
+            local installed = P.seatPose(vehicle, profile, id) ~= nil
+            local item = seat:getInventoryItem()
+            if installed and not item then
+                M.initStandingPart(vehicle, seat)
+                if isServer() then vehicle:transmitPartItem(seat) end
+            elseif not installed and item then
+                seat:setInventoryItem(nil)
+                if isServer() then vehicle:transmitPartItem(seat) end
+            end
+        end
+    end
+end
+
 function P.showPiece(part, force, ghost)
+    P.syncCapacity(part)
     if not MELensRV or not part then return end
     if ghost ~= nil then
         P.ghosts[part] = ghost or nil
@@ -518,8 +559,7 @@ end
 -- Container size and type follow the piece (the type names it in the loot window).
 function P.applyPiece(vehicle, part)
     local piece = P.pieceAt(part)
-    local kit = P.kit(piece)
-    part:setContainerCapacity(kit and kit.capacity or 0)
+    P.syncCapacity(part)
     local container = part:getItemContainer()
     if container then
         container:setType(piece and ("MELensRV_" .. piece) or part:getId())
@@ -528,6 +568,7 @@ function P.applyPiece(vehicle, part)
         end
     end
     P.showPiece(part, true)
+    P.syncFurnitureSeats(vehicle)
 end
 
 -- A new vehicle (or one from before ME: LENS) is furnished with its default layout (a spot
@@ -616,6 +657,7 @@ end
 -- Fridges keep cool and heaters warm the inside while the generator gives power; boxes fall
 -- when what they rest on is gone.
 function P.updateSpot(vehicle, part, elapsedMinutes)
+    P.syncCapacity(part)
     local piece = P.pieceAt(part)
     if piece == "fridge" then
         M.Utilities.updateFridge(vehicle, part, elapsedMinutes)
@@ -708,9 +750,9 @@ local function spotScript(index, spot, profile, withModels)
     local models = {}
     local pieces = P.piecesFor(spot)
     -- `Vehicle:repair()` installs a part's declared itemType into every empty
-    -- compatible part. Empty cargo levels remain valid places for players to
-    -- build a stack, but must not advertise a default box to that repair path.
-    local installTypes = spot.empty and " " or (" itemType = %s, "):format(itemTypeList(pieces))
+    -- compatible part. Bare slots use a harmless placeholder that init/refresh removes;
+    -- omitting itemType entirely causes the engine to discard installed furniture on load.
+    local installTypes = (" itemType = %s, "):format(spot.empty and P.EMPTY_ITEM or itemTypeList(pieces))
     if withModels then
         local o = M.modelOffset(spot.x, profile.floorY + (spot.rise or 0), spot.z)
         local rotate = P.WALLS[spot.wall].rotate * P.ROTATE_SIGN

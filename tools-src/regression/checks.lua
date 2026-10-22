@@ -39,7 +39,8 @@ for i, spot in ipairs(profile.spots) do
     if not spot.cargo then
         -- furniture places along the walls (2.0.8): bare, after every box place, so a saved truck keeps its boxes
         check(spot.empty == true and spot.default == nil, "F700 furniture spot " .. i .. " does not start bare")
-        check(string.find(declaration, "itemType", 1, true) == nil, "F700 furniture spot " .. i .. " advertises a repair item")
+        check(string.find(declaration, "itemType = Base.MELensRV_Seat", 1, true) ~= nil,
+            "F700 furniture spot " .. i .. " has no serializable empty-slot placeholder")
         check(string.find(declaration, "model cabinet {", 1, true) ~= nil and string.find(declaration, "model box {", 1, true) == nil,
             "F700 furniture spot " .. i .. " declares the wrong models")
         check(i > 63, "F700 furniture spot " .. i .. " moved a box place's number")
@@ -50,7 +51,7 @@ for i, spot in ipairs(profile.spots) do
     if i <= 63 then check(spot.cargo == true, "F700 box place " .. i .. " is no longer a box place") end
     if not spot.cargo then furnitureSpots = furnitureSpots + 1 end
 end
-check(furnitureSpots == 18, "F700 furniture spots: " .. furnitureSpots)
+check(furnitureSpots == 20, "F700 furniture spots: " .. furnitureSpots)
 
 local function truck(id)
     local v = { id = id, xx = 100, yy = 100, parts = {}, passengers = {}, offsets = {}, script = newScript(), resyncs = 0 }

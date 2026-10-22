@@ -4,10 +4,12 @@ local M, U, P, H = MELens, MELens.Utilities, MELens.Parts, MELens.Home
 local names = { "isClient", "isServer", "SandboxVars", "Fluid", "FluidContainer", "VehicleUtils", "addSound",
     "getCell", "getClimateManager", "instanceof", "instanceItem", "Perks", "addXp", "sendRemoveItemFromContainer",
     "sendAddItemToContainer", "sendItemStats", "syncItemFields", "syncVisuals", "sendHumanVisual", "CharacterStat",
-    "ISWashClothing", "BloodBodyPartType", "BloodClothingType", "ComponentType" }
+    "ISWashClothing", "BloodBodyPartType", "BloodClothingType", "ComponentType", "getGameTime" }
 local saved = {}
 for _, name in ipairs(names) do saved[name] = _G[name] end
 local client, server = false, true
+local worldHour = 100
+getGameTime = function() return { getWorldAgeHours = function() return worldHour end } end
 isClient, isServer = function() return client end, function() return server end
 SandboxVars = { MELens = { GeneratorFuelUse = 1, GeneratorWear = 1, PropaneAppliances = true,
     ShorePower = true, RainFillsTank = true } }
@@ -81,7 +83,9 @@ local function fixture()
     function v:transmitPartCondition() self.transmits = self.transmits + 1 end
     function v:transmitModData() self.transmits = self.transmits + 1 end
     local function part(id, piece)
-        local p = { id = id, data = {}, condition = 100, container = { temperature = 0 } }
+        local p = { id = id, data = {}, condition = 100, container = { temperature = 0 }, lastUpdated = worldHour }
+        function p:getLastUpdated() return self.lastUpdated end
+        function p:setLastUpdated(n) self.lastUpdated = n end
         function p:getModData() return self.data end
         function p:getCondition() return self.condition end
         function p:setCondition(n) self.condition = n end
@@ -244,25 +248,55 @@ local fuelBefore, chargeBefore = f.gen.data.fuel, f.v.charge
 U.runGenerator(f.v, f.gen, 0)
 check(f.gen.data.fuel == fuelBefore and f.v.charge == chargeBefore, "zero-time generator changes state")
 U.runGenerator(f.v, f.gen, 60)
-near(f.gen.data.fuel, 1.2, "one-hour fuel consumption"); near(f.v.charge, 0.06, "one-hour battery generation")
+near(f.gen.data.fuel, 1.8, "one-hour fridge-only fuel consumption"); near(f.v.charge, 0.06, "one-hour battery generation")
 near(f.gen.data.wear, 0.25, "one-hour wear")
 f = fixture(); f.gen.data.on = true; f.gen.data.fuel = 0.1; f.fridge.container.temperature = U.FRIDGE_COLD
 U.runGenerator(f.v, f.gen, 60)
-near(f.gen.data.fuel, 0, "fuel exhausted"); near(f.v.charge, 0.0075, "exhausted generator charges full interval")
-near(f.gen.data.wear, 0.03125, "exhausted generator wears full interval")
+near(f.gen.data.fuel, 0, "fuel exhausted"); near(f.v.charge, 0.03, "exhausted generator charges full interval")
+near(f.gen.data.wear, 0.125, "exhausted generator wears full interval")
 check(not f.gen.data.on and f.fridge.container.temperature == 0, "fuel cutoff does not immediately stop fridge power")
-near(f.gen.data.noise, 7.5, "short fuel lifetime accumulated full-interval generator noise")
+near(f.gen.data.noise, 0, "generator noise interval was not emitted")
 U.updateGenerator(f.v, f.gen, 1)
 check(not f.v.awake, "fully stopped camper keeps unnecessary part updates awake")
 f = fixture(); f.gen.data.on = true; f.gen.condition = 1; f.gen.data.wear = 0.9
 U.runGenerator(f.v, f.gen, 60)
 near(f.v.charge, 0.024, "broken generator charges beyond 24-minute lifetime")
-near(f.gen.data.fuel, 4.68, "wear cutoff consumes full-interval petrol")
+near(f.gen.data.fuel, 4.92, "wear cutoff consumes full-interval petrol")
 check(f.gen.condition == 0 and not f.gen.data.on, "wear cutoff does not stop generator")
 SandboxVars.MELens.GeneratorFuelUse, SandboxVars.MELens.GeneratorWear = 0, 0
 f = fixture(); f.gen.data.on = true; U.runGenerator(f.v, f.gen, 60)
 near(f.gen.data.fuel, 5, "zero fuel-use option consumes petrol"); near(f.v.charge, 0.06, "zero-rate options stop generation")
 SandboxVars.MELens.GeneratorFuelUse, SandboxVars.MELens.GeneratorWear = 1, 1
+
+-- The same game hour at different appliance loads, with idle/off controls.
+f = fixture(); near(U.generatorFuelRate(f.v), 0.2, "fridge load rate")
+f.gen.data.on = true; f.v.awake = false
+U.updateGenerator(f.v, f.gen, 1)
+check(f.v.awake == true, "stock cold-engine update puts running generator back to sleep")
+f.fridge.installed = nil; near(U.generatorFuelRate(f.v), 0.08, "idle generator rate")
+f.fridge.installed = item(P.itemType("fridge"))
+f.oven.data.on, f.heater.data.on = true, true
+near(U.generatorFuelRate(f.v), 0.2, "propane appliances consume generator petrol")
+SandboxVars.MELens.PropaneAppliances = false
+near(U.generatorFuelRate(f.v), 0.8, "full electrical load rate")
+SandboxVars.MELens.PropaneAppliances = true
+
+-- Starting after days parked OFF must not bill those days as running time.
+f = fixture(); f.gen.lastUpdated = worldHour - 72
+local before = f.gen.data.fuel
+U.setSwitch(f.v, "generator", true)
+near(f.gen.lastUpdated, worldHour, "generator start retains parked clock")
+near(f.gen.data.fuel, before, "starting charges for parked time")
+worldHour = worldHour + 1 / 6
+U.setSwitch(f.v, "generator", false)
+near(f.gen.data.fuel, before - 0.2 / 6, "ten game-minute fuel use")
+worldHour = worldHour + 48
+U.setSwitch(f.v, "generator", true)
+near(f.gen.data.fuel, before - 0.2 / 6, "restarting charges two days switched off")
+worldHour = worldHour + 1 / 6
+U.setSwitch(f.v, "generator", true)
+U.setSwitch(f.v, "generator", false)
+near(f.gen.data.fuel, before - 0.2 / 3, "repeated start resets away running time")
 
 -- Shore power is actual production Home scanning/caching; battery charge alone is not appliance power.
 active = fixture(); active.gen.data.on = false

@@ -568,7 +568,7 @@ def build(spec_path):
     xs = [p[0] for p in ring]
     zs = [p[1] for p in ring]
     shell_cfg = {
-        "measure": os.path.join(FLOORPLANS, measure_file).replace("\\", "/"),
+        "measure": os.path.relpath(os.path.join(FLOORPLANS, measure_file), ROOT).replace("\\", "/"),
         "object": "shell_" + spec["texture"],
         "floorY": floor,
         "top": r(min(ceiling, floor + 1.64)),
@@ -671,6 +671,8 @@ def build(spec_path):
     # that stand inside the shell's lining and show as black objects: the cutaway does not draw
     # KI5's own models inside the lining's outline (written with the walk grid by the bake), low
     # above the floor. (Not in a bus or truck, whose driver's seat and cab are KI5's.)
+    if spec.get("extraSeats"):
+        profile["extraSeats"] = spec["extraSeats"]
     if spec.get("clipBody", spec.get("kind", "camper") == "camper"):
         profile["clipBody"] = True
     if window_boxes:

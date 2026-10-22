@@ -50,6 +50,7 @@
     "cutFrontTop": 0.55,
     "openings": [],
     "fuelTank": 30,
+    "extraSeats": ["MELensFurnitureLeft1", "MELensFurnitureLeft2", "MELensFurnitureRight1", "MELensFurnitureRight2"],
     "spots": [
         {
             "wall": "left",
@@ -150,6 +151,24 @@
             "length": 1.0,
             "depth": 0.55,
             "empty": true,
+            "appendAtEnd": true
+        },
+        {
+            "wall": "left",
+            "at": -1.16,
+            "length": 1.5,
+            "depth": 0.55,
+            "empty": true,
+            "seats": ["MELensFurnitureLeft1", "MELensFurnitureLeft2"],
+            "appendAtEnd": true
+        },
+        {
+            "wall": "right",
+            "at": -1.16,
+            "length": 1.5,
+            "depth": 0.55,
+            "empty": true,
+            "seats": ["MELensFurnitureRight1", "MELensFurnitureRight2"],
             "appendAtEnd": true
         }
     ]
