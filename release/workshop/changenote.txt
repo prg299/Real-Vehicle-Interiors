@@ -1,8 +1,10 @@
-2.0.11 - Bed animation and height fixes
+2.0.12 - F700 furniture, storage and generator fixes
 
-- Uses vanilla bed animations for getting in, falling asleep, waking and getting out instead of snapping directly into the sleeping pose.
-- Aligns resting and sleeping poses to the mattress height.
-- Shows the normal sleep confirmation before walking to the bed; cancelling leaves the character standing.
-- Includes 2.0.10's fixes for weapon aiming crashes and stuck walk-in entry actions.
+- Adds two full-size F700 furniture spaces for salvaged beds and dinettes, with working furniture seats. Existing cargo-box positions are preserved.
+- Repairs storage boxes and fridges stuck at 0 or 1 kg without replacing furniture or stored items.
+- Keeps furniture installed in originally empty slots after saving and reloading.
+- Generator fuel use now follows appliance load: a fridge-only setup uses 0.2 litres per game hour at the default setting.
+- Starting or restarting the generator no longer burns fuel for time it spent switched off.
+- Keeps the generator and appliances updating while the vehicle is parked with its engine off.
 
-Dedicated-server gameplay and wider bed-layout verification remain pending; this is a beta update.
+Multiplayer remains experimental. Back up existing saves before updating.

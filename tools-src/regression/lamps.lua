@@ -43,6 +43,7 @@ do
         function v:getCharacter(seat) return self.passengers[seat] end
         function v:getPartById(_) return nil end
         function v:setNeedPartsUpdate(value) self.awake = value; self.wakes = self.wakes + 1 end
+        function v:needPartsUpdate() return self.awake == true end
         function v:transmitPartUsedDelta(part) check(part == battery, "wrong lamp battery transmitted"); self.packets = self.packets + 1 end
         function v:transmitModData() end
         local p = { vehicle = v }
@@ -170,9 +171,22 @@ do
     loaded = {}; emit("OnTick")
     loaded = { f.v }; hour, milliseconds = 3000, 50500; emit("OnTick")
     near(f.item.charge, before, "returning unloaded vehicle catches up")
+    -- Appliances must stay awake even with no occupants and all lights switched off.
+    f = fixture(); f.v.passengers = {}; f.v.data.MELensLightsOff = true
+    local generator = { on = true }
+    function f.v:getPartById(id)
+        if id == MELens.Parts.GENERATOR then return { getModData = function() return generator end } end
+    end
+    loaded = { f.v }; milliseconds = 50600; emit("OnTick")
+    milliseconds = 51100; emit("OnTick")
+    check(f.v.awake == true, "unoccupied parked generator never wakes")
+    f.v.awake = false; milliseconds = 51600; emit("OnTick")
+    check(f.v.awake == true, "cold stock engine permanently puts generator to sleep")
+    generator.on = false; f.v.awake = false; milliseconds = 52100; emit("OnTick")
+    check(f.v.awake == false, "stopped empty vehicle is needlessly kept awake")
     local many = {}; for i = 1, 65 do many[i] = fixture() end
     loaded = {}; for i, value in ipairs(many) do loaded[i] = value.v end
-    hour, milliseconds = 4000, 51000; emit("OnTick")
+    hour, milliseconds = 4000, 52600; emit("OnTick")
     check(many[64].v.wakes == 1 and many[65].v.wakes == 0, "lamp scan exceeds 64 vehicles per frame")
     emit("OnTick")
     check(many[65].v.wakes == 1, "bounded lamp scan never reaches later vehicles")

@@ -785,6 +785,24 @@ local profile = {
         { x = -1.01, z = -2.66, wall = "right", length = 1, depth = 0.55, empty = true },
         { x = -1.01, z = -3.16, wall = "right", length = 1, depth = 0.55, empty = true },
         { x = 0, z = 1.07, wall = "front", length = 1, depth = 0.55, empty = true },
+        {
+            x = 1.01,
+            z = -1.16,
+            wall = "left",
+            length = 1.5,
+            depth = 0.55,
+            seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
+            empty = true,
+        },
+        {
+            x = -1.01,
+            z = -1.16,
+            wall = "right",
+            length = 1.5,
+            depth = 0.55,
+            seats = { "MELensFurnitureRight1", "MELensFurnitureRight2" },
+            empty = true,
+        },
     },
     wheelWells = {  },
     panel = { x = -1, y = 0.315, z = -4.19, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
@@ -795,6 +813,7 @@ local profile = {
     loot = "cargo",
     cutFront = 1.1,
     cutFrontTop = 0.55,
+    extraSeats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2", "MELensFurnitureRight1", "MELensFurnitureRight2" },
 }
 
 MELens.Profiles["Base.87fordF700box"] = profile
