@@ -2,6 +2,8 @@
 
 - Adds interiors for 193 additional vehicle definitions across 12 body families, including optional vehicle mods.
 - Fixes cutaway state leaking between vehicles, wheel rendering and adjacent bed/kitchenette placement.
+- Seals cargo cab cutaways with fitted full-height partitions and gives work trucks and vans metal floors.
+- Adds matching medical stretchers and steel equipment cabinets, with vehicle-appropriate factory fittings and medical supplies.
 - Entering an interior with Project Viewpoint active switches its camera to isometric.
 - The dashboard uses vanilla window chrome and controls by default. Enabled Neat UI mods retain the rounded dashboard.
 - Solid interior walls block zombie sight. Windows and open, removed or destroyed doors allow normal spotting.

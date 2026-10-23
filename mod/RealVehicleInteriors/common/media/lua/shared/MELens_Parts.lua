@@ -90,6 +90,8 @@ P.VEHICLE_USE = {
         loot = { metalcase = "MedicalStorageTools" } },
     ["Base.90fordF350ambulance"] = { fittings = { [1] = "stretcher", [3] = "metalcase" },
         loot = { metalcase = "MedicalStorageTools" } },
+    ["Base.86fordE150med"] = { fittings = { [1] = "stretcher", [2] = "metalcase" },
+        loot = { metalcase = "MedicalStorageTools" } },
     ["Base.90fordF350SWAT"] = { fittings = { [3] = "metalcase" } },
     ["Base.87fordF700swat"] = { fittings = { [3] = "metalcase" } },
     ["Base.87fordF700bank"] = { fittings = { [3] = "metalcase" } },
