@@ -205,6 +205,13 @@ function MELens.standingIds(profile)
     return ids
 end
 
+-- Furniture passengers follow the released standing passengers; saved indices stay stable.
+function MELens.interiorSeatIds(profile)
+    local ids = MELens.standingIds(profile)
+    for _, id in ipairs(profile.extraSeats or {}) do ids[#ids + 1] = id end
+    return ids
+end
+
 -- How many places to stand fit in a profile's vehicles: the fewest over its scripts (they share the ids), the
 -- script's own seats counted without ours (an earlier call may have merged them already).
 local function standingCounts(manager)
@@ -217,7 +224,10 @@ local function standingCounts(manager)
                 local id = i == 1 and profile.seatId or (profile.seatId .. i)
                 if script:getPassengerIndex(id) >= 0 then own = own - 1 end
             end
-            local fit = math.max(0, math.min(MELens.STANDING_SEATS, MELens.MAX_SEATS - own))
+            for _, id in ipairs(profile.extraSeats or {}) do
+                if script:getPassengerIndex(id) >= 0 then own = own - 1 end
+            end
+            local fit = math.max(0, math.min(MELens.STANDING_SEATS, MELens.MAX_SEATS - own - #(profile.extraSeats or {})))
             counts[profile] = math.min(counts[profile] or fit, fit)
         end
     end
@@ -263,6 +273,19 @@ function MELens.initStandingPart(vehicle, part)
     container:setAcceptItemFunction("MELens.standingContainerTest")
 end
 
+function MELens.initFurnitureSeat(vehicle, part)
+    local container = part:getItemContainer()
+    if container == nil then
+        container = ItemContainer.new()
+        part:setItemContainer(container)
+    end
+    container:setType(part:getId())
+    container:setCapacity(0)
+    container:setExplored(true)
+    container:setAcceptItemFunction("MELens.standingContainerTest")
+    if MELens.Parts then MELens.Parts.syncFurnitureSeats(vehicle) end
+end
+
 function MELens.addStandingPositions()
     local manager = getScriptManager()
     if not manager then return end
@@ -272,7 +295,7 @@ function MELens.addStandingPositions()
         local s = profile.standing
         if script and s then
             -- Merging is idempotent: an existing passenger is updated, not duplicated.
-            for _, id in ipairs(MELens.standingIds(profile)) do
+            for _, id in ipairs(MELens.interiorSeatIds(profile)) do
                 script:Load(script:getName(), table.concat({
                     "{ passenger ", id, " {",
                     " door = ", s.door, ",",
@@ -305,15 +328,16 @@ function MELens.addStandingPositions()
             if MELens.Parts and MELens.Parts.extendScript then
                 MELens.Parts.extendScript(script, profile)
             end
-            for _, id in ipairs(MELens.standingIds(profile)) do
+            for n, id in ipairs(MELens.interiorSeatIds(profile)) do
                 -- Append after the existing parts so their order and all passenger IDs
                 -- remain stable. Load merges by ID, including on later boot/world events.
+                local init = n <= #MELens.standingIds(profile) and "MELens.initStandingPart" or "MELens.initFurnitureSeat"
                 script:Load(script:getName(), table.concat({
                     "{ part Seat", id, " {",
                     " category = nodisplay, area = ", s.area, ", itemType = Base.MELensRV_Seat,",
                     " container { seat = ", id, ", capacity = 0,",
                     " conditionAffectsCapacity = false, test = MELens.standingContainerTest, }",
-                    " lua { create = MELens.initStandingPart, init = MELens.initStandingPart, }",
+                    " lua { create = ", init, ", init = ", init, ", }",
                     " } }",
                 }))
                 local index = script:getPassengerIndex(id)

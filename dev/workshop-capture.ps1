@@ -1,10 +1,16 @@
 # Owned gameplay-media capture on an inactive desktop. Run the entire lifetime through run-heavy.mjs.
 param([string]$Run = 'workshop-20261017', [switch]$GroundOnly, [string]$Scenario, [string]$LoadWorld,
     [switch]$FreshProfile, [ValidateRange(1,60)][int]$ReviewMinutes = 30,
-    [switch]$LowMemory,
+    [switch]$LowMemory, [string]$ProfilePath,
     [string]$Driver, [string[]]$DriverArguments = @(),
     [switch]$AllowOtherGames) # this game/input/capture stay on a separate inactive desktop
 . (Join-Path $PSScriptRoot '..\scripts\common.ps1')
+if ($ProfilePath) {
+    $profile = [IO.Path]::GetFullPath($ProfilePath)
+    if (-not $profile.StartsWith($Lens.Out + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Profile must stay inside build/rv' }
+    if ($FreshProfile) { throw 'Use either an existing profile or FreshProfile' }
+    $Lens.TestHome = $profile
+}
 $runPath = [IO.Path]::GetFullPath((Join-Path $Lens.Out $Run))
 if (-not $runPath.StartsWith($Lens.Out + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Invalid media output' }
 New-Item -ItemType Directory -Path $runPath -Force | Out-Null

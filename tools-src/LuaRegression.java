@@ -34,7 +34,7 @@ public final class LuaRegression {
             shared + "MELens_Profile_B700.lua", shared + "MELens_WalkGrid_B700_Shell.lua",
             shared + "MELens_Parts.lua", shared + "MELens_Utilities.lua", shared + "TimedActions/MELens_Actions.lua",
             client + "MELens_Interact.lua", shared + "MELens_Sync.lua", shared + "MELens_Phobia.lua",
-            "tools-src/regression/phobia.lua", "tools-src/regression/checks.lua",
+            "tools-src/regression/f700.lua", "tools-src/regression/phobia.lua", "tools-src/regression/checks.lua",
             "tools-src/regression/lifecycle.lua", shared + "MELens_Home.lua",
             "tools-src/regression/utilities.lua", "tools-src/regression/lamps.lua",
             "tools-src/regression/personalization.lua", "tools-src/regression/interior-actions.lua",

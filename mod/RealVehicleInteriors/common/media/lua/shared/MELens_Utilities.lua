@@ -19,7 +19,10 @@ M.Utilities = M.Utilities or {}
 local U = M.Utilities
 local P = M.Parts
 
-U.FUEL_PER_HOUR = 0.8        -- litres of petrol an hour while running (20 litres: about a day)
+U.IDLE_FUEL_PER_HOUR = 0.08  -- litres per game hour, including battery charging
+U.FRIDGE_FUEL_PER_HOUR = 0.12
+U.STOVE_FUEL_PER_HOUR = 0.4
+U.HEATER_FUEL_PER_HOUR = 0.2
 U.WEAR_PER_HOUR = 0.25       -- condition lost per running hour (a new generator: about 16 days)
 U.CHARGE_PER_MINUTE = 0.001  -- battery charge while running (the same as a running engine)
 U.NOISE_RADIUS = 20          -- tiles; like a generator on the ground, zombies hear it
@@ -199,9 +202,9 @@ end
 function U.updateGenerator(vehicle, part, elapsedMinutes)
     U.runGenerator(vehicle, part, elapsedMinutes)
     -- Nothing running, warming or cooling any more: let the camper rest.
-    if not U.busy(vehicle) then
-        vehicle:setNeedPartsUpdate(false)
-    end
+    -- The stock Engine callback can clear this flag earlier in the same update.
+    -- Re-arm it while appliances are active, even with the engine stopped and cold.
+    vehicle:setNeedPartsUpdate(U.busy(vehicle))
 end
 
 -- Server: the players get the battery's charge again once it moved 0.001 since they last got it (or always with
@@ -222,6 +225,22 @@ function U.syncBatteryCharge(vehicle, force)
     end
 end
 
+function U.generatorFuelRate(vehicle)
+    local rate = U.IDLE_FUEL_PER_HOUR
+    local profile = U.profile(vehicle)
+    for index in ipairs(profile and profile.spots or {}) do
+        if P.pieceAt(P.spotPart(vehicle, index)) == "fridge" then
+            rate = rate + U.FRIDGE_FUEL_PER_HOUR
+        end
+    end
+    if not U.propaneOn() then
+        local oven, heater = U.part(vehicle, P.OVEN), U.heaterPart(vehicle)
+        if oven and oven:getModData().on == true then rate = rate + U.STOVE_FUEL_PER_HOUR end
+        if heater and heater:getModData().on == true then rate = rate + U.HEATER_FUEL_PER_HOUR end
+    end
+    return rate * math.max(0, M.sandbox("GeneratorFuelUse", 1.0))
+end
+
 function U.runGenerator(vehicle, part, elapsedMinutes)
     local data = part:getModData()
     if data.on ~= true or not elapsedMinutes or elapsedMinutes <= 0 then return end
@@ -236,7 +255,7 @@ function U.runGenerator(vehicle, part, elapsedMinutes)
     end
     -- A parked vehicle can receive a long catch-up interval. It only generates power
     -- for the portion its remaining fuel and condition can actually sustain.
-    local fuelRate = U.FUEL_PER_HOUR * math.max(0, M.sandbox("GeneratorFuelUse", 1.0))
+    local fuelRate = U.generatorFuelRate(vehicle)
     local wearRate = U.WEAR_PER_HOUR * math.max(0, M.sandbox("GeneratorWear", 1.0))
     local wear = num(data.wear, 0)
     local hours = elapsedMinutes / 60
@@ -452,6 +471,16 @@ function U.setSwitch(vehicle, which, on)
         part = U.heaterPart(vehicle)
     end
     if not part then return false end
+    local data = part:getModData()
+    if which == "generator" and (data.on == true) ~= (on == true) then
+        local hours = getGameTime():getWorldAgeHours()
+        if data.on == true then
+            U.runGenerator(vehicle, part, math.max(0, hours - part:getLastUpdated()) * 60)
+        end
+        -- Native part callbacks measure time since last update, including time spent parked OFF.
+        -- Start the clock now so restarting cannot burn fuel for that idle interval.
+        part:setLastUpdated(hours)
+    end
     part:getModData().on = on == true
     U.transmit(vehicle, part)
     U.wake(vehicle)
@@ -595,6 +624,11 @@ function U.lampTick()
         if lampSeen[id] ~= vehicle then
             lampSeen[id] = vehicle
             U.observeLamps(vehicle)
+            -- A cold stock engine may sleep the parts before the generator's own
+            -- minute is due. Reuse this bounded authority scan to keep appliances ticking.
+            if M.profileFor(vehicle) and U.busy(vehicle) and not vehicle:needPartsUpdate() then
+                U.wake(vehicle)
+            end
         end
     end
     lampIndex = stop + 1
