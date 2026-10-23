@@ -12,8 +12,12 @@ local profile = {
         models = { "MELensShell_fleet_chevystepvan_floor", "MELensShell_fleet_chevystepvan_walls" },
     },
     hideKI5 = {
-        ["85chevyStepVanSpare1"] = true,
-        ["85chevyStepVanSpare2"] = true,
+        ["85chevyStepVanSpare1"] = {
+            plane = { 0, -1, 0, -1 },
+        },
+        ["85chevyStepVanSpare2"] = {
+            plane = { 0, -1, 0, -1 },
+        },
         ["85chevyStepVanWindowfl"] = {
             plane = { 0, -1, 0, -1 },
         },
@@ -21,6 +25,9 @@ local profile = {
             plane = { 0, -1, 0, -1 },
         },
         ["85chevyStepVanInterior"] = {
+            plane = { 0, -1, 0, -1 },
+        },
+        ["85chevyStepVanInteriorRoof"] = {
             plane = { 0, -1, 0, -1 },
         },
     },

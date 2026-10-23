@@ -507,6 +507,9 @@ public final class RV {
     /** Keep everything ahead of body mesh y {@code meshY} (the front of the compartment). */
     public static void setCutFront(double meshY) {
         cutFrontY = (float) meshY;
+        // Each profile supplies its own optional height after this call. A
+        // previous vehicle's mesh-space cutoff must never leak into this one.
+        cutFrontTopZ = -1e9f;
         cutFrontEnabled = true;
     }
 

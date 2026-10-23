@@ -22,6 +22,31 @@ import static org.lwjgl.opengl.GL30.*;
 public final class Media {
     private Media() {}
 
+    private static boolean fixedCamera;
+    private static float cameraX, cameraY, cameraZ;
+
+    /** Capture framing fixture only; input checks run with the ordinary camera. */
+    public static void camera(float x, float y, float z) {
+        cameraX = x; cameraY = y; cameraZ = z; fixedCamera = true;
+    }
+    public static void cameraOff() { fixedCamera = false; }
+
+    @Patch(className = "zombie.iso.PlayerCamera", methodName = "update")
+    public static final class CaptureCamera {
+        @Patch.OnExit public static void exit() { Media.frameCamera(); }
+    }
+
+    public static void frameCamera() {
+        if (!fixedCamera) return;
+        var camera = zombie.iso.IsoCamera.cameras[0];
+        camera.offX = zombie.iso.IsoUtils.XToScreen(cameraX, cameraY, cameraZ, 0)
+            - zombie.iso.IsoCamera.getOffscreenWidth(0) / 2f;
+        camera.offY = zombie.iso.IsoUtils.YToScreen(cameraX, cameraY, cameraZ, 0)
+            - zombie.iso.IsoCamera.getOffscreenHeight(0) / 2f;
+        camera.lastOffX = camera.offX; camera.lastOffY = camera.offY;
+        camera.rightClickX = 0; camera.rightClickY = 0;
+    }
+
     /** Skip the loading-screen click without interacting with the owner's desktop. */
     public static boolean start() throws ReflectiveOperationException {
         if (!(GameWindow.states.current instanceof GameLoadingState loading)) return false;

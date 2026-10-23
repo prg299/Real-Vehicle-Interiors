@@ -83,8 +83,22 @@
         "86fordE150seatmr": true,
         "86fordE150seatrl": true,
         "86fordE150seatrr": true,
-        "E150Wheel": true,
-        "E150Wheel1L": true,
+        "E150Wheel": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
+        "E150Wheel1L": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
         "86fordE150windowfl": {
             "plane": [
                 0,
@@ -116,24 +130,73 @@
                 0,
                 2.6667
             ]
+        },
+        "86fordE150windowrr": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
+        "86fordE150MMSpareTire": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
+        "86fordE150pd1": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
+        "86fordE150pd2": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
+        "86fordE150pd3": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
+        "86fordE150pdinterior": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
         }
     },
     "clipBody": true,
     "cutFront": 0.24,
+    "aisleX": -0.25,
     "entry": {
         "span": [
-            -0.5,
-            0.5
+            -0.7,
+            0.2
         ],
         "wall": "back",
         "part": "TrunkDoor",
         "area": "TruckBed",
-        "panelWall": "left"
+        "panelWall": "right"
     },
     "entryOpening": {
         "x": [
-            -0.5,
-            0.5
+            -0.65,
+            0.25
         ],
         "y": [
             -0.078,
@@ -186,7 +249,7 @@
     "spots": [
         {
             "wall": "left",
-            "at": -0.63,
+            "at": -1.103,
             "length": 1.5,
             "depth": 0.55,
             "default": "bed",
@@ -197,16 +260,16 @@
             ]
         },
         {
-            "wall": "left",
-            "at": -0.35,
+            "wall": "front",
+            "at": 0,
             "length": 1.0,
             "depth": 0.55,
             "default": "kitchen",
             "empty": true
         },
         {
-            "wall": "left",
-            "at": -1.193,
+            "wall": "front",
+            "at": 0.26,
             "length": 0.52,
             "depth": 0.52,
             "default": "fridge",

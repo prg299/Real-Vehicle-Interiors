@@ -64,6 +64,7 @@
     },
     "clipBody": true,
     "cutFront": -0.37,
+    "aisleX": 0,
     "entry": {
         "span": [
             -0.5,

@@ -56,6 +56,7 @@
     "hide": {},
     "clipBody": true,
     "cutFront": 0.15,
+    "aisleX": 0,
     "entry": {
         "span": [
             -0.5,

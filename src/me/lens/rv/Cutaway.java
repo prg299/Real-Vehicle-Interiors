@@ -85,6 +85,11 @@ public final class Cutaway {
         if (isCut && RV.survey) {
             survey(model, inst, body);
         }
+        // Road wheels remain outside the room. Keep their native material and
+        // texture binding even when the body and lining above them are cut.
+        if (inst.modelInstance instanceof zombie.core.skinnedmodel.model.VehicleSubModelInstance sub
+                && sub.modelInfo != null && sub.modelInfo.part != null
+                && sub.modelInfo.part.getWheelIndex() >= 0) return false;
         // scratch maps this sub-model's mesh space into the body's mesh space. Parts from
         // other FBX files (awning, jack) have their own axes and offsets.
         scratch.set(body).invert().mul(inst.xfrm);
@@ -110,6 +115,10 @@ public final class Cutaway {
         }
         cut.Start();
         ShaderProgram program = cut.getShaderProgram();
+        // Preserve the source material's paint mode. NoRandom liveries are baked;
+        // ordinary vehicle_multiuv materials use the vehicle's native HSV mask.
+        if (original.isVehicleShader()) program.setValue("MELensVehiclePaint",
+            "vehicle_multiuv".equals(original.getName()) ? 1f : 0f);
         program.setValue("MELensToBody", scratch);
         if (!isCut || furniture) {
             program.setVector4("MELensBodyPlane", 0f, 0f, 0f, -1.0f);
@@ -239,7 +248,10 @@ public final class Cutaway {
         org.joml.Vector3f bodyLo = toBody.transformPosition(new org.joml.Vector3f(lo));
         org.joml.Vector3f bodyHi = toBody.transformPosition(new org.joml.Vector3f(hi));
         surveyed.put(name, "mesh " + lo + ".." + hi + " -> body " + bodyLo + ".." + bodyHi
-                + " scale " + toBody.getScale(new org.joml.Vector3f()));
+                + " scale " + toBody.getScale(new org.joml.Vector3f())
+                + " shader=" + (model.effect == null ? "none" : model.effect.getName())
+                + " wheel=" + (inst.modelInstance instanceof zombie.core.skinnedmodel.model.VehicleSubModelInstance sub
+                    && sub.modelInfo != null && sub.modelInfo.part != null ? sub.modelInfo.part.getWheelIndex() : -1));
     }
 
     public static void endVehicleDraw(ModelSlotRenderData slot, ModelInstanceRenderData inst) {

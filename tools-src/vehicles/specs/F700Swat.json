@@ -93,6 +93,7 @@
     },
     "clipBody": true,
     "cutFront": 1.0,
+    "aisleX": 0,
     "entry": {
         "span": [
             -0.5,
@@ -201,5 +202,6 @@
             "default": "fridge",
             "empty": true
         }
-    ]
+    ],
+    "cutFrontTop": 1.18
 }

@@ -812,7 +812,7 @@ local profile = {
     ki5Storage = { "F700TrunkBX" },
     loot = "cargo",
     cutFront = 1.1,
-    cutFrontTop = 0.55,
+    cutFrontTop = 0.95,
     extraSeats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2", "MELensFurnitureRight1", "MELensFurnitureRight2" },
 }
 

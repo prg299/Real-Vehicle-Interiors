@@ -18,7 +18,11 @@ do
         check(P.fits(pr.spots[1],"bed") and P.fits(pr.spots[1],"dinette"),"large furniture rejected: "..name)
         check(P.roomFor(pr,{},1,"bed"),"bed cannot be installed in empty compartment: "..name)
         if #pr.spots==3 then
-            check(not P.roomFor(pr,{[1]="bed"},2,"kitchen"),"small van accepts overlapping kitchen: "..name)
+            check(P.roomFor(pr,{[1]="bed"},2,"kitchen"),"small van rejects adjacent bed and kitchen: "..name)
+            check(P.roomFor(pr,{[2]="kitchen"},1,"bed"),"bed/kitchen placement order matters: "..name)
+            check(not P.roomFor(pr,{[2]="kitchen"},3,"fridge"),"front kitchen accepts overlapping fridge: "..name)
+            check(P.roomFor(pr,{[1]="bed"},3,"fridge"),"small van rejects bed and fridge: "..name)
+            check(pr.aisleX==-.25 and pr.standing.inside[1]==-.25,"narrow van entry misses clear aisle: "..name)
         else
             check(P.roomFor(pr,{[1]="bed"},2,"dinette"),"wide vehicle blocks opposite furnishing wall: "..name)
         end
@@ -43,6 +47,34 @@ do
     for _,pr in pairs(M.Profiles) do if seen[pr] then count=count+1 end end
     check(count==193,"fleet identifier coverage changed unexpectedly")
     check(#M.Profiles["Base.87fordF700box"].spots==83,"released cargo slots changed")
+    for name,roof in pairs({["Base.87fordF700bank"]=1.295,["Base.87fordF700swat"]=1.142}) do
+        check(M.Profiles[name].cutFrontTop>roof,"armored truck cab roof is cut away: "..name)
+    end
+    local payday=M.Profiles["Base.86fordE150pd"].hideKI5
+    for _,model in ipairs({"86fordE150pd1","86fordE150pd2","86fordE150pd3","86fordE150pdinterior"}) do
+        local rule=payday[model]
+        check(type(rule)=="table" and rule.plane and rule.plane[2]==-1,
+            "variant factory chairs/liner are absent from shared rear-compartment clipping: "..model)
+    end
+    local oldX,oldY,oldProject=getMouseXScaled,getMouseYScaled,M.Interact.screenToCamper
+    getMouseXScaled=function() return 0 end;getMouseYScaled=function() return 0 end
+    local px,pz=0,0
+    M.Interact.screenToCamper=function() return px,pz end
+    local a={index=2,rise=0,x0=-.5,x1=.5,z0=-1,z1=0}
+    local b={index=3,rise=0,x0=-.5,x1=.5,z0=-.7,z1=.3}
+    local mode={profile={floorY=0},places={a,b}}
+    pz=-.2
+    check(M.Placement.Mode.placeUnderMouse(mode)==b,"overlapping marker chooses earlier slot over nearest centre")
+    pz=-.5
+    check(M.Placement.Mode.placeUnderMouse(mode)==a,"nearest marker selection is reversed")
+    mode.places={b,a}
+    check(M.Placement.Mode.placeUnderMouse(mode)==a,"marker selection depends on list order")
+    local upper={index=4,rise=.8,x0=-.5,x1=.5,z0=-1,z1=0}
+    mode.places={a,upper}
+    check(M.Placement.Mode.placeUnderMouse(mode)==upper,"nearest marker ignores stacked floor priority")
+    pz=4
+    check(M.Placement.Mode.placeUnderMouse(mode)==nil,"off-marker click selects furniture slot")
+    getMouseXScaled,getMouseYScaled,M.Interact.screenToCamper=oldX,oldY,oldProject
     local manager=getScriptManager
     getScriptManager=function() return {getVehicle=function() return nil end} end
     check(pcall(M.addStandingPositions),"optional vehicle packs cannot be absent")

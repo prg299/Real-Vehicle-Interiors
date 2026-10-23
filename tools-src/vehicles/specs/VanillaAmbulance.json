@@ -28,20 +28,21 @@
     "hide": {},
     "clipBody": true,
     "cutFront": 0.32,
+    "aisleX": -0.25,
     "entry": {
         "span": [
-            -0.5,
-            0.5
+            -0.7,
+            0.2
         ],
         "wall": "back",
         "part": "DoorRear",
         "area": "TruckBed",
-        "panelWall": "left"
+        "panelWall": "right"
     },
     "entryOpening": {
         "x": [
-            -0.5,
-            0.5
+            -0.65,
+            0.25
         ],
         "y": [
             -0.588,
@@ -90,7 +91,7 @@
     "spots": [
         {
             "wall": "left",
-            "at": -0.55,
+            "at": -1.135,
             "length": 1.5,
             "depth": 0.55,
             "default": "bed",
@@ -101,16 +102,16 @@
             ]
         },
         {
-            "wall": "left",
-            "at": -0.27,
+            "wall": "front",
+            "at": 0,
             "length": 1.0,
             "depth": 0.55,
             "default": "kitchen",
             "empty": true
         },
         {
-            "wall": "left",
-            "at": -1.225,
+            "wall": "front",
+            "at": 0.26,
             "length": 0.52,
             "depth": 0.52,
             "default": "fridge",

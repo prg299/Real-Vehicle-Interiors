@@ -117,6 +117,7 @@ local profile = {
     fuelTank = 20,
     vanillaSeats = { "FrontLeft", "FrontRight", "P2", "P3", "P4", "P5", "P6", "P7" },
     cutFront = 1,
+    cutFrontTop = 1.18,
     extraSeats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2", "MELensFurnitureRight1", "MELensFurnitureRight2" },
     clipBody = true,
     windowBoxes = {

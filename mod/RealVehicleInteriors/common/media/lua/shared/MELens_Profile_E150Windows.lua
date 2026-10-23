@@ -66,16 +66,16 @@ local profile = {
     },
     nearCutY = 0.32,
     walkSpeed = 1.35,
-    aisleX = 0,
+    aisleX = -0.25,
     standing = {
         door = "TrunkDoor",
         area = "TruckBed",
-        inside = { 0, -0.058, -2.058 },
-        outside = { 0, -0.69, -2.958 },
+        inside = { -0.25, -0.058, -2.058 },
+        outside = { -0.25, -0.69, -2.958 },
     },
-    door = { x = 0, z = -2.058 },
+    door = { x = -0.25, z = -2.058 },
     exitMarker = {
-        x = 0,
+        x = -0.25,
         z = -2.048,
         halfX = 0.45,
         halfZ = 0.22,
@@ -83,12 +83,12 @@ local profile = {
     },
     walkGrid = "MELens.E150Windows.shell",
     walkable = {
-        { x1 = -0.1, x2 = 0.1, z1 = -2.158, z2 = -1.958 },
+        { x1 = -0.35, x2 = -0.15, z1 = -2.158, z2 = -1.958 },
     },
     spots = {
         {
             x = 0.697,
-            z = -0.63,
+            z = -1.438,
             wall = "left",
             length = 1.5,
             depth = 0.55,
@@ -96,8 +96,8 @@ local profile = {
             seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
             empty = true,
         },
-        { x = 0.697, z = -0.35, wall = "left", length = 1, depth = 0.55, default = "kitchen", empty = true },
-        { x = 0.697, z = -1.528, wall = "left", length = 0.52, depth = 0.52, default = "fridge", empty = true },
+        { x = 0, z = 0.21, wall = "front", length = 1, depth = 0.55, default = "kitchen", empty = true },
+        { x = 0.26, z = 0.21, wall = "front", length = 0.52, depth = 0.52, default = "fridge", empty = true },
     },
     wheelWells = {
         {
@@ -111,7 +111,7 @@ local profile = {
             z = { -1.71, -0.97 },
         },
     },
-    panel = { x = 0.687, y = 0.237, z = -2.068, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
+    panel = { x = -0.687, y = 0.237, z = -2.068, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
     waterTank = 40,
     fuelTank = 20,
     vanillaSeats = { "BackLeft", "BackMiddle", "BackRight", "FrontLeft", "FrontRight", "MiddleLeft", "MiddleMiddle", "MiddleRight", "RearLeft", "RearMiddle", "RearRight" },
@@ -125,7 +125,7 @@ local profile = {
             z = { -2.228, 0.21 },
         },
         {
-            x = { -0.5, 0.5 },
+            x = { -0.65, 0.25 },
             y = { -0.078, 0.93 },
             z = { -2.578, -2.198 },
         },

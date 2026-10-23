@@ -16,11 +16,12 @@ def load(name):
     spec.loader.exec_module(m)
     return m
 
-def enter(h, vehicle, heading):
+def enter(h, vehicle, heading, walk_approach=True):
     assert not h.lua('return getPlayer():getVehicle()~=nil'), 'start outside'
     spawn = (ROOT/'dev/lua/spawn_one.lua').read_text().replace('NAME',vehicle)
     spawn = spawn.replace('tonumber("7")','tonumber("-4")').replace('local HEADING = "E"',f'local HEADING = "{heading}"')
     h.lua(spawn)
+    if not walk_approach:time.sleep(1)
     h.lua('''local p=getPlayer();local v=MELensTest.vehicle;local q=Vector3f.new()
 v:getPassengerPositionWorldPos(v:getPassengerPosition(MELens.cabinSeat(v),"outside"),q)
 p:setX(q:x());p:setY(q:y());p:setLastX(q:x());p:setLastY(q:y())
@@ -30,7 +31,7 @@ p:faceLocation(q:x(),q:y());ISUIHandler.setVisibleAllUI(true);return true''')
 v:getPassengerPositionWorldPos(v:getPassengerPosition(MELens.cabinSeat(v),"inside"),q)
 local dx,dy=q:x()-p:getX(),q:y()-p:getY();local sx,sy=dx-dy,dx+dy
 return getCore():getKey(math.abs(sx)>math.abs(sy) and (sx>0 and "Right" or "Left") or (sy>0 and "Backward" or "Forward"))''')
-    h.lua(f'MEMCNativeLab.holdKey({int(approach)},150);return true')
+    if walk_approach:h.lua(f'MEMCNativeLab.holdKey({int(approach)},150);return true')
     time.sleep(.6)
     key=int(h.lua('return getCore():getKey("Interact")'))
     h.lua(f'MEMCNativeLab.holdKey({key},200);return true')

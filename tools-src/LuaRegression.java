@@ -77,6 +77,11 @@ public final class LuaRegression {
             }
         }
         Path fleet = root.resolve("tools-src/regression/fleet.lua");
+        thread.pcall(LuaCompiler.loadstring("ISUIElement={derive=function() return {} end};"
+            + "Events.OnFillInventoryObjectContextMenu={Add=function() end}", "placement-load-doubles", env), new Object[0]);
+        Object[] placement = thread.pcall(LuaCompiler.loadstring(Files.readString(root.resolve(client + "MELens_Placement.lua"),
+            StandardCharsets.UTF_8), "MELens_Placement.lua", env), new Object[0]);
+        if (!Boolean.TRUE.equals(placement[0])) throw new AssertionError(java.util.Arrays.toString(placement));
         Object[] fleetResult = thread.pcall(LuaCompiler.loadstring(Files.readString(fleet, StandardCharsets.UTF_8),
             fleet.toString(), env), new Object[0]);
         if (!Boolean.TRUE.equals(fleetResult[0])) throw new AssertionError(java.util.Arrays.toString(fleetResult));

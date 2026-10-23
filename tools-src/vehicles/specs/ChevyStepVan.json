@@ -53,8 +53,22 @@
         ]
     },
     "hide": {
-        "85chevyStepVanSpare1": true,
-        "85chevyStepVanSpare2": true,
+        "85chevyStepVanSpare1": {
+            "plane": [
+                0,
+                -1,
+                0,
+                -1.0
+            ]
+        },
+        "85chevyStepVanSpare2": {
+            "plane": [
+                0,
+                -1,
+                0,
+                -1.0
+            ]
+        },
         "85chevyStepVanWindowfl": {
             "plane": [
                 0,
@@ -78,10 +92,19 @@
                 0,
                 -1.0
             ]
+        },
+        "85chevyStepVanInteriorRoof": {
+            "plane": [
+                0,
+                -1,
+                0,
+                -1.0
+            ]
         }
     },
     "clipBody": true,
     "cutFront": -0.09,
+    "aisleX": 0,
     "entry": {
         "span": [
             -0.5,

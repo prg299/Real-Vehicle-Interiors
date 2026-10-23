@@ -19,7 +19,11 @@ The expansion adds 193 vehicle definitions to the 10 already supported: **203 to
 
 Install the vehicle packs you want and enable them before Real Vehicle Interiors. The new packs are optional; they are not bundled or added as mandatory dependencies. The full script-ID list is in [coverage.json](../tools-src/vehicles/coverage.json).
 
-Enter at the rear door using the normal interact key. Interiors begin empty and retain the vehicle's original cargo containers, loot and capacities. Bring RV furniture to furnish them. Smaller vans offer one furnishing wall: a bed or dinette can replace the kitchen arrangement. Wider vehicles have places on both sides. Placement rejects overlapping furniture.
+Enter at the rear door using the normal interact key. Interiors begin empty and retain the vehicle's original cargo containers, loot and capacities. Bring RV furniture to furnish them. Smaller vans fit a bed along one wall and a kitchenette across the front, with a clear aisle beside the bed. Wider vehicles have places on both sides. Placement checks the furniture's actual footprint and rejects genuine overlaps. Where alternative markers overlap, the pointer selects the nearest marker centre.
+
+The F700 box truck also accepts a bed and kitchenette along the same wall after clearing the cargo in their footprints. A bed is 1.5 m wide, a kitchenette 1 m, and a cargo box 0.5 m: adjacent highlights are possible positions, not always separate rooms for two pieces. Remove stacked boxes from above before clearing the boxes below.
+
+Stock vehicles retain their native paint masks while inside, and road wheels keep their original rendering. The F700 box, bank and SWAT trucks preserve their separate cab roofs above the cargo cutaway. Each profile resets the previous vehicle's optional cab-height limit, preventing an armored truck's cutoff from damaging a stock van's cab. Shared clipping rules inventory every variant's factory models, including custom rear chairs, liners and roof accessories, while preserving the cab ahead of the compartment.
 
 These are physical interiors inside the vehicle body, with dimensions measured from the installed model. They do not use separate map rooms. The Arcadia RV Interior coverage list was used to identify candidate vehicles; its scripts, room maps and assets are not included. Livestock/Animals support remains separate on `animals-support`.
 
@@ -35,4 +39,4 @@ The ordinary build uses the checked-in profiles, walk grids and authored shell m
 
 Blender's binary FBX importer handles most models. The vanilla step van uses ASCII FBX; install the `ufbx` Python wheel matching Blender's bundled Python into `.tools/ufbx-blender`, or set `RVI_UFBX_DIR`. This tool dependency and all external vehicle geometry stay outside the shipped mod. New shells reuse the existing F700 wall/floor materials.
 
-Native test evidence and remaining limits are recorded in the feature pull request. Script checks cover every registered variant; interaction and visual checks use body-family representatives. Dedicated-server and human acceptance remain separate checks.
+Native test evidence and remaining limits are recorded in the feature pull request. The audit covers all 203 script variants with keyboard entry, furnished-aisle movement, exit, four interior headings and a closed exterior. The extra headings use fresh vehicle/seat fixtures rather than driving input. Inventory mouse/UI placement, rejection of genuinely overlapping furniture and rest/get-up are checked per added body family, plus the reported F700 box-truck bed/kitchen case. Dedicated-server, split-screen/controllers, every optional cosmetic combination, performance and human acceptance remain separate checks.
