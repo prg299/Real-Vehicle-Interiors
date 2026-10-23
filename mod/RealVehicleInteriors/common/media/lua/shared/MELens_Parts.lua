@@ -754,14 +754,15 @@ local function spotScript(index, spot, profile, withModels)
     -- omitting itemType entirely causes the engine to discard installed furniture on load.
     local installTypes = (" itemType = %s, "):format(spot.empty and P.EMPTY_ITEM or itemTypeList(pieces))
     if withModels then
-        local o = M.modelOffset(spot.x, profile.floorY + (spot.rise or 0), spot.z)
+        local o = M.modelOffset(spot.x, profile.floorY + (spot.rise or 0), spot.z, profile)
+        local modelScale = 0.9 / (profile.vehicleScale or 0.9)
         local rotate = P.WALLS[spot.wall].rotate * P.ROTATE_SIGN
         for _, piece in ipairs(pieces) do
             local file = P.modelFile(piece, spot)
-            table.insert(models, string.format(" model %s { file = %s, offset = %.4f %.4f %.4f, rotate = 0 %d 0, }",
-                piece, file, o[1], o[2], o[3], rotate))
-            table.insert(models, string.format(" model ghost_%s { file = %s_ghost, offset = %.4f %.4f %.4f, rotate = 0 %d 0, }",
-                piece, file, o[1], o[2], o[3], rotate))
+            table.insert(models, string.format(" model %s { file = %s, offset = %.4f %.4f %.4f, rotate = 0 %d 0, scale = %.7f, }",
+                piece, file, o[1], o[2], o[3], rotate, modelScale))
+            table.insert(models, string.format(" model ghost_%s { file = %s_ghost, offset = %.4f %.4f %.4f, rotate = 0 %d 0, scale = %.7f, }",
+                piece, file, o[1], o[2], o[3], rotate, modelScale))
         end
     end
     return string.format("{ part %s%d { category = nodisplay, area = %s,%smechanicRequireKey = false, setAllModelsVisible = false,"
@@ -781,11 +782,12 @@ function P.extendScript(script, profile)
     local area = profile.standing.area
     local java = MELensRV ~= nil
     if profile.shell then
-        local o = M.modelOffset(0, 0, 0)
+        local o = M.modelOffset(0, 0, 0, profile)
+        local modelScale = 0.9 / (profile.vehicleScale or 0.9)
         local models = {}
         for i, model in ipairs(java and profile.shell.models or {}) do
-            table.insert(models, string.format(" model MELensShell%d { file = %s, offset = %.4f %.4f %.4f, rotate = 0 0 0, }",
-                i, model, o[1], o[2], o[3]))
+            table.insert(models, string.format(" model MELensShell%d { file = %s, offset = %.4f %.4f %.4f, rotate = 0 0 0, scale = %.7f, }",
+                i, model, o[1], o[2], o[3], modelScale))
         end
         script:Load(script:getName(), string.format(
             "{ part %s { category = nodisplay, area = %s,%s lua { create = MELens.Parts.initShell, init = MELens.Parts.initShell, } } }",

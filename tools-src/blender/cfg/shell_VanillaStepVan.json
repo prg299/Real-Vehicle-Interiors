@@ -1,0 +1,88 @@
+{
+    "measure": "build/rv/floorplans/measure_VanillaStepVan_box.json",
+    "object": "shell_fleet_vanillastepvan",
+    "floorY": -0.568,
+    "top": 0.77,
+    "refHeight": -0.13,
+    "lowestOutline": -0.33,
+    "segments": 72,
+    "inset": 0.03,
+    "wall": "wall_panel",
+    "floor": "floor_planks",
+    "openings": [
+        {
+            "x": [
+                -0.5,
+                0.5
+            ],
+            "y": [
+                -0.588,
+                0.73
+            ],
+            "z": [
+                -2.25,
+                -1.87
+            ]
+        }
+    ],
+    "grid": {
+        "name": "MELens.VanillaStepVan.shell",
+        "file": "VanillaStepVan_Shell",
+        "cell": 0.025,
+        "xRange": [
+            -0.83,
+            0.83
+        ],
+        "zRange": [
+            -2.0,
+            0.2
+        ],
+        "radius": 0.15,
+        "headroom": 1.05,
+        "floorTolerance": 0.04
+    },
+    "texture": "fleet_vanillastepvan",
+    "seed": 11,
+    "style": {
+        "flat": false,
+        "floorArt": "floor_planks",
+        "floorTile": 1.0,
+        "floorTint": [
+            0.29,
+            0.23,
+            0.18
+        ],
+        "wallArt": "steel",
+        "wallTile": 1.0,
+        "wallTint": [
+            0.55,
+            0.57,
+            0.59
+        ],
+        "panelWidth": 0.5,
+        "baseboard": 0.0,
+        "wallSize": [
+            2048,
+            256
+        ],
+        "floorSize": [
+            512,
+            2048
+        ]
+    },
+    "wheelWells": [],
+    "panel": {
+        "x": 0.746,
+        "depth": 0.02,
+        "y": [
+            -0.328,
+            -0.218
+        ],
+        "z": [
+            -1.81,
+            -1.67
+        ]
+    },
+    "reuseTexture": "f700box",
+    "sharpCorners": true
+}

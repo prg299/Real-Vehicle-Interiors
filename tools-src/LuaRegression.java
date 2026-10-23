@@ -66,6 +66,20 @@ public final class LuaRegression {
                 throw new AssertionError(name + ": " + java.util.Arrays.toString(result));
             }
         }
+        // Load every generated family/grid, including optional vehicle mods that
+        // are absent from these engine doubles, before checking shared contracts.
+        try (var files = Files.list(root.resolve(shared))) {
+            for (Path source : files.filter(p -> p.getFileName().toString().startsWith("MELens_Profile_")
+                    || p.getFileName().toString().startsWith("MELens_WalkGrid_")).sorted().toList()) {
+                Object[] result = thread.pcall(LuaCompiler.loadstring(Files.readString(source, StandardCharsets.UTF_8),
+                    source.toString(), env), new Object[0]);
+                if (!Boolean.TRUE.equals(result[0])) throw new AssertionError(java.util.Arrays.toString(result));
+            }
+        }
+        Path fleet = root.resolve("tools-src/regression/fleet.lua");
+        Object[] fleetResult = thread.pcall(LuaCompiler.loadstring(Files.readString(fleet, StandardCharsets.UTF_8),
+            fleet.toString(), env), new Object[0]);
+        if (!Boolean.TRUE.equals(fleetResult[0])) throw new AssertionError(java.util.Arrays.toString(fleetResult));
         System.out.println("ME_LENS regression assertions=" + env.rawget("assertions")
             + " productionLua=true engineDoubles=true nativeInput=false");
     }

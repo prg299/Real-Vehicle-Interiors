@@ -178,10 +178,10 @@ public final class Cutaway {
             float[] ring = RV.roomRing;
             program.setVector4("MELensRoom", room ? ring.length / 2 : 0f, RV.roomFloorDot, RV.roomMin, RV.roomMax);
             // (the camper's body only: its tank, tyres and hitch stand in some windows' boxes)
-            int windows = isCut && !furniture && isBody(inst) ? RV.windowCount : 0;
+            int windows = isCut && !furniture && isBody(slot, inst) ? RV.windowCount : 0;
             program.setVector4("MELensRoomCut", RV.roomNormal, RV.roomDebug ? 1f : 0f, windows, RV.windowDark);
             // (the camper's body only: the dark jambs of its doors are painted like the room)
-            int jambs = isCut && !furniture && RV.doorPaintEnabled && isBody(inst) ? RV.jambCount : 0;
+            int jambs = isCut && !furniture && RV.doorPaintEnabled && isBody(slot, inst) ? RV.jambCount : 0;
             program.setVector4("MELensJambCount", jambs, 0f, 0f, 0f);
             if (jambs > 0) {
                 int location = jambLocation(program);
@@ -493,9 +493,9 @@ public final class Cutaway {
                 id -> GL20.glGetUniformLocation(id, "MELensJamb[0]"));
     }
 
-    /** The camper's body: KI5 names its FBX object "..._body". */
-    private static boolean isBody(ModelInstanceRenderData inst) {
-        return meshName(inst).toLowerCase(java.util.Locale.ROOT).endsWith("_body");
+    /** The actual vehicle body, including stock meshes and named KI5 body variants. */
+    private static boolean isBody(ModelSlotRenderData slot, ModelInstanceRenderData inst) {
+        return slot.modelSlot != null && slot.modelSlot.model == inst.modelInstance;
     }
 
     /** A door leaf: KI5 names its FBX object "..._door_..." (a truck's rear door "..._trunkDoor"). */

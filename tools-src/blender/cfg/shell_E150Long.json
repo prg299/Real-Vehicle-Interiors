@@ -1,0 +1,113 @@
+{
+    "measure": "build/rv/floorplans/measure_E150Long_box.json",
+    "object": "shell_fleet_e150long",
+    "floorY": -0.058,
+    "top": 0.97,
+    "refHeight": 0.38,
+    "lowestOutline": 0.18,
+    "segments": 72,
+    "inset": 0.03,
+    "wall": "wall_panel",
+    "floor": "floor_planks",
+    "openings": [
+        {
+            "x": [
+                -0.5,
+                0.5
+            ],
+            "y": [
+                -0.078,
+                0.93
+            ],
+            "z": [
+                -2.578,
+                -2.198
+            ]
+        }
+    ],
+    "grid": {
+        "name": "MELens.E150Long.shell",
+        "file": "E150Long_Shell",
+        "cell": 0.025,
+        "xRange": [
+            -0.78,
+            0.78
+        ],
+        "zRange": [
+            -2.33,
+            0.29
+        ],
+        "radius": 0.15,
+        "headroom": 0.93,
+        "floorTolerance": 0.04
+    },
+    "texture": "fleet_e150long",
+    "seed": 11,
+    "style": {
+        "flat": false,
+        "floorArt": "floor_planks",
+        "floorTile": 1.0,
+        "floorTint": [
+            0.29,
+            0.23,
+            0.18
+        ],
+        "wallArt": "steel",
+        "wallTile": 1.0,
+        "wallTint": [
+            0.55,
+            0.57,
+            0.59
+        ],
+        "panelWidth": 0.5,
+        "baseboard": 0.0,
+        "wallSize": [
+            2048,
+            256
+        ],
+        "floorSize": [
+            512,
+            2048
+        ]
+    },
+    "wheelWells": [
+        {
+            "x": [
+                0.6,
+                0.747
+            ],
+            "z": [
+                -1.71,
+                -0.97
+            ],
+            "top": 0.102,
+            "bottom": -0.218
+        },
+        {
+            "x": [
+                -0.6,
+                -0.747
+            ],
+            "z": [
+                -1.71,
+                -0.97
+            ],
+            "top": 0.102,
+            "bottom": -0.218
+        }
+    ],
+    "panel": {
+        "x": 0.697,
+        "depth": 0.02,
+        "y": [
+            0.182,
+            0.292
+        ],
+        "z": [
+            -2.138,
+            -1.998
+        ]
+    },
+    "reuseTexture": "f700box",
+    "sharpCorners": true
+}

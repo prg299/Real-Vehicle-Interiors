@@ -4,6 +4,8 @@ Walk around inside KI5 campers, B700 buses and F700 box trucks in **Project Zomb
 
 **Current release: 2.0.12 (beta).** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541) · [Animals WIP branch](https://github.com/prg299/Real-Vehicle-Interiors/tree/animals-support)
 
+This branch adds **193 vehicle definitions across 12 body families**, including vanilla vans, step vans, E150s, Chevy step vans and additional armored trucks and ambulances. See [supported vehicles](docs/vehicles.md) for optional vehicle mods and fit details.
+
 ## Requirements
 
 Enable these dependencies before `RealVehicleInteriors`:

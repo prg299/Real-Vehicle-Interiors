@@ -1,0 +1,188 @@
+{
+    "key": "ChevyStepVan",
+    "vehicles": [
+        "Base.85chevyStepVan",
+        "Base.85chevyStepVanBlacksmith",
+        "Base.85chevyStepVanButchers",
+        "Base.85chevyStepVanCitrusWave",
+        "Base.85chevyStepVanDelirosPlonkies",
+        "Base.85chevyStepVanFlorist",
+        "Base.85chevyStepVanGenuine",
+        "Base.85chevyStepVanHerald",
+        "Base.85chevyStepVanJorgensen",
+        "Base.85chevyStepVanLibrary",
+        "Base.85chevyStepVanLvAirportCatering",
+        "Base.85chevyStepVanLvMotorshop",
+        "Base.85chevyStepVanMarineBites",
+        "Base.85chevyStepVanMasonry",
+        "Base.85chevyStepVanMrHuangsLaundry",
+        "Base.85chevyStepVanPostal",
+        "Base.85chevyStepVanPropane",
+        "Base.85chevyStepVanRandys",
+        "Base.85chevyStepVanSWAT",
+        "Base.85chevyStepVanScarletOak",
+        "Base.85chevyStepVanSeHospitality",
+        "Base.85chevyStepVanSePaintingServices",
+        "Base.85chevyStepVanSmartCut",
+        "Base.85chevyStepVanSunBallz",
+        "Base.85chevyStepVanTheCompleteRepair",
+        "Base.85chevyStepVanTimelessGlass",
+        "Base.85chevyStepVanUsLogistics",
+        "Base.85chevyStepVanZippeeMarket"
+    ],
+    "title": "Chevrolet step van",
+    "kind": "cargo",
+    "measure": "measure_ChevyStepVan.json",
+    "scripts": [
+        "fleet_ChevyStepVan.json",
+        "85chevyStepVan"
+    ],
+    "texture": "fleet_chevystepvan",
+    "reuseTexture": "f700box",
+    "mesh": {
+        "scale": 0.09000000000000001,
+        "lift": 0.6660000337604417
+    },
+    "floorY": 0.312,
+    "ceiling": 1.82,
+    "box": {
+        "x": 0.878,
+        "z": [
+            -2.648,
+            -0.09
+        ]
+    },
+    "hide": {
+        "85chevyStepVanSpare1": true,
+        "85chevyStepVanSpare2": true,
+        "85chevyStepVanWindowfl": {
+            "plane": [
+                0,
+                -1,
+                0,
+                -1.0
+            ]
+        },
+        "85chevyStepVanWindowfr": {
+            "plane": [
+                0,
+                -1,
+                0,
+                -1.0
+            ]
+        },
+        "85chevyStepVanInterior": {
+            "plane": [
+                0,
+                -1,
+                0,
+                -1.0
+            ]
+        }
+    },
+    "clipBody": true,
+    "cutFront": -0.09,
+    "entry": {
+        "span": [
+            -0.5,
+            0.5
+        ],
+        "wall": "back",
+        "part": "TrunkDoor",
+        "area": "TruckBed",
+        "panelWall": "left"
+    },
+    "entryOpening": {
+        "x": [
+            -0.5,
+            0.5
+        ],
+        "y": [
+            0.292,
+            1.78
+        ],
+        "z": [
+            -2.948,
+            -2.568
+        ]
+    },
+    "windowBoxes": [
+        {
+            "x": [
+                -0.863,
+                0.863
+            ],
+            "y": [
+                0.33,
+                1.84
+            ],
+            "z": [
+                -2.598,
+                -0.12
+            ]
+        }
+    ],
+    "openings": [],
+    "extraSeats": [
+        "MELensFurnitureLeft1",
+        "MELensFurnitureLeft2",
+        "MELensFurnitureRight1",
+        "MELensFurnitureRight2"
+    ],
+    "wheelWells": [
+        {
+            "z": -1.37,
+            "inner": 0.47,
+            "halfLength": 0.42,
+            "top": 0.452
+        }
+    ],
+    "vanillaSeats": [
+        "FrontLeft",
+        "FrontRight"
+    ],
+    "waterTank": 40,
+    "fuelTank": 20,
+    "spots": [
+        {
+            "wall": "left",
+            "at": -0.96,
+            "length": 1.5,
+            "depth": 0.55,
+            "default": "bed",
+            "empty": true,
+            "seats": [
+                "MELensFurnitureLeft1",
+                "MELensFurnitureLeft2"
+            ]
+        },
+        {
+            "wall": "right",
+            "at": -0.96,
+            "length": 1.5,
+            "depth": 0.55,
+            "default": "dinette",
+            "empty": true,
+            "seats": [
+                "MELensFurnitureRight1",
+                "MELensFurnitureRight2"
+            ]
+        },
+        {
+            "wall": "right",
+            "at": -0.68,
+            "length": 1.0,
+            "depth": 0.55,
+            "default": "kitchen",
+            "empty": true
+        },
+        {
+            "wall": "right",
+            "at": -1.898,
+            "length": 0.52,
+            "depth": 0.52,
+            "default": "fridge",
+            "empty": true
+        }
+    ]
+}

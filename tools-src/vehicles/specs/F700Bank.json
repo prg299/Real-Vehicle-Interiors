@@ -1,0 +1,199 @@
+{
+    "key": "F700Bank",
+    "vehicles": [
+        "Base.87fordF700bank"
+    ],
+    "title": "F700 armored bank truck",
+    "kind": "cargo",
+    "measure": "measure_F700Bank.json",
+    "scripts": [
+        "fleet_F700Bank.json",
+        "87fordF700bank"
+    ],
+    "texture": "fleet_f700bank",
+    "reuseTexture": "f700box",
+    "mesh": {
+        "scale": 0.09000000000000001,
+        "lift": 0.6660000337604417
+    },
+    "floorY": -0.228,
+    "ceiling": 1.03,
+    "box": {
+        "x": 0.855,
+        "z": [
+            -1.505,
+            1.0
+        ]
+    },
+    "hide": {
+        "87fordF700WindowflB": {
+            "plane": [
+                0,
+                -1,
+                0,
+                11.1111
+            ]
+        },
+        "87fordF700WindowfrB": {
+            "plane": [
+                0,
+                -1,
+                0,
+                11.1111
+            ]
+        },
+        "87fordF700WindowmlB": {
+            "plane": [
+                0,
+                -1,
+                0,
+                11.1111
+            ]
+        },
+        "87fordF700WindowmrB": {
+            "plane": [
+                0,
+                -1,
+                0,
+                11.1111
+            ]
+        },
+        "87fordF700WindowrlB": {
+            "plane": [
+                0,
+                -1,
+                0,
+                11.1111
+            ]
+        },
+        "87fordF700WindowrrB": {
+            "plane": [
+                0,
+                -1,
+                0,
+                11.1111
+            ]
+        },
+        "87fordF700bankInterior": {
+            "plane": [
+                0,
+                -1,
+                0,
+                11.1111
+            ]
+        },
+        "87fordB700Engine": {
+            "plane": [
+                0,
+                -1,
+                0,
+                11.1111
+            ]
+        }
+    },
+    "clipBody": true,
+    "cutFront": 1.0,
+    "entry": {
+        "span": [
+            -0.5,
+            0.5
+        ],
+        "wall": "back",
+        "part": "TrunkDoor",
+        "area": "TruckBed",
+        "panelWall": "left"
+    },
+    "entryOpening": {
+        "x": [
+            -0.5,
+            0.5
+        ],
+        "y": [
+            -0.248,
+            0.99
+        ],
+        "z": [
+            -1.805,
+            -1.425
+        ]
+    },
+    "windowBoxes": [
+        {
+            "x": [
+                -0.84,
+                0.84
+            ],
+            "y": [
+                -0.21,
+                1.05
+            ],
+            "z": [
+                -1.455,
+                0.97
+            ]
+        }
+    ],
+    "openings": [],
+    "extraSeats": [
+        "MELensFurnitureLeft1",
+        "MELensFurnitureLeft2",
+        "MELensFurnitureRight1",
+        "MELensFurnitureRight2"
+    ],
+    "wheelWells": [
+        {
+            "z": -0.64,
+            "inner": 0.46,
+            "halfLength": 0.52,
+            "top": -0.078
+        }
+    ],
+    "vanillaSeats": [
+        "FrontLeft",
+        "FrontRight"
+    ],
+    "waterTank": 40,
+    "fuelTank": 20,
+    "spots": [
+        {
+            "wall": "left",
+            "at": 0.13,
+            "length": 1.5,
+            "depth": 0.55,
+            "default": "bed",
+            "empty": true,
+            "seats": [
+                "MELensFurnitureLeft1",
+                "MELensFurnitureLeft2"
+            ]
+        },
+        {
+            "wall": "right",
+            "at": 0.13,
+            "length": 1.5,
+            "depth": 0.55,
+            "default": "dinette",
+            "empty": true,
+            "seats": [
+                "MELensFurnitureRight1",
+                "MELensFurnitureRight2"
+            ]
+        },
+        {
+            "wall": "right",
+            "at": 0.41,
+            "length": 1.0,
+            "depth": 0.55,
+            "default": "kitchen",
+            "empty": true
+        },
+        {
+            "wall": "right",
+            "at": -0.755,
+            "length": 0.52,
+            "depth": 0.52,
+            "default": "fridge",
+            "empty": true
+        }
+    ]
+}

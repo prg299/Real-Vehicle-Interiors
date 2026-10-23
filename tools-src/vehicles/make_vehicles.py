@@ -378,6 +378,7 @@ def build(spec_path):
     scripts = load(os.path.join(FLOORPLANS, spec["scripts"][0]))
     info = scripts[spec["scripts"][1]]
     scale = info["model"]["scale"]
+    mesh = spec.get("mesh", {"scale": MESH_SCALE, "lift": LIFT})
     floor = spec.get("floorY", measure["floor"])
     ceiling = spec.get("ceiling", measure["ceiling"])
     measure_file = spec["measure"]
@@ -558,13 +559,17 @@ def build(spec_path):
     openings.extend(spec.get("extraOpenings", []))
     window_boxes.extend(spec.get("windowBoxes", []))
     wells = []
+    if spec.get("entryOpening"):
+        openings.append(spec["entryOpening"])
+        window_boxes.append(spec["entryOpening"])
     for w in spec.get("wheelWells", []):
         wz = w["z"]
+        half_length = w.get("halfLength", WELL_HALF)
         for side in (1, -1):
-            outer = wall_line(ring, "left" if side > 0 else "right", wz - WELL_HALF, wz + WELL_HALF) + side * INSET
+            outer = wall_line(ring, "left" if side > 0 else "right", wz - half_length, wz + half_length) + side * INSET
             inner = side * w["inner"]
-            wells.append({"x": [r(inner), r(outer + side * 0.02)], "z": [r(wz - WELL_HALF), r(wz + WELL_HALF)],
-                          "top": r(floor + WELL_TOP), "bottom": r(floor - 0.16)})
+            wells.append({"x": [r(inner), r(outer + side * 0.02)], "z": [r(wz - half_length), r(wz + half_length)],
+                          "top": r(w.get("top", floor + WELL_TOP)), "bottom": r(floor - 0.16)})
     xs = [p[0] for p in ring]
     zs = [p[1] for p in ring]
     shell_cfg = {
@@ -588,6 +593,8 @@ def build(spec_path):
         "wheelWells": [{"x": w["x"], "z": w["z"], "top": w["top"], "bottom": w["bottom"]} for w in wells],
         "panel": {"x": panel["x"], "depth": 0.02, "y": panel["y"], "z": panel["z"]},
     }
+    if spec.get("reuseTexture"):
+        shell_cfg["reuseTexture"] = spec["reuseTexture"]
     if spec.get("box"):
         # a rectangular room (a box truck's cargo space, a bus): the shell keeps its corners
         shell_cfg["sharpCorners"] = True
@@ -633,7 +640,7 @@ def build(spec_path):
         "kind": spec.get("kind", "camper"),
         "seatId": "MELensCabin",
         "floorY": floor,
-        "mesh": {"scale": MESH_SCALE, "lift": LIFT},
+        "mesh": mesh,
         "shell": {"models": shell_models},
         "hideKI5": hide,
         "light": {
@@ -664,7 +671,11 @@ def build(spec_path):
         "waterTank": spec.get("waterTank", 60),
         "fuelTank": spec.get("fuelTank", 20),
     }
-    for extra in ("vanillaSeats", "ki5Storage", "loot", "driver", "cutFront", "cutFrontTop"):
+    if "mesh" in spec:
+        profile["cutPlanes"] = [[0, 0, -1, r(mesh["lift"] - (h + floor) / mesh["scale"], 2)] for h in CUT_HEIGHTS]
+    if abs(scale - 0.9) > 0.00001:
+        profile["vehicleScale"] = scale
+    for extra in ("vanillaSeats", "ki5Storage", "loot", "driver", "cutFront", "cutFrontTop", "modelShift"):
         if extra in spec:
             profile[extra] = spec[extra]
     # KI5's body carries details inside its hull (a trailer tongue's arm tips at the front corners)

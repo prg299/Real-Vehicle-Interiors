@@ -174,8 +174,10 @@ end
 -- (px, py, pz). Checked in game with a calibration box: a part offset moves a model by
 -- 0.9 x offset, and KI5's campers carry a 0.06 tile shift in height and length.
 --
-function MELens.modelOffset(px, py, pz)
-    return { px / 0.9, (py - 0.06) / 0.9, (pz + 0.06) / 0.9 }
+function MELens.modelOffset(px, py, pz, profile)
+    local scale = profile and profile.vehicleScale or 0.9
+    local shift = profile and profile.modelShift or { 0, -0.06, 0.06 }
+    return { (px + shift[1]) / scale, (py + shift[2]) / scale, (pz + shift[3]) / scale }
 end
 
 --

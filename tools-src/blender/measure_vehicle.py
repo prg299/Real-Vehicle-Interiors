@@ -15,6 +15,7 @@
 # KI5's meshes are only measured here; ME: LENS models its own geometry from these numbers.
 import json
 import math
+from pathlib import Path
 import sys
 from collections import Counter
 
@@ -27,8 +28,22 @@ with open(args[0], "r", encoding="utf-8-sig") as handle:
     cfg = json.load(handle)
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
-bpy.ops.import_scene.fbx(filepath=cfg["fbx"])
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from load_vehicle_fbx import load as load_vehicle_fbx
+load_vehicle_fbx(cfg["fbx"])
 m = cfg.get("map", {"sx": -90, "sy": 90, "sz": 90})
+if "modelScale" in cfg:
+    body_obj = bpy.data.objects.get(cfg["body"])
+    if body_obj is None:
+        meshes = [o for o in bpy.data.objects if o.type == "MESH"]
+        assert len(meshes) == 1, (cfg["name"], cfg["body"], [o.name for o in meshes])
+        body_obj = meshes[0]
+        cfg["body"] = body_obj.name
+    size = body_obj.matrix_world.to_scale()
+    assert max(size) - min(size) < 1e-5, "Non-uniform body import scale needs a dedicated mapping"
+    factor = cfg["modelScale"] / size.z
+    m = {"sx": -factor, "sy": factor, "sz": factor}
+    cfg["mesh"] = {"scale": cfg["modelScale"], "lift": body_obj.matrix_world.to_translation().z / size.z}
 depsgraph = bpy.context.evaluated_depsgraph_get()
 
 
@@ -67,29 +82,34 @@ def bounds(name):
     return {"min": [round(v, 4) for v in lo], "max": [round(v, 4) for v in hi]}
 
 
+def slice_segments(name, py):
+    """Keep exact cross-section segments so embedded seats cannot shrink the body envelope."""
+    verts, _, polys = world_mesh(name)
+    pv = [to_passenger(v) for v in verts]
+    segments = []
+    for poly in polys:
+        cuts = []
+        for i in range(len(poly)):
+            pa, pb = pv[poly[i]], pv[poly[(i + 1) % len(poly)]]
+            if (pa[1] - py) * (pb[1] - py) > 0 or pa[1] == pb[1]:
+                continue
+            t = (py - pa[1]) / (pb[1] - pa[1])
+            cuts.append((pa[0] + (pb[0] - pa[0]) * t, pa[2] + (pb[2] - pa[2]) * t))
+        segments.extend([cuts[i], cuts[i + 1]] for i in range(0, len(cuts) - 1, 2))
+    return segments
+
+
 def slice_outline(name, py, samples=144, step=0.02):
     """Outline of the mesh at height py: for each direction from the centre, the
     closest point of the mesh's cross-section (the inside surface of the shell). Each
     face crossing the height is cut into a segment, sampled every `step` tiles, so a
     low-poly body still gives a point in every direction."""
-    verts, _, polys = world_mesh(name)
-    pv = [to_passenger(v) for v in verts]
     pts = []
-    for poly in polys:
-        cuts = []
-        n = len(poly)
-        for i in range(n):
-            pa, pb = pv[poly[i]], pv[poly[(i + 1) % n]]
-            if (pa[1] - py) * (pb[1] - py) > 0 or pa[1] == pb[1]:
-                continue
-            t = (py - pa[1]) / (pb[1] - pa[1])
-            cuts.append((pa[0] + (pb[0] - pa[0]) * t, pa[2] + (pb[2] - pa[2]) * t))
-        for i in range(0, len(cuts) - 1, 2):
-            (x0, z0), (x1, z1) = cuts[i], cuts[i + 1]
-            count = max(1, int(math.hypot(x1 - x0, z1 - z0) / step))
-            for k in range(count + 1):
-                t = k / count
-                pts.append((x0 + (x1 - x0) * t, z0 + (z1 - z0) * t))
+    for (x0, z0), (x1, z1) in slice_segments(name, py):
+        count = max(1, int(math.hypot(x1 - x0, z1 - z0) / step))
+        for k in range(count + 1):
+            t = k / count
+            pts.append((x0 + (x1 - x0) * t, z0 + (z1 - z0) * t))
     if not pts:
         return []
     cx = sum(p[0] for p in pts) / len(pts)
@@ -112,8 +132,10 @@ inside = tree(cfg.get("interior", []) + [body])
 lo, hi = body_bounds["min"], body_bounds["max"]
 mid = (lo[1] + hi[1]) / 2
 floors, ceilings = [], []
+sample_lo = max(lo[2], cfg["sampleZ"][0]) if "sampleZ" in cfg else lo[2]
+sample_hi = min(hi[2], cfg["sampleZ"][1]) if "sampleZ" in cfg else hi[2]
 for i in range(81):
-    z = lo[2] + (hi[2] - lo[2]) * (0.05 + 0.9 * i / 80)
+    z = sample_lo + (sample_hi - sample_lo) * (0.05 + 0.9 * i / 80)
     for x in (-0.15, 0.0, 0.15):
         origin = to_blender(x, mid, z)
         down = inside.ray_cast(origin, Vector((0, 0, -1))) if inside else (None,)
@@ -131,9 +153,15 @@ if "floor" in cfg:
 result = {"name": cfg["name"], "floor": floor, "ceiling": ceiling, "body": body_bounds,
           "floorCounts": Counter(floors).most_common(6), "ceilingCounts": Counter(ceilings).most_common(6),
           "outlines": {}, "parts": {}}
+if "mesh" in cfg:
+    result["mesh"] = cfg["mesh"]
+if cfg.get("fitEnvelope"):
+    result["sections"] = {}
 h = floor - 0.1
 while h <= ceiling + 0.05:
     result["outlines"]["%.2f" % h] = slice_outline(body, h)
+    if cfg.get("fitEnvelope"):
+        result["sections"]["%.2f" % h] = slice_segments(body, h)
     h = round(h + 0.1, 4)
 prefixes = cfg.get("prefix", [])
 for obj in bpy.data.objects:

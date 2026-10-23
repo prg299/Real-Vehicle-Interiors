@@ -36,7 +36,9 @@ args = sys.argv[sys.argv.index("--") + 1:]
 SHELLS_ONLY = "--shells-only" in args
 # --no-cache: bake every piece again, also those whose cached texture still matches (bake_piece)
 NO_CACHE = "--no-cache" in args
-args = [a for a in args if a not in ("--shells-only", "--no-cache")]
+SHELL_FILE = next((a.split("=", 1)[1] for a in args if a.startswith("--shell-file=")), "MELens_Shells")
+assert SHELL_FILE.replace("_", "").isalnum(), "Shell output must be a filename without a path"
+args = [a for a in args if a not in ("--shells-only", "--no-cache") and not a.startswith("--shell-file=")]
 # Absolute: Blender saves images relative to the .blend file, not the working folder, so
 # a relative media path left the baked textures unwritten (the FBX export was fine).
 MEDIA = os.path.abspath(args[0])
@@ -943,8 +945,9 @@ def build_shell(measure, spec, tex_dir):
             walls.poly([P(r0[i][0], h0, r0[i][1]), P(r1[i][0], h1, r1[i][1]),
                         P(r1[j][0], h1, r1[j][1]), P(r0[j][0], h0, r0[j][1])],
                        [(u0, v0), (u0, v1), (u1, v1), (u1, v0)], inward)
-    wall_texture(os.path.join(tex_dir, "Vehicles", "MELensShell_%s_walls.png" % spec["texture"]),
-                 perimeter, top - floor_y, rng, style)
+    if not spec.get("reuseTexture"):
+        wall_texture(os.path.join(tex_dir, "Vehicles", "MELensShell_%s_walls.png" % spec["texture"]),
+                     perimeter, top - floor_y, rng, style)
 
     # Wheel wells. The skin is open around the wheels (the arches), and the tyres reach
     # above the floor, so the floor stops at each well's inner side and a sheet-metal box
@@ -1034,8 +1037,9 @@ def build_shell(measure, spec, tex_dir):
         if abs((bx - ax) * (qz - az) - (qx - ax) * (bz - az)) < 1e-9:
             continue   # collinear outline points
         floor.poly([P(x, floor_y, z) for x, z in pts], [fuv(x, z) for x, z in pts], Vector((0, 0, 1)))
-    floor_texture(os.path.join(tex_dir, "Vehicles", "MELensShell_%s_floor.png" % spec["texture"]),
-                  bounds, floor_poly, rng, style)
+    if not spec.get("reuseTexture"):
+        floor_texture(os.path.join(tex_dir, "Vehicles", "MELensShell_%s_floor.png" % spec["texture"]),
+                      bounds, floor_poly, rng, style)
     return [floor.finish(), walls.finish()]
 
 
@@ -1740,7 +1744,7 @@ def main():
     tex_dir = os.path.join(MEDIA, "textures")
     os.makedirs(os.path.join(tex_dir, "Vehicles"), exist_ok=True)
     os.makedirs(os.path.join(MEDIA, "models_X", "vehicles"), exist_ok=True)
-    palette = build_palette(os.path.join(tex_dir, "Vehicles", "MELens_RV.png"))
+    palette = None if SHELLS_ONLY else build_palette(os.path.join(tex_dir, "Vehicles", "MELens_RV.png"))
 
     furniture = []
     textures = {}
@@ -1786,7 +1790,7 @@ def main():
         decal.poly([Vector((-0.5, -0.5, 0.0)), Vector((0.5, -0.5, 0.0)), Vector((0.5, 0.5, 0.0)), Vector((-0.5, 0.5, 0.0))],
                    [(0, 1), (1, 1), (1, 0), (0, 0)], Vector((0.0, 0.0, 1.0)))
         shells.append(decal.finish())
-        export(shells, os.path.join(MEDIA, "models_X", "vehicles", "MELens_Shells.fbx"))
+        export(shells, os.path.join(MEDIA, "models_X", "vehicles", SHELL_FILE + ".fbx"))
 
     # Inventory icons come from the painted art (tools-src/art/icons.py); a render of the
     # model only stands in for a piece that has none yet.

@@ -1,0 +1,113 @@
+{
+    "measure": "build/rv/floorplans/measure_F350Ambulance_box.json",
+    "object": "shell_fleet_f350ambulance",
+    "floorY": -0.088,
+    "top": 1.29,
+    "refHeight": 0.35,
+    "lowestOutline": 0.15,
+    "segments": 72,
+    "inset": 0.03,
+    "wall": "wall_panel",
+    "floor": "floor_planks",
+    "openings": [
+        {
+            "x": [
+                -0.5,
+                0.5
+            ],
+            "y": [
+                -0.108,
+                1.25
+            ],
+            "z": [
+                -4.156,
+                -3.776
+            ]
+        }
+    ],
+    "grid": {
+        "name": "MELens.F350Ambulance.shell",
+        "file": "F350Ambulance_Shell",
+        "cell": 0.025,
+        "xRange": [
+            -1.03,
+            1.03
+        ],
+        "zRange": [
+            -3.91,
+            -0.32
+        ],
+        "radius": 0.15,
+        "headroom": 1.05,
+        "floorTolerance": 0.04
+    },
+    "texture": "fleet_f350ambulance",
+    "seed": 11,
+    "style": {
+        "flat": false,
+        "floorArt": "floor_planks",
+        "floorTile": 1.0,
+        "floorTint": [
+            0.29,
+            0.23,
+            0.18
+        ],
+        "wallArt": "steel",
+        "wallTile": 1.0,
+        "wallTint": [
+            0.55,
+            0.57,
+            0.59
+        ],
+        "panelWidth": 0.5,
+        "baseboard": 0.0,
+        "wallSize": [
+            2048,
+            256
+        ],
+        "floorSize": [
+            512,
+            2048
+        ]
+    },
+    "wheelWells": [
+        {
+            "x": [
+                0.53,
+                1.0
+            ],
+            "z": [
+                -2.73,
+                -1.89
+            ],
+            "top": 0.062,
+            "bottom": -0.248
+        },
+        {
+            "x": [
+                -0.53,
+                -1.0
+            ],
+            "z": [
+                -2.73,
+                -1.89
+            ],
+            "top": 0.062,
+            "bottom": -0.248
+        }
+    ],
+    "panel": {
+        "x": 0.95,
+        "depth": 0.02,
+        "y": [
+            0.152,
+            0.262
+        ],
+        "z": [
+            -3.716,
+            -3.576
+        ]
+    },
+    "reuseTexture": "f700box",
+    "sharpCorners": true
+}

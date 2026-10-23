@@ -1,0 +1,160 @@
+{
+    "key": "VanillaStepVan",
+    "vehicles": [
+        "Base.StepVan",
+        "Base.StepVanAirportCatering",
+        "Base.StepVanMail",
+        "Base.StepVan_Blacksmith",
+        "Base.StepVan_Butchers",
+        "Base.StepVan_Cereal",
+        "Base.StepVan_Citr8",
+        "Base.StepVan_CompleteRepairShop",
+        "Base.StepVan_Florist",
+        "Base.StepVan_Genuine_Beer",
+        "Base.StepVan_Glass",
+        "Base.StepVan_Heralds",
+        "Base.StepVan_HuangsLaundry",
+        "Base.StepVan_Jorgensen",
+        "Base.StepVan_LouisvilleMotorShop",
+        "Base.StepVan_LouisvilleSWAT",
+        "Base.StepVan_MarineBites",
+        "Base.StepVan_Masonry",
+        "Base.StepVan_Mechanic",
+        "Base.StepVan_MobileLibrary",
+        "Base.StepVan_Plonkies",
+        "Base.StepVan_Propane",
+        "Base.StepVan_RandisPlants",
+        "Base.StepVan_Scarlet",
+        "Base.StepVan_SmartKut",
+        "Base.StepVan_SouthEasternHosp",
+        "Base.StepVan_SouthEasternPaint",
+        "Base.StepVan_USL",
+        "Base.StepVan_Zippee"
+    ],
+    "title": "Chevalier step van",
+    "kind": "cargo",
+    "measure": "measure_VanillaStepVan.json",
+    "scripts": [
+        "fleet_VanillaStepVan.json",
+        "StepVan"
+    ],
+    "texture": "fleet_vanillastepvan",
+    "reuseTexture": "f700box",
+    "mesh": {
+        "scale": 0.01456,
+        "lift": 0.0
+    },
+    "floorY": -0.568,
+    "ceiling": 0.77,
+    "box": {
+        "x": 0.776,
+        "z": [
+            -1.95,
+            0.15
+        ]
+    },
+    "hide": {},
+    "clipBody": true,
+    "cutFront": 0.15,
+    "entry": {
+        "span": [
+            -0.5,
+            0.5
+        ],
+        "wall": "back",
+        "part": "DoorRear",
+        "area": "TruckBed",
+        "panelWall": "left"
+    },
+    "entryOpening": {
+        "x": [
+            -0.5,
+            0.5
+        ],
+        "y": [
+            -0.588,
+            0.73
+        ],
+        "z": [
+            -2.25,
+            -1.87
+        ]
+    },
+    "windowBoxes": [
+        {
+            "x": [
+                -0.761,
+                0.761
+            ],
+            "y": [
+                -0.55,
+                0.79
+            ],
+            "z": [
+                -1.9,
+                0.12
+            ]
+        }
+    ],
+    "openings": [],
+    "extraSeats": [
+        "MELensFurnitureLeft1",
+        "MELensFurnitureLeft2",
+        "MELensFurnitureRight1",
+        "MELensFurnitureRight2"
+    ],
+    "wheelWells": [],
+    "vanillaSeats": [
+        "FrontLeft",
+        "FrontRight"
+    ],
+    "waterTank": 40,
+    "fuelTank": 20,
+    "spots": [
+        {
+            "wall": "left",
+            "at": -0.72,
+            "length": 1.5,
+            "depth": 0.55,
+            "default": "bed",
+            "empty": true,
+            "seats": [
+                "MELensFurnitureLeft1",
+                "MELensFurnitureLeft2"
+            ]
+        },
+        {
+            "wall": "right",
+            "at": -0.72,
+            "length": 1.5,
+            "depth": 0.55,
+            "default": "dinette",
+            "empty": true,
+            "seats": [
+                "MELensFurnitureRight1",
+                "MELensFurnitureRight2"
+            ]
+        },
+        {
+            "wall": "right",
+            "at": -0.44,
+            "length": 1.0,
+            "depth": 0.55,
+            "default": "kitchen",
+            "empty": true
+        },
+        {
+            "wall": "right",
+            "at": -1.2,
+            "length": 0.52,
+            "depth": 0.52,
+            "default": "fridge",
+            "empty": true
+        }
+    ],
+    "modelShift": [
+        0,
+        0,
+        0
+    ]
+}

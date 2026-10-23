@@ -1,0 +1,126 @@
+{
+    "key": "VanillaRadioVan",
+    "vehicles": [
+        "Base.VanRadio",
+        "Base.VanRadio_3N"
+    ],
+    "title": "Vanilla radio van",
+    "kind": "cargo",
+    "measure": "measure_VanillaRadioVan.json",
+    "scripts": [
+        "fleet_VanillaRadioVan.json",
+        "VanRadio"
+    ],
+    "texture": "fleet_vanillaradiovan",
+    "reuseTexture": "f700box",
+    "mesh": {
+        "scale": 0.01456,
+        "lift": 0.0
+    },
+    "floorY": -0.568,
+    "ceiling": 0.59,
+    "box": {
+        "x": 0.684,
+        "z": [
+            -1.975,
+            0.32
+        ]
+    },
+    "hide": {},
+    "clipBody": true,
+    "cutFront": 0.32,
+    "entry": {
+        "span": [
+            -0.5,
+            0.5
+        ],
+        "wall": "back",
+        "part": "DoorRear",
+        "area": "TruckBed",
+        "panelWall": "left"
+    },
+    "entryOpening": {
+        "x": [
+            -0.5,
+            0.5
+        ],
+        "y": [
+            -0.588,
+            0.55
+        ],
+        "z": [
+            -2.275,
+            -1.895
+        ]
+    },
+    "windowBoxes": [
+        {
+            "x": [
+                -0.669,
+                0.669
+            ],
+            "y": [
+                -0.55,
+                0.61
+            ],
+            "z": [
+                -1.925,
+                0.29
+            ]
+        }
+    ],
+    "openings": [],
+    "extraSeats": [
+        "MELensFurnitureLeft1",
+        "MELensFurnitureLeft2"
+    ],
+    "wheelWells": [
+        {
+            "z": -0.98,
+            "inner": 0.443,
+            "halfLength": 0.318,
+            "top": -0.422
+        }
+    ],
+    "vanillaSeats": [
+        "FrontLeft",
+        "FrontRight"
+    ],
+    "waterTank": 40,
+    "fuelTank": 20,
+    "spots": [
+        {
+            "wall": "left",
+            "at": -0.55,
+            "length": 1.5,
+            "depth": 0.55,
+            "default": "bed",
+            "empty": true,
+            "seats": [
+                "MELensFurnitureLeft1",
+                "MELensFurnitureLeft2"
+            ]
+        },
+        {
+            "wall": "left",
+            "at": -0.27,
+            "length": 1.0,
+            "depth": 0.55,
+            "default": "kitchen",
+            "empty": true
+        },
+        {
+            "wall": "left",
+            "at": -1.225,
+            "length": 0.52,
+            "depth": 0.52,
+            "default": "fridge",
+            "empty": true
+        }
+    ],
+    "modelShift": [
+        0,
+        0,
+        0
+    ]
+}
