@@ -9,11 +9,11 @@ local profile = {
     floorY = -0.568,
     mesh = { scale = 0.01456, lift = 0 },
     shell = {
-        models = { "MELensShell_fleet_vanillaradiovan_floor", "MELensShell_fleet_vanillaradiovan_walls" },
+        models = { "MELensShell_fleet_vanillaradiovan_floor", "MELensShell_fleet_vanillaradiovan_walls", "MELensShell_fleet_vanillaradiovan_bulkhead" },
     },
     hideKI5 = {  },
     light = {
-        interiorModels = { "MELensShell_fleet_vanillaradiovan_floor", "MELensShell_fleet_vanillaradiovan_walls" },
+        interiorModels = { "MELensShell_fleet_vanillaradiovan_floor", "MELensShell_fleet_vanillaradiovan_walls", "MELensShell_fleet_vanillaradiovan_bulkhead" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,

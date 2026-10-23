@@ -9,7 +9,7 @@ local profile = {
     floorY = -0.058,
     mesh = { scale = 0.09, lift = 0.6660000337604417 },
     shell = {
-        models = { "MELensShell_fleet_e150windows_floor", "MELensShell_fleet_e150windows_walls" },
+        models = { "MELensShell_fleet_e150windows_floor", "MELensShell_fleet_e150windows_walls", "MELensShell_fleet_e150windows_bulkhead" },
     },
     hideKI5 = {
         ["86fordE150seatml"] = true,
@@ -47,7 +47,7 @@ local profile = {
         },
     },
     light = {
-        interiorModels = { "MELensShell_fleet_e150windows_floor", "MELensShell_fleet_e150windows_walls" },
+        interiorModels = { "MELensShell_fleet_e150windows_floor", "MELensShell_fleet_e150windows_walls", "MELensShell_fleet_e150windows_bulkhead" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,

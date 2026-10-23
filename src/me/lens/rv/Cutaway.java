@@ -120,7 +120,7 @@ public final class Cutaway {
         if (original.isVehicleShader()) program.setValue("MELensVehiclePaint",
             "vehicle_multiuv".equals(original.getName()) ? 1f : 0f);
         program.setValue("MELensToBody", scratch);
-        if (!isCut || furniture) {
+        if (!isCut || furniture || isCabBulkhead(inst)) {
             program.setVector4("MELensBodyPlane", 0f, 0f, 0f, -1.0f);
             program.setVector4("MELensNearCut", 0f, 0f, 0f, 0f);
             program.setVector4("MELensCutFront", 0f, 0f, 0f, 0f);
@@ -519,7 +519,12 @@ public final class Cutaway {
     /** The shell's walls: ME: LENS' inside lining (MELensShell_*_walls). */
     private static boolean isShellWalls(ModelInstanceRenderData inst) {
         String name = modelName(inst);
-        return name.startsWith("MELensShell_") && name.endsWith("_walls");
+        return name.startsWith("MELensShell_") && (name.endsWith("_walls") || name.endsWith("_bulkhead"));
+    }
+
+    private static boolean isCabBulkhead(ModelInstanceRenderData inst) {
+        String name = modelName(inst);
+        return name.startsWith("MELensShell_") && name.endsWith("_bulkhead");
     }
 
     /** A piece's preview while you place furniture: its ghost model (MELensRV_*_ghost). */

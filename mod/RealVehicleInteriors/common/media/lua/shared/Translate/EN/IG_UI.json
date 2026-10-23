@@ -1,4 +1,6 @@
 {
+    "IGUI_VehiclePartMELensRV_stretcher": "Medical Stretcher",
+    "IGUI_VehiclePartMELensRV_metalcase": "Equipment Cabinet",
     "IGUI_MELens_OptionsTitle": "Real Vehicle Interiors",
     "IGUI_MELens_WallHeight": "Wall height inside campers",
     "IGUI_MELens_WallHeightTooltip": "How much of the camper walls stays visible while you are inside. Lower walls show more of the interior.",

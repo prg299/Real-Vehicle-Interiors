@@ -9,7 +9,7 @@ local profile = {
     floorY = 0.02,
     mesh = { scale = 0.09, lift = 0.666 },
     shell = {
-        models = { "MELensShell_f700box_floor", "MELensShell_f700box_walls" },
+        models = { "MELensShell_f700box_floor", "MELensShell_f700box_walls", "MELensShell_f700box_bulkhead" },
     },
     hideKI5 = {
         ["87fordF700boxInterior"] = {
@@ -17,7 +17,7 @@ local profile = {
         },
     },
     light = {
-        interiorModels = { "MELensShell_f700box_floor", "MELensShell_f700box_walls" },
+        interiorModels = { "MELensShell_f700box_floor", "MELensShell_f700box_walls", "MELensShell_f700box_bulkhead" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,

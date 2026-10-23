@@ -46,7 +46,7 @@ P.EMPTY_ITEM = "Base.MELensRV_Seat" -- harmless repair placeholder; keeps empty 
 ------------------------------------------------------------------------------------
 
 P.PIECES = { "bed", "dinette", "kitchen", "fridge", "cabinet", "wardrobe", "washroom", "heater", "shelf",
-             "busseat", "busseat2", "box" }
+             "busseat", "busseat2", "box", "stretcher", "metalcase" }
 
 -- Cargo spots (a box truck's) take boxes and nothing else, other spots everything but
 -- boxes, so a part only declares the models it can show.
@@ -81,6 +81,30 @@ end
 
 function P.kit(piece)
     return piece and M.RVKit and M.RVKit[piece] or nil
+end
+
+-- Only new emergency/service conversions receive factory fittings. Cargo vans
+-- keep their native trunk distributions; no residential furniture is invented.
+P.VEHICLE_USE = {
+    ["Base.VanAmbulance"] = { fittings = { [1] = "stretcher", [2] = "metalcase" },
+        loot = { metalcase = "MedicalStorageTools" } },
+    ["Base.90fordF350ambulance"] = { fittings = { [1] = "stretcher", [3] = "metalcase" },
+        loot = { metalcase = "MedicalStorageTools" } },
+    ["Base.90fordF350SWAT"] = { fittings = { [3] = "metalcase" } },
+    ["Base.87fordF700swat"] = { fittings = { [3] = "metalcase" } },
+    ["Base.87fordF700bank"] = { fittings = { [3] = "metalcase" } },
+    ["Base.StepVan_LouisvilleSWAT"] = { fittings = { [3] = "metalcase" } },
+    ["Base.85chevyStepVanSWAT"] = { fittings = { [3] = "metalcase" } },
+}
+
+function P.vehicleUse(vehicle)
+    local script = vehicle and vehicle:getScript()
+    return script and P.VEHICLE_USE[script:getFullName()] or nil
+end
+
+function P.factoryPiece(vehicle, index, spot)
+    local use = P.vehicleUse(vehicle)
+    return use and use.fittings[index] or (spot and not spot.empty and spot.default or nil)
 end
 
 -- The piece standing at a spot part, or nil.
@@ -339,14 +363,15 @@ function P.seatPose(vehicle, profile, id)
     if not spot then return nil end
     local piece = P.pieceAt(P.spotPart(vehicle, index))
     if not piece and vehicle:getPartById(P.SPOT .. index) == nil then
-        piece = not spot.empty and spot.default or nil     -- before the parts exist (the script's first load)
+        piece = P.factoryPiece(vehicle, index, spot)       -- before the parts exist (the script's first load)
     end
     local floor = profile.floorY
-    if piece == "bed" and k == 1 then
+    local kit = P.kit(piece)
+    if kit and kit.kind == "bed" and k == 1 then
         local head = HEAD[spot.head or ((spot.wall == "left" or spot.wall == "right") and "front" or "right")]
         local cx, cz = P.spotPoint(spot, 0, 0.272)
         local out = P.WALLS[spot.wall].out
-        return { pose = "MELensBed", kind = "bed", x = cx + 0.45 * head[1], y = floor + 0.28 - 0.30 * 1.5,
+        return { pose = "MELensBed", kind = "bed", x = cx + 0.45 * head[1], y = floor + kit.height - 0.02 - 0.30 * 1.5,
                  z = cz + 0.45 * head[2], turn = math.atan2(head[1], -head[2]),
                  headX = head[1], headZ = head[2], outX = out[1], outZ = out[2] }
     elseif piece == "dinette" and k <= 2 then
@@ -587,7 +612,7 @@ function P.createSpot(vehicle, part)
     end
     data[P.INITIALIZED_KEY] = true
     local spot = P.spotOf(vehicle, part)
-    local piece = spot and not spot.empty and spot.default or nil
+    local piece = P.factoryPiece(vehicle, P.spotIndex(part), spot)
     -- unfurnished by the sandbox option, except a box truck's boxes (they hold its cargo)
     if piece and piece ~= "box" and not M.sandbox("StartFurnished", true) then piece = nil end
     if piece and P.fits(spot, piece) then
@@ -598,7 +623,7 @@ function P.createSpot(vehicle, part)
     end
     P.applyPiece(vehicle, part)
     if piece and piece ~= "box" and M.sandbox("FurnitureLoot", true) then
-        P.fillFurniture(part, piece)
+        P.fillFurniture(part, piece, vehicle)
     end
 end
 
@@ -616,9 +641,10 @@ P.FURNITURE_LOOT = {
     bed = "DresserGeneric",
 }
 
-function P.fillFurniture(part, piece)
+function P.fillFurniture(part, piece, vehicle)
     local container = part:getItemContainer()
-    local listName = P.FURNITURE_LOOT[piece]
+    local use = vehicle and P.vehicleUse(vehicle)
+    local listName = use and use.loot and use.loot[piece] or P.FURNITURE_LOOT[piece]
     local lists = ProceduralDistributions and ProceduralDistributions.list
     local list = lists and listName and lists[listName]
     if not container or not list or not list.items then return end

@@ -19,11 +19,13 @@ The expansion adds 193 vehicle definitions to the 10 already supported: **203 to
 
 Install the vehicle packs you want and enable them before Real Vehicle Interiors. The new packs are optional; they are not bundled or added as mandatory dependencies. The full script-ID list is in [coverage.json](../tools-src/vehicles/coverage.json).
 
-Enter at the rear door using the normal interact key. Interiors begin empty and retain the vehicle's original cargo containers, loot and capacities. Bring RV furniture to furnish them. Smaller vans fit a bed along one wall and a kitchenette across the front, with a clear aisle beside the bed. Wider vehicles have places on both sides. Placement checks the furniture's actual footprint and rejects genuine overlaps. Where alternative markers overlap, the pointer selects the nearest marker centre.
+Enter at the rear door using the normal interact key. Cargo conversions retain their original cargo containers, loot and capacities. Ambulances begin with a medical stretcher and steel equipment cabinet containing medical supplies; security and SWAT conversions have a steel equipment cabinet. These fittings use the existing furniture placement, storage and resting systems. Cleared or player-furnished vehicles retain their saved layout. Other new interiors begin bare, ready for furniture of your choice.
+
+Smaller vans fit a bed along one wall and a kitchenette across the front, with a clear aisle beside the bed. Wider vehicles have places on both sides. Placement checks the furniture's actual footprint and rejects genuine overlaps. Where alternative markers overlap, the pointer selects the nearest marker centre. Promotional captures use actual factory fittings, without adding a bed and kitchen to every vehicle.
 
 The F700 box truck also accepts a bed and kitchenette along the same wall after clearing the cargo in their footprints. A bed is 1.5 m wide, a kitchenette 1 m, and a cargo box 0.5 m: adjacent highlights are possible positions, not always separate rooms for two pieces. Remove stacked boxes from above before clearing the boxes below.
 
-Stock vehicles retain their native paint masks while inside, and road wheels keep their original rendering. The F700 box, bank and SWAT trucks preserve their separate cab roofs above the cargo cutaway. Each profile resets the previous vehicle's optional cab-height limit, preventing an armored truck's cutoff from damaging a stock van's cab. Shared clipping rules inventory every variant's factory models, including custom rear chairs, liners and roof accessories, while preserving the cab ahead of the compartment.
+Stock vehicles retain their native paint masks while inside, and road wheels keep their original rendering. Cargo interiors use worn grey diamond-plate metal flooring; campers retain their wood floors and buses their rubber flooring. An opaque full-height partition closes the cab behind every cargo cutaway, including the F700 box, bank and SWAT trucks. This partition stays intact at every wall-height setting. Each profile resets the previous vehicle's optional cab-height limit. Shared clipping rules inventory every variant's factory models, including custom rear chairs, liners and roof accessories, while preserving the cab ahead of the compartment.
 
 These are physical interiors inside the vehicle body, with dimensions measured from the installed model. They do not use separate map rooms. The Arcadia RV Interior coverage list was used to identify candidate vehicles; its scripts, room maps and assets are not included. Livestock/Animals support remains separate on `animals-support`.
 
@@ -33,7 +35,7 @@ The ordinary build uses the checked-in profiles, walk grids and authored shell m
 
 1. `tools-src/vehicles/catalogue.py` resolves the installed coverage and external assets into ignored `build/rv` metadata.
 2. `tools-src/vehicles/prepare_expansion.py` groups matching body meshes and scales.
-3. Blender runs `tools-src/blender/measure_fleet.py -- build/rv/floorplans/fleet-measures.json` to measure geometry.
+3. Blender runs `tools-src/blender/measure_fleet.py -- build/rv/floorplans/fleet-measures.json` to measure compartments and the cab cross-section used to close each cut face.
 4. `tools-src/vehicles/build_expansion.py` generates layout specs, profiles and model declarations.
 5. Blender runs `tools-src/blender/rv_kit.py -- mod/RealVehicleInteriors/common/media --shells-only --shell-file=MELens_Fleet` with every generated `shell_<family>.json` config in the coverage file.
 6. `tools-src/vehicles/vision_geometry.py --floorplans <directory>` exports the sight openings to `MELens_VisionGeometry.lua`. Repeat `--floorplans` for directories holding the original and expansion measurements and resolved script JSON. The ordinary build uses this checked-in numerical metadata.

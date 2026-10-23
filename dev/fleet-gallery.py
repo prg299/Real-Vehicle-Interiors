@@ -1,6 +1,6 @@
 """Clean native gameplay screenshots for manual Workshop gallery selection.
 
-Disposable furnishing, character position and camera are capture fixtures.
+Character position and camera are capture fixtures; furnishing is factory stock.
 No painted/generated content, UI feature proof or Workshop upload is implied.
 """
 import importlib.util
@@ -52,10 +52,7 @@ p:setLastX(10813.5);p:setLastY(10140.5);return true''')
             spawn=spawn.replace('tonumber("7")','tonumber("-4")').replace('local HEADING = "E"',f'local HEADING = "{heading}"')
             h.lua(spawn);time.sleep(1)
             h.lua('''local v=MELensTest.vehicle;local p=getPlayer();local pr=MELens.profileFor(v);local P=MELens.Parts
-for index,spot in ipairs(pr.spots) do if spot.default=="bed" or spot.default=="kitchen" then
-assert(P.roomFor(pr,P.standing(v,pr),index,spot.default))
-local part=P.spotPart(v,index);part:setInventoryItem(instanceItem(P.itemType(spot.default)));P.applyPiece(v,part)
-end end
+-- Keep the vehicle's actual factory fittings and cargo loot in review images.
 assert(v:enter(MELens.cabinSeat(v),p));return true''')
             deadline=time.monotonic()+12
             while not h.lua('return MELens.isStanding(getPlayer())'):

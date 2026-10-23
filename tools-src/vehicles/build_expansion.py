@@ -135,8 +135,9 @@ def main():
         path = ROOT / f'tools-src/vehicles/specs/{key}.json'
         path.write_text(json.dumps(spec, indent=4) + '\n', encoding='utf-8', newline='\n')
         mv.build(str(path))
-        for suffix in ('floor', 'walls'):
-            declarations.append(f'    model MELensShell_{texture}_{suffix} {{ mesh = vehicles/MELens_Fleet|shell_{texture}_{suffix}, texture = Vehicles/MELensShell_f700box_{suffix}, shader = vehiclewheel, scale = 0.0111111, }}')
+        for suffix in ('floor', 'walls', 'bulkhead'):
+            material = 'floor' if suffix == 'floor' else 'walls'
+            declarations.append(f'    model MELensShell_{texture}_{suffix} {{ mesh = vehicles/MELens_Fleet|shell_{texture}_{suffix}, texture = Vehicles/MELensShell_f700box_{material}, shader = vehiclewheel, scale = 0.0111111, }}')
         coverage.append(dict(family=key, title=row['title'], vehicles=row['vehicles'], dependencies=row['dependencies'],
                              representative=row['name'], mesh=info['model']['mesh']))
     assert not mv.PROBLEMS, '\n'.join(mv.PROBLEMS)

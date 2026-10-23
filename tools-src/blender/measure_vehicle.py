@@ -82,7 +82,7 @@ def bounds(name):
     return {"min": [round(v, 4) for v in lo], "max": [round(v, 4) for v in hi]}
 
 
-def slice_segments(name, py):
+def slice_segments(name, py, axis=1):
     """Keep exact cross-section segments so embedded seats cannot shrink the body envelope."""
     verts, _, polys = world_mesh(name)
     pv = [to_passenger(v) for v in verts]
@@ -91,10 +91,11 @@ def slice_segments(name, py):
         cuts = []
         for i in range(len(poly)):
             pa, pb = pv[poly[i]], pv[poly[(i + 1) % len(poly)]]
-            if (pa[1] - py) * (pb[1] - py) > 0 or pa[1] == pb[1]:
+            if (pa[axis] - py) * (pb[axis] - py) > 0 or pa[axis] == pb[axis]:
                 continue
-            t = (py - pa[1]) / (pb[1] - pa[1])
-            cuts.append((pa[0] + (pb[0] - pa[0]) * t, pa[2] + (pb[2] - pa[2]) * t))
+            t = (py - pa[axis]) / (pb[axis] - pa[axis])
+            other = 2 if axis == 1 else 1
+            cuts.append((pa[0] + (pb[0] - pa[0]) * t, pa[other] + (pb[other] - pa[other]) * t))
         segments.extend([cuts[i], cuts[i + 1]] for i in range(0, len(cuts) - 1, 2))
     return segments
 
@@ -157,6 +158,7 @@ if "mesh" in cfg:
     result["mesh"] = cfg["mesh"]
 if cfg.get("fitEnvelope"):
     result["sections"] = {}
+    result["cabSection"] = slice_segments(body, cfg["sampleZ"][1] - .04, axis=2)
 h = floor - 0.1
 while h <= ceiling + 0.05:
     result["outlines"]["%.2f" % h] = slice_outline(body, h)

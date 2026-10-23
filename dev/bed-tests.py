@@ -111,10 +111,11 @@ local q=Vector3f.new();v:getPassengerLocalPos(v:getSeat(p),q);r.passengerY=q:y()
 local bs=MELens.Bed.states[p];r.bedTurn=bs and (bs.phase=="Enter" and bs.entryTurn or bs.place.turn)
 local P=MELens.Parts;local pr=MELens.profileFor(v);local spot=pr.spots[MELensBedTestSpotIndex]
 local o=v:getScript():getModel():getOffset();local origin=Vector3f.new();local base=v:getWorldPos(0,0,0,origin):z()
-r.bedGeometry={x=spot.x,z=spot.z,wall=spot.wall,top=pr.floorY+.28,modelOffsetY=o:y()}
+local piece=P.pieceAt(P.spotPart(v,MELensBedTestSpotIndex));local mattressTop=P.kit(piece).height-.02
+r.bedGeometry={x=spot.x,z=spot.z,wall=spot.wall,top=pr.floorY+mattressTop,modelOffsetY=o:y()}
 r.bedCorners={}
 for i,pair in ipairs({{-.75,0},{.75,0},{.75,.55},{-.75,.55}}) do
-local x,z=P.spotPoint(spot,pair[1],pair[2]);local h=pr.floorY+.28
+local x,z=P.spotPoint(spot,pair[1],pair[2]);local h=pr.floorY+mattressTop
 v:getWorldPos(o:x()+x,o:y()+h,o:z()+z,q)
 local sx,sy=ISCoordConversion.ToScreen(q:x(),q:y(),base+(o:y()+h)/2.44949)
 r.bedCorners[i]={x=sx/getCore():getZoom(0),y=sy/getCore():getZoom(0)}

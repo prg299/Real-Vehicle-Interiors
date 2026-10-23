@@ -9,7 +9,7 @@ local profile = {
     floorY = -0.228,
     mesh = { scale = 0.09, lift = 0.6660000337604417 },
     shell = {
-        models = { "MELensShell_fleet_f700swat_floor", "MELensShell_fleet_f700swat_walls" },
+        models = { "MELensShell_fleet_f700swat_floor", "MELensShell_fleet_f700swat_walls", "MELensShell_fleet_f700swat_bulkhead" },
     },
     hideKI5 = {
         ["87fordF700Windowfl"] = {
@@ -38,7 +38,7 @@ local profile = {
         },
     },
     light = {
-        interiorModels = { "MELensShell_fleet_f700swat_floor", "MELensShell_fleet_f700swat_walls" },
+        interiorModels = { "MELensShell_fleet_f700swat_floor", "MELensShell_fleet_f700swat_walls", "MELensShell_fleet_f700swat_bulkhead" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,

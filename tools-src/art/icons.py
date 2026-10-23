@@ -11,7 +11,7 @@ from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PIECES = ["bed", "dinette", "kitchen", "fridge", "cabinet", "wardrobe", "washroom", "heater", "shelf",
-          "box", "busseat", "busseat2"]
+          "box", "busseat", "busseat2", "stretcher", "metalcase"]
 SIZE = 64
 
 
@@ -75,7 +75,9 @@ def main():
     media = sys.argv[1]
     out_dir = os.path.join(media, "textures")
     made = 0
-    for piece in PIECES:
+    pieces = sys.argv[2:] or PIECES
+    assert all(piece in PIECES for piece in pieces), "Unknown furniture icon"
+    for piece in pieces:
         src = os.path.join(HERE, "icons", "icon_%s.png" % piece)
         if os.path.exists(src):
             make_icon(src, os.path.join(out_dir, "Item_MELensRV_%s.png" % piece))

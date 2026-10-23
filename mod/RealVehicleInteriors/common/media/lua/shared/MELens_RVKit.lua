@@ -2,6 +2,8 @@
 MELens = MELens or {}
 MELens.RVKit = {
     bed = { width = 1.500, depth = 0.550, height = 0.300, capacity = 20, kind = "bed", label = "RV Bed" },
+    stretcher = { width = 1.500, depth = 0.550, height = 0.550, capacity = 0, kind = "bed", label = "Medical Stretcher" },
+    metalcase = { width = 0.520, depth = 0.520, height = 0.800, capacity = 25, kind = "storage", label = "Steel Equipment Cabinet" },
     dinette = { width = 1.120, depth = 0.550, height = 0.720, capacity = 15, kind = "seat", label = "RV Dinette" },
     kitchen = { width = 1.000, depth = 0.520, height = 0.920, capacity = 30, kind = "kitchen", label = "RV Kitchenette" },
     fridge = { width = 0.520, depth = 0.520, height = 0.880, capacity = 30, kind = "fridge", label = "RV Fridge" },

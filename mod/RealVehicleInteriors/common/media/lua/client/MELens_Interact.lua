@@ -737,6 +737,12 @@ local ICONS = {
 for key, vanilla in pairs(ICONS) do
     ContainerButtonIcons[key] = ContainerButtonIcons[key] or ContainerButtonIcons[vanilla]
 end
+if getTexture then
+    for _, piece in ipairs({ "metalcase", "stretcher" }) do
+        local icon = getTexture("media/textures/Item_MELensRV_" .. piece .. ".png")
+        if icon then ContainerButtonIcons["MELensRV_" .. piece] = icon end
+    end
+end
 
 local reachKey = nil
 local reachTimer = 0

@@ -47,6 +47,24 @@ do
     for _,pr in pairs(M.Profiles) do if seen[pr] then count=count+1 end end
     check(count==193,"fleet identifier coverage changed unexpectedly")
     check(#M.Profiles["Base.87fordF700box"].spots==83,"released cargo slots changed")
+    for name,use in pairs(P.VEHICLE_USE) do
+        local pr=assert(M.Profiles[name])
+        local v={getScript=function() return {getFullName=function() return name end} end}
+        local fitted={}
+        for index,piece in pairs(use.fittings) do
+            check(P.factoryPiece(v,index,pr.spots[index])==piece,"wrong service fitting: "..name)
+            check(P.fits(pr.spots[index],piece),"service fitting does not fit: "..name..":"..piece)
+            check(P.roomFor(pr,fitted,index,piece),"service fittings overlap: "..name)
+            fitted[index]=piece
+            check(piece~="bed" and piece~="kitchen","service vehicle receives residential furniture")
+        end
+        check(pr.loot==nil and pr.ki5Storage==nil,"service fittings overwrite native vehicle loot")
+    end
+    for name,pr in pairs(M.Profiles) do
+        if pr.shell.models[1]:find("fleet_",1,true) or name=="Base.87fordF700box" then
+            check(pr.shell.models[3] and pr.shell.models[3]:find("_bulkhead",1,true),"unsealed cargo cab: "..name)
+        end
+    end
     for name,roof in pairs({["Base.87fordF700bank"]=1.295,["Base.87fordF700swat"]=1.142}) do
         check(M.Profiles[name].cutFrontTop>roof,"armored truck cab roof is cut away: "..name)
     end

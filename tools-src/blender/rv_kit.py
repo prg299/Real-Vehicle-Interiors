@@ -376,6 +376,33 @@ def build_bed(b):
     plinth(b, -0.73, 0.73, -0.245, 0.26, 0.04)
     b.box(-0.735, -0.262, 0.19, 0.735, 0.268, 0.28, "sheet", bevel=0.04, segments=3)
 
+@piece("stretcher", 1.50, 0.55, 0.55, 0, "bed", "Medical Stretcher")
+def build_stretcher(b):
+    # The same painted steel, dark vinyl and bevels as the existing bus seats.
+    for x in (-.62, .62):
+        for y in (-.19, .19):
+            b.box(x-.035, y-.025, 0, x+.035, y+.025, .085, "rubber", bevel=.02, segments=3)
+            b.box(x-.018, y-.018, .07, x+.018, y+.018, .40, "steel", bevel=.005)
+    b.box(-.69, -.22, .13, .69, .22, .16, "steel", bevel=.008)
+    b.box(-.75, -.26, .39, .75, .26, .435, "steel", bevel=.012, segments=2)
+    b.box(-.72, -.245, .435, .72, .245, .53, "mattress", bevel=.025, segments=3)
+    for y in (-.264, .264):
+        b.box(-.52, y-.008, .53, .52, y+.008, .55, "chrome", bevel=.006)
+    for x in (-.30, .30):
+        b.box(x-.025, -.248, .531, x+.025, .248, .536, "black", bevel=.003)
+
+
+@piece("metalcase", .52, .52, .80, 25, "storage", "Steel Equipment Cabinet")
+def build_metalcase(b):
+    b.box(-.26, -.235, .04, .26, .26, .77, "steel", bevel=.008, segments=2)
+    plinth(b, -.245, .245, -.22, .245, .04, "black")
+    b.box(-.26, -.26, .77, .26, .26, .80, "steel", bevel=.009, segments=2)
+    for z0, z1 in ((.06,.28),(.295,.515),(.53,.75)):
+        b.box(-.247, -.248, z0-.003, .247, -.234, z1+.003, "black")
+        b.box(-.24, -.258, z0, .24, -.247, z1, "steel", bevel=.005, segments=2)
+        handle(b, 0, -.255, (z0+z1)/2, vertical=False)
+
+
 @piece("dinette", 1.12, 0.55, 0.72, 15, "seat", "RV Dinette")
 def build_dinette(b):
     # Two booth benches facing each other along the wall (seats 0.79 apart, like KI5's):
@@ -1040,7 +1067,39 @@ def build_shell(measure, spec, tex_dir):
     if not spec.get("reuseTexture"):
         floor_texture(os.path.join(tex_dir, "Vehicles", "MELensShell_%s_floor.png" % spec["texture"]),
                       bounds, floor_poly, rng, style)
-    return [floor.finish(), walls.finish()]
+    objects = [floor.finish(), walls.finish()]
+    if spec.get("cabBulkhead"):
+        # The cab and its cargo partition remain opaque at every wall setting.
+        # Two faces close the otherwise exposed backfaces of factory cab parts.
+        front = max(z for x, z in floor_ring) - 0.003
+        xs = [x for x, z in floor_ring if z > front - 0.05]
+        left, right = min(xs), max(xs)
+        high = spec["cabBulkhead"]["top"]
+        partition = UVBuilder(name + "_bulkhead")
+        points = [(left, floor_y-.015), (left, high), (right, high), (right, floor_y-.015)]
+        points += [(x, max(y, floor_y-.015)) for segment in spec["cabBulkhead"].get("section", [])
+                   for x, y in segment if y >= floor_y-.03]
+        # Cap the actual outer cab cross-section, including raised roofs and
+        # tapered shoulders. A rectangle fitted only to the cargo lining leaves
+        # factory roof backfaces visible around its upper/outboard edges.
+        def cross(o, a, c):
+            return (a[0]-o[0])*(c[1]-o[1])-(a[1]-o[1])*(c[0]-o[0])
+        ordered = sorted(set(points))
+        lower, upper = [], []
+        for chain, sequence in ((lower, ordered), (upper, reversed(ordered))):
+            for point in sequence:
+                while len(chain)>1 and cross(chain[-2],chain[-1],point)<=0:chain.pop()
+                chain.append(point)
+        outline = lower[:-1]+upper[:-1]
+        corners = [P(x, y, front) for x,y in outline]
+        # Match the lining's wall panels instead of stretching its entire atlas.
+        u0 = arc[max(range(n), key=lambda i: floor_ring[i][1])] / perimeter
+        cap_height = max(y for x,y in outline)-floor_y
+        uv = [(u0+(x-left)/perimeter, (y-floor_y)/cap_height) for x,y in outline]
+        for direction in (-1, 1):
+            partition.poly(corners, uv, Vector((0, direction, 0)))
+        objects.append(partition.finish())
+    return objects
 
 
 def ring_crossing(ring, z, side):
@@ -1202,7 +1261,7 @@ TEXTURES = {
     "wood_dark": ("wood_dark", 0.5, 0.15),
     "wood_birch": ("birch", 0.5, 0.15),
     "fabric_red": ("quilt", 1.1, 0.0),
-    "mattress": ("sheet", 0.6, 0.0),            # the blanket: soft cloth, graded blue
+    "mattress": ("vinyl", 0.6, 0.0),           # washable blue-grey stretcher pad
     "pillow": ("sheet", 0.5, 0.0),
     "sheet": ("sheet", 0.5, 0.0),
     "fabric_blue": ("vinyl", 0.45, 0.0),

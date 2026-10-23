@@ -9,7 +9,7 @@ local profile = {
     floorY = -0.088,
     mesh = { scale = 0.09, lift = 0.6660000337604417 },
     shell = {
-        models = { "MELensShell_fleet_f350ambulance_floor", "MELensShell_fleet_f350ambulance_walls" },
+        models = { "MELensShell_fleet_f350ambulance_floor", "MELensShell_fleet_f350ambulance_walls", "MELensShell_fleet_f350ambulance_bulkhead" },
     },
     hideKI5 = {
         ["90fordF350ambulanceseatstr0"] = true,
@@ -28,7 +28,7 @@ local profile = {
         },
     },
     light = {
-        interiorModels = { "MELensShell_fleet_f350ambulance_floor", "MELensShell_fleet_f350ambulance_walls" },
+        interiorModels = { "MELensShell_fleet_f350ambulance_floor", "MELensShell_fleet_f350ambulance_walls", "MELensShell_fleet_f350ambulance_bulkhead" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,

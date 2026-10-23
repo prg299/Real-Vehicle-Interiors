@@ -73,7 +73,7 @@ STYLES = {
             "wallArt": "wall_paint", "wallTile": 0.8, "wallTint": [0.78, 0.76, 0.70], "panelWidth": 0.75,
             "baseboard": 0.05, "baseboardArt": "darkmetal", "baseboardColour": [0.22, 0.22, 0.23],
             "wallSize": [2048, 256], "floorSize": [512, 2048]},
-    "cargo": {"flat": False, "floorArt": "floor_planks", "floorTile": 1.0, "floorTint": [0.29, 0.23, 0.18],
+    "cargo": {"flat": False, "floorArt": "diamondplate", "floorTile": 0.55, "floorTint": [0.34, 0.36, 0.38],
               "wallArt": "steel", "wallTile": 1.0, "wallTint": [0.55, 0.57, 0.59], "panelWidth": 0.5,
               "baseboard": 0.0, "wallSize": [2048, 256], "floorSize": [512, 2048]},
 }
@@ -595,6 +595,12 @@ def build(spec_path):
     }
     if spec.get("reuseTexture"):
         shell_cfg["reuseTexture"] = spec["reuseTexture"]
+    # A cut-away cargo shell needs an opaque, full-height partition behind the
+    # cab. The native cab mesh is often single-sided at this artificial cut.
+    if spec.get("kind") == "cargo" and spec.get("cutFront") is not None:
+        shell_cfg["cabBulkhead"] = {"top": max(ceiling, spec.get("cutFrontTop", ceiling))}
+        if measure.get("cabSection"):
+            shell_cfg["cabBulkhead"] = {"top": ceiling, "section": measure["cabSection"]}
     if spec.get("box"):
         # a rectangular room (a box truck's cargo space, a bus): the shell keeps its corners
         shell_cfg["sharpCorners"] = True
@@ -613,6 +619,8 @@ def build(spec_path):
 
     # --- the profile --------------------------------------------------------------------
     shell_models = ["MELensShell_%s_floor" % spec["texture"], "MELensShell_%s_walls" % spec["texture"]]
+    if shell_cfg.get("cabBulkhead"):
+        shell_models.append("MELensShell_%s_bulkhead" % spec["texture"])
     hide = {}
     for model, keep in spec.get("hide", {}).items():
         if keep is True or isinstance(keep, dict):
