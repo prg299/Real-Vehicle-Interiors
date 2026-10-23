@@ -650,6 +650,10 @@ public final class RV {
         return ViewpointCompat.active();
     }
 
+    public static boolean useInteriorCamera(IsoGameCharacter player) {
+        return ViewpointCompat.useIsometric(player);
+    }
+
     public static String shaderError() {
         return Cutaway.shaderError;
     }

@@ -136,7 +136,7 @@ function F.snapshot()
     r.queueCount = #queue
     for i, action in ipairs(queue) do
         r.queue[i] = { type = tostring(action.Type), which = action.which, on = action.on,
-            maxTime = action.maxTime, jobDelta = optional(function() return action:getJobDelta() end) }
+            maxTime = action.maxTime, jobDelta = action.action and optional(function() return action:getJobDelta() end) }
     end
 
     local w = M.Dashboard.instance

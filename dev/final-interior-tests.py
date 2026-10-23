@@ -163,6 +163,7 @@ def interact_key(h, label):
 
 
 def choose(h, tap, point, labels, case):
+    h.REPORT.setdefault("menuAttempts", []).append({"case": case, "point": point, "labels": labels})
     before = poll(h, idle, label=f"idle before {case}")
     tap.native_click(h, point["x"], point["y"], f"{case}:open-world-menu", right=True)
     for label in labels:
@@ -182,7 +183,7 @@ def close_dashboard(h, tap):
     return state
 
 
-def run_interior_cases(h, tap):
+def run_interior_cases(h, tap, before_entry=None):
     h.REPORT["scope"] = "native single-player keyboard entry/exit, bed/dinette seating and world-menu Dashboard"
     h.REPORT["fixtureState"] = "existing water-test character; walkTo exit marker and outside-door position are fixture setup only"
     h.REPORT["unverified"] = ["multiplayer", "normal storage-window transfer", "furniture pickup/place",
@@ -199,6 +200,8 @@ def run_interior_cases(h, tap):
     h.record("keyboard-interior-exit", before, after, fixturePositioning=True, uiHandlersInvokedDirectly=False)
     h.capture("interior-keyboard-outside")
     outside = h.lua("return MELensInteriorTest.positionOutside()")
+    if before_entry:
+        before_entry()  # native movement refresh for camera mods that cache the near vehicle
     before = poll(h, lambda s: idle(s) and s["interior"]["nearWayIn"], label="fixture outside doorway")
     interact_key(h, "keyboard-entry")
     after = poll(h, lambda s: idle(s) and s["interior"]["inside"] and s["interior"]["standing"], label="actual Interact entry")
@@ -207,6 +210,7 @@ def run_interior_cases(h, tap):
 
     rest = h.lua('return getText("ContextMenu_Rest")')
     for piece, kind in (("bed", "bed"), ("dinette", "seat")):
+        time.sleep(.6)  # let the isometric camera finish following the prior seat transition
         point = h.lua(f'return MELensInteriorTest.point("{piece}")')
         before = choose(h, tap, point, [point["header"], rest], f"{piece}-rest")
         after = poll(h, lambda s: idle(s) and s["interior"].get("kind") == kind
