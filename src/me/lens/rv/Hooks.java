@@ -17,6 +17,33 @@ import zombie.core.skinnedmodel.model.ModelSlotRenderData;
 public final class Hooks {
     private Hooks() {}
 
+    @Patch(className = "zombie.characters.IsoZombie", methodName = "spottedNew", strictMatch = true)
+    public static final class InteriorSightNew {
+        @Patch.OnEnter(skipOn = true)
+        public static boolean enter(@Patch.This zombie.characters.IsoZombie zombie,
+                @Patch.Argument(0) zombie.iso.IsoMovingObject target) {
+            return Vision.blocksSight(zombie, target);
+        }
+    }
+
+    @Patch(className = "zombie.characters.IsoZombie", methodName = "spottedOld", strictMatch = true)
+    public static final class InteriorSightOld {
+        @Patch.OnEnter(skipOn = true)
+        public static boolean enter(@Patch.This zombie.characters.IsoZombie zombie,
+                @Patch.Argument(0) zombie.iso.IsoMovingObject target) {
+            return Vision.blocksSight(zombie, target);
+        }
+    }
+
+    @Patch(className = "zombie.characters.IsoZombie", methodName = "isTargetVisible", strictMatch = true)
+    public static final class InteriorTargetSight {
+        @Patch.OnExit
+        public static void exit(@Patch.This zombie.characters.IsoZombie zombie,
+                @Patch.Return(readOnly = false) boolean visible) {
+            if (visible && Vision.blocksSight(zombie, zombie.getTarget())) visible = false;
+        }
+    }
+
     @Patch(className = "zombie.iso.weather.fx.ParticleRectangle", methodName = "render", strictMatch = true)
     public static final class CabinWeatherParticles {
         // Keep the typed receiver: ZB must resolve this class before transforming

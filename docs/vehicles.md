@@ -36,7 +36,10 @@ The ordinary build uses the checked-in profiles, walk grids and authored shell m
 3. Blender runs `tools-src/blender/measure_fleet.py -- build/rv/floorplans/fleet-measures.json` to measure geometry.
 4. `tools-src/vehicles/build_expansion.py` generates layout specs, profiles and model declarations.
 5. Blender runs `tools-src/blender/rv_kit.py -- mod/RealVehicleInteriors/common/media --shells-only --shell-file=MELens_Fleet` with every generated `shell_<family>.json` config in the coverage file.
+6. `tools-src/vehicles/vision_geometry.py --floorplans <directory>` exports the sight openings to `MELens_VisionGeometry.lua`. Repeat `--floorplans` for directories holding the original and expansion measurements and resolved script JSON. The ordinary build uses this checked-in numerical metadata.
 
 Blender's binary FBX importer handles most models. The vanilla step van uses ASCII FBX; install the `ufbx` Python wheel matching Blender's bundled Python into `.tools/ufbx-blender`, or set `RVI_UFBX_DIR`. This tool dependency and all external vehicle geometry stay outside the shipped mod. New shells reuse the existing F700 wall/floor materials.
+
+At world initialization, shared Lua registers the room rings and sight openings with the Java component. Sight and indoor panic share the registered interior-seat classification. The native zombie sight adapter adds wall occlusion; hearing, target memory and attacks remain owned by the game. Stock windows embedded in the body model use the vehicle script's interaction area as their opening estimate.
 
 Native test evidence and remaining limits are recorded in the feature pull request. The audit covers all 203 script variants with keyboard entry, furnished-aisle movement, exit, four interior headings and a closed exterior. The extra headings use fresh vehicle/seat fixtures rather than driving input. Inventory mouse/UI placement, rejection of genuinely overlapping furniture and rest/get-up are checked per added body family, plus the reported F700 box-truck bed/kitchen case. Dedicated-server, split-screen/controllers, every optional cosmetic combination, performance and human acceptance remain separate checks.

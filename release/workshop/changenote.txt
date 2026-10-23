@@ -1,10 +1,10 @@
-2.0.12 - F700 furniture, storage and generator fixes
+2.0.13 - Vehicle support, cameras, dashboard and concealment
 
-- Adds two full-size F700 furniture spaces for salvaged beds and dinettes, with working furniture seats. Existing cargo-box positions are preserved.
-- Repairs storage boxes and fridges stuck at 0 or 1 kg without replacing furniture or stored items.
-- Keeps furniture installed in originally empty slots after saving and reloading.
-- Generator fuel use now follows appliance load: a fridge-only setup uses 0.2 litres per game hour at the default setting.
-- Starting or restarting the generator no longer burns fuel for time it spent switched off.
-- Keeps the generator and appliances updating while the vehicle is parked with its engine off.
+- Adds interiors for 193 additional vehicle definitions across 12 body families, including optional vehicle mods.
+- Fixes cutaway state leaking between vehicles, wheel rendering and adjacent bed/kitchenette placement.
+- Entering an interior with Project Viewpoint active switches its camera to isometric.
+- The dashboard uses vanilla window chrome and controls by default. Enabled Neat UI mods retain the rounded dashboard.
+- Solid interior walls block zombie sight. Windows and open, removed or destroyed doors allow normal spotting.
+- Native hearing, pursuit memory and attacks remain active; entering an interior does not clear a zombie's existing target.
 
 Multiplayer remains experimental. Back up existing saves before updating.

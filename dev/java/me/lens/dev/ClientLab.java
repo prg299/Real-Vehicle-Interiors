@@ -60,6 +60,21 @@ public final class ClientLab {
         Field field=Class.forName("me.lens.rv.Weather").getDeclaredField("enabled");
         field.setAccessible(true); field.setBoolean(null,enabled);
     }
+    /** Same native perception inputs with only the additive cabin LOS disabled. */
+    public static void visionMask(boolean enabled) throws Exception {
+        Field field=Class.forName("me.lens.rv.Vision").getDeclaredField("enabled");
+        field.setAccessible(true); field.setBoolean(null,enabled);
+    }
+    public static void forceSpot(zombie.characters.IsoZombie observer, zombie.characters.IsoPlayer target, boolean old) {
+        if(old) observer.spottedOld(target,true); else observer.spottedNew(target,true);
+    }
+    public static String zombieInfo(zombie.characters.IsoZombie z, zombie.characters.IsoPlayer p) {
+        return "{\"targetPlayer\":"+(z.getTarget()==p)+",\"targetNull\":"+(z.getTarget()==null)
+            +",\"seenSince\":"+z.timeSinceSeenFlesh+",\"seenX\":"+z.lastTargetSeenX+",\"seenY\":"+z.lastTargetSeenY
+            +",\"heardPlayer\":"+(z.soundSourceTarget==p)+",\"soundSince\":"+z.timeSinceRespondToSound
+            +",\"goalSound\":"+z.getPathFindBehavior2().isGoalSound()+",\"state\":\""
+            +(z.getCurrentState()==null?"":z.getCurrentState().getClass().getSimpleName())+"\"}";
+    }
     public static volatile boolean frozenWeather;
     public static void freezeWeather(boolean frozen) { frozenWeather=frozen; }
     @Patch(className="zombie.iso.weather.fx.IsoWeatherFX",methodName="update",strictMatch=true)

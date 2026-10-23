@@ -39,6 +39,7 @@ public final class LuaRegression {
             "tools-src/regression/utilities.lua", "tools-src/regression/lamps.lua",
             "tools-src/regression/personalization.lua", "tools-src/regression/interior-actions.lua",
             "tools-src/regression/dashboard-setup.lua", client + "MELens_Dashboard.lua",
+            client + "MELens_DashboardVanilla.lua",
             "tools-src/regression/dashboard.lua", "tools-src/regression/loose-ui-setup.lua",
             client + "MELens_LooseUI.lua", "tools-src/regression/loose-ui.lua",
             client + "MELens_Bed.lua", "tools-src/regression/bed.lua",
@@ -85,6 +86,12 @@ public final class LuaRegression {
         Object[] fleetResult = thread.pcall(LuaCompiler.loadstring(Files.readString(fleet, StandardCharsets.UTF_8),
             fleet.toString(), env), new Object[0]);
         if (!Boolean.TRUE.equals(fleetResult[0])) throw new AssertionError(java.util.Arrays.toString(fleetResult));
+        for (String name : new String[] { shared + "MELens_VisionGeometry.lua", shared + "MELens_Vision.lua",
+                "tools-src/regression/vision.lua" }) {
+            Object[] checked = thread.pcall(LuaCompiler.loadstring(Files.readString(root.resolve(name), StandardCharsets.UTF_8),
+                    name, env), new Object[0]);
+            if (!Boolean.TRUE.equals(checked[0])) throw new AssertionError(name + ": " + java.util.Arrays.toString(checked));
+        }
         System.out.println("ME_LENS regression assertions=" + env.rawget("assertions")
             + " productionLua=true engineDoubles=true nativeInput=false");
     }
