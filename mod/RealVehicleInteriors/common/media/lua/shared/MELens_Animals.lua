@@ -23,7 +23,9 @@ A.KEY = "MELensAnimals"
 A.ROOM = 300             -- trailer size of the animals one vehicle takes (a hen 30, a dog 50, a rabbit 90, a calf 120)
 A.SPACING = 0.4          -- tiles between two animals' middles when one is put down or walks somewhere
 A.BOWL_GAP = 0.3         -- tiles between an animal's middle and the thing it eats or drinks from
-A.WANDER = 1.6           -- tiles an animal walks at most when it moves for no reason
+A.WANDER = 0.6           -- short occasional movement in a confined interior
+A.REST_MINUTES = 20      -- minimum quiet time between voluntary movements
+A.REST_JITTER = 20       -- extra game minutes, per animal, to avoid a shared pacing rhythm
 A.DOOR_REACH = 3.5       -- tiles between a Companion Dogs dog and the way in for it to follow its owner in
 A.FEED_MINUTES = 3       -- game minutes an animal spends at a bowl
 A.RESTORE = 0.5          -- the most hunger or thirst one meal or drink takes away (a dog's bowl: Companion Dogs' sandbox)
@@ -47,6 +49,12 @@ end
 
 function A.alive(animal)
     return animal ~= nil and not animal:isDead() and animal:getHealth() > 0
+end
+
+function A.canPickUp(animal)
+    local defs = AnimalDefinitions and AnimalDefinitions.animals
+    local def = animal and defs and defs[animal:getAnimalType()]
+    return A.alive(animal) and (not def or def.canBePicked ~= false)
 end
 
 -- The vehicle and profile a player is inside (standing, or on a bed or seat inside), not in its cab or at its wheel.
@@ -123,7 +131,7 @@ end
 
 -- A free place on the floor nearest to (x, z): where nothing stands and no other animal is (nor any of the
 -- points in avoid: { { x, z }, ... }, e.g. where a player stands).
-function A.freePoint(vehicle, profile, x, z, except, avoid)
+function A.freePoint(vehicle, profile, x, z, except, avoid, strict)
     local taken = {}
     local records = A.records(vehicle, false) or {}
     for k, r in pairs(records) do
@@ -142,7 +150,22 @@ function A.freePoint(vehicle, profile, x, z, except, avoid)
         end
     end
     if best then return best[1], best[2] end
+    if strict then return nil end
     return x, z
+end
+
+-- A short interior step must be clear for its whole length, not just at its
+-- destination. Reuse the same room/furniture geometry as placed floor items.
+-- This is deliberately bounded local movement, rather than outside-world AI.
+function A.clearStep(vehicle, profile, x0, z0, x1, z1)
+    local dx, dz = x1 - x0, z1 - z0
+    local count = math.max(1, math.ceil(math.sqrt(dx * dx + dz * dz) / 0.08))
+    local floor = { kind = "floor", s = 0, y = profile.floorY }
+    for i = 0, count do
+        local t = i / count
+        if not L.fitsSurface(vehicle, profile, floor, x0 + dx * t, z0 + dz * t, 0.1, 0.1) then return false end
+    end
+    return true
 end
 
 -- Puts an animal at a place inside (server or single player); the caller transmits the vehicle's modData.
@@ -153,6 +176,7 @@ function A.place(vehicle, animal, x, z, f, pose)
     r.f = f or r.f or 0
     r.p = pose or "idle"
     r.u = nil
+    r.nextMove = now() + (A.REST_MINUTES + ZombRand(A.REST_JITTER + 1)) / 60
     records[key(animal)] = r
     return r
 end
@@ -352,11 +376,15 @@ end
 local function besidePoint(vehicle, profile, animal, r, x, z)
     local dx, dz = r.x - x, r.z - z
     local len = math.sqrt(dx * dx + dz * dz)
+    -- Already beside this bowl: do not shuffle to another sampled floor point
+    -- for every small remaining drink or portion of food.
+    if len <= A.BOWL_GAP + 0.15 then return r.x, r.z, facingTo(-dx, -dz) end
     if len < 0.01 then dx, dz, len = 0, -1, 1 end
     local bx, bz = x + dx / len * A.BOWL_GAP, z + dz / len * A.BOWL_GAP
     if not L.fitsSurface(vehicle, profile, { kind = "floor", s = 0, y = profile.floorY }, bx, bz, 0.08, 0.08) then
         bx, bz = A.freePoint(vehicle, profile, bx, bz, key(animal))
     end
+    if not A.clearStep(vehicle, profile, r.x, r.z, bx, bz) then return nil end
     return bx, bz, facingTo(x - bx, z - bz)
 end
 
@@ -377,10 +405,11 @@ local function look(vehicle, profile, animal, r, hours)
     for _, wants in ipairs(needs) do
         for _, source in ipairs(A.sources(vehicle, profile, animal, wants, r.x, r.z)) do
             local bx, bz, f = besidePoint(vehicle, profile, animal, r, source.entry.x, source.entry.z)
-            if consume(animal, source) then
+            if bx and consume(animal, source) then
                 r.x, r.z, r.f = bx, bz, f
                 r.p = wants == "water" and "drink" or "eat"
                 r.u = hours + A.FEED_MINUTES / 60
+                r.nextMove = r.u + (A.REST_MINUTES + ZombRand(A.REST_JITTER + 1)) / 60
                 if not source.bowl and source.kind == "food" then
                     -- an item eaten up leaves the floor: so does its recorded place
                     local part = L.prune(vehicle)
@@ -390,12 +419,19 @@ local function look(vehicle, profile, animal, r, hours)
             end
         end
     end
-    -- now and then: a few steps, a rest, up again
-    local roll = ZombRand(40)
+    -- Needs can interrupt a rest, but a satisfied animal mostly stays settled.
+    -- A missing timer on an old record starts a quiet interval on first load.
+    if not r.nextMove then
+        r.nextMove = hours + (A.REST_MINUTES + ZombRand(A.REST_JITTER + 1)) / 60
+        return true
+    end
+    if hours < r.nextMove then return changed end
+    r.nextMove = hours + (A.REST_MINUTES + ZombRand(A.REST_JITTER + 1)) / 60
+    local roll = ZombRand(4)
     if roll == 0 then
         local tx, tz = r.x + ZombRandFloat(-A.WANDER, A.WANDER), r.z + ZombRandFloat(-A.WANDER, A.WANDER)
         local nx, nz = A.freePoint(vehicle, profile, tx, tz, key(animal))
-        if (nx - r.x) ^ 2 + (nz - r.z) ^ 2 > 0.04 then
+        if (nx - r.x) ^ 2 + (nz - r.z) ^ 2 > 0.04 and A.clearStep(vehicle, profile, r.x, r.z, nx, nz) then
             r.f = facingTo(nx - r.x, nz - r.z)
             r.x, r.z, r.p = nx, nz, "idle"
             return true
@@ -404,7 +440,7 @@ local function look(vehicle, profile, animal, r, hours)
         r.p = r.p == "lie" and "idle" or "lie"
         return true
     end
-    return changed
+    return true -- persist the new quiet interval even when it chose to stay still
 end
 
 -- Records for animals that have none (put in some other way: the game's trailer menu, Companion Dogs), none for
@@ -461,7 +497,7 @@ end
 
 -- An owner standing inside: their following dogs that reached the way in walk in.
 local function dogsIn(CD, player, vehicle, profile)
-    if not CD.regCompanionsOf then return false end
+    if not CD.regCompanionsOf or not vehicle:isStopped() then return false end
     local ok, dogs = pcall(CD.regCompanionsOf, player)
     if not ok or type(dogs) ~= "table" then return false end
     local wx, wy = wayIn(vehicle, profile)
@@ -470,11 +506,13 @@ local function dogsIn(CD, player, vehicle, profile)
         if type(dog) == "userdata" and instanceof(dog, "IsoAnimal") and dog:getSquare() ~= nil and dog:getVehicle() == nil
                 and A.alive(dog) and following(CD, dog) and A.fits(vehicle, dog)
                 and (dog:getX() - wx) ^ 2 + (dog:getY() - wy) ^ 2 <= A.DOOR_REACH * A.DOOR_REACH then
-            vehicle:addAnimalInTrailer(dog)
             local door = profile.door or { x = 0, z = 0 }
-            local x, z = A.freePoint(vehicle, profile, door.x, door.z, key(dog))
-            A.place(vehicle, dog, x, z, facingTo(-door.x, -door.z), "idle")
-            changed = true
+            local x, z = A.freePoint(vehicle, profile, door.x, door.z, key(dog), nil, true)
+            if x then
+                vehicle:addAnimalInTrailer(dog)
+                A.place(vehicle, dog, x, z, facingTo(-door.x, -door.z), "idle")
+                changed = true
+            end
         end
     end
     return changed
@@ -495,11 +533,11 @@ local function dogsOut(CD, vehicle)
                     local md = fresh:getModData()
                     for k, v in pairs(data) do md[k] = v end
                     fresh:addToWorld()
+                    if isServer() then sendRemoveAnimalFromTrailer(dog, owner, vehicle) end
+                    local records = A.records(vehicle, false)
+                    if records then records[key(dog)] = nil end
+                    changed = true
                 end
-                if isServer() then
-                    sendRemoveAnimalFromTrailer(dog, owner, vehicle)
-                end
-                changed = true
             end
         end
     end
@@ -529,6 +567,10 @@ local function companionDogsPass(vehicles)
         local ok, changed = pcall(dogsOut, CD, vehicle)
         if not ok then
             print("[ME_LENS] animals: taking a dog out failed: " .. tostring(changed))
+        elseif changed then
+            -- Also publish when the last dog leaves: withAnimals() below no
+            -- longer includes an empty vehicle, so it cannot prune this record.
+            vehicle:transmitModData()
         end
     end
 end

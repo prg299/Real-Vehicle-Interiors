@@ -24,7 +24,14 @@ UI.PICK = 0.3         -- tiles round an animal's middle the mouse finds it
 UI.HEIGHT = 0.55      -- how high (tiles) the mouse finds it
 UI.AHEAD = 0.45       -- tiles in front of you a dropped animal is put down
 
-local function java() return MELensRV end
+local function java()
+    local rv = M.java and M.java()
+    if not rv then return nil end
+    for _, name in ipairs({"beginAnimals", "addAnimal", "endAnimals", "clearAnimals"}) do
+        if type(rv[name]) ~= "function" then return nil end
+    end
+    return rv
+end
 
 local function say(player, key, ...)
     HaloTextHelper.addBadText(player, getText(key, ...))
@@ -57,6 +64,7 @@ local function standPoint(player, vehicle)
 end
 
 function UI.drop(player, vehicle, profile, item)
+    if not java() then say(player, "IGUI_MELens_NoJava");return end
     local animal = item:getAnimal()
     if not animal or not A.alive(animal) then
         say(player, "IGUI_MELens_AnimalNotAlive")
@@ -71,7 +79,8 @@ function UI.drop(player, vehicle, profile, item)
         if not x then return end
         local ax, az = x - math.sin(f) * UI.AHEAD, z + math.cos(f) * UI.AHEAD
         -- not where you stand: the nearest free floor point ahead may be your own
-        ax, az = A.freePoint(vehicle, profile, ax, az, tostring(animal:getAnimalID()), { { x = x, z = z } })
+        ax, az = A.freePoint(vehicle, profile, ax, az, tostring(animal:getAnimalID()), { { x = x, z = z } }, true)
+        if not ax then say(player, "IGUI_MELens_AnimalNoRoom");return end
         -- it faces you
         ISTimedActionQueue.add(MELensDropAnimal:new(player, vehicle, item, ax, az, math.atan2(-(x - ax), z - az)))
     end)
@@ -83,7 +92,7 @@ ISInventoryPaneContextMenu.dropItem = function(item, player)
     if item and instanceof(item, "AnimalInventoryItem") then
         local playerObj = getSpecificPlayer(player)
         local vehicle, profile = A.inside(playerObj)
-        if vehicle and java() and MELensRV and M.insideVehicle(playerObj) then
+        if vehicle and M.insideVehicle(playerObj) then
             UI.drop(playerObj, vehicle, profile, item)
             return
         end
@@ -245,12 +254,6 @@ M.LooseView.proto = function(fullType)
     return previousProto(fullType)
 end
 
-local function canPickUp(animal)
-    local defs = AnimalDefinitions and AnimalDefinitions.animals
-    local def = defs and defs[animal:getAnimalType()]
-    return def == nil or def.canBePicked ~= false
-end
-
 function UI.menu(player, vehicle, profile, hit, context)
     local animal = hit.animal
     if not animal then return end
@@ -268,7 +271,7 @@ function UI.menu(player, vehicle, profile, hit, context)
             end)
         end)
     end)
-    if not canPickUp(animal) then
+    if not A.canPickUp(animal) then
         pick.notAvailable = true
     end
     if AnimalContextMenu and AnimalContextMenu.onAnimalInfo then

@@ -59,24 +59,29 @@ end
 
 function MELensDropAnimal:complete()
     local inventory = self.character:getInventory()
-    local item = inventory:getItemWithID(self.item:getID()) or self.item
+    -- Re-resolve committed inventory at completion; a queued/stale item object
+    -- is not authority to add another animal after the item was transferred.
+    local item = self.item and inventory:getItemWithID(self.item:getID())
     local animal = liveAnimal(item)
     local vehicle = self.vehicle
     local _, profile = A().inside(self.character)
     if not animal or not profile or A().inside(self.character) ~= vehicle or not A().fits(vehicle, animal) then
         return false
     end
+    local px, pz = MELens.Parts.characterAt(vehicle, self.character)
+    if not px then return false end
+    local x, z = tonumber(self.x), tonumber(self.z)
+    if not x or not z or x ~= x or z ~= z or (x-px)^2+(z-pz)^2 > 1.5^2 then x, z = px, pz end
+    -- Floor/furniture/occupancy may have changed since the client chose a point.
+    -- Reject a full interior without consuming its carried animal.
+    x, z = A().freePoint(vehicle, profile, x, z, tostring(animal:getAnimalID()), {{x=px,z=pz}}, true)
+    if not x then return false end
+    vehicle:updateParts()
     vehicle:addAnimalFromHandsInTrailer(animal, self.character)
-    if isServer() then
-        sendAddAnimalFromHandsInTrailer(animal, self.character, vehicle)
-    end
-    -- where the player put it, or the free place nearest to it
-    local x, z = tonumber(self.x) or 0, tonumber(self.z) or 0
-    local floor = { kind = "floor", s = 0, y = profile.floorY }
-    if not MELens.Loose.fitsSurface(vehicle, profile, floor, x, z, 0.1, 0.1) then
-        x, z = A().freePoint(vehicle, profile, x, z, tostring(animal:getAnimalID()))
-    end
-    A().place(vehicle, animal, x, z, tonumber(self.f) or 0, "idle")
+    if isServer() then sendAddAnimalFromHandsInTrailer(animal, self.character, vehicle) end
+    local facing = tonumber(self.f) or 0
+    if facing ~= facing or math.abs(facing) == math.huge then facing = 0 end
+    A().place(vehicle, animal, x, z, facing, "idle")
     vehicle:transmitModData()
     return true
 end
@@ -110,7 +115,8 @@ function MELensPickUpAnimal:animal()
 end
 
 function MELensPickUpAnimal:isValid()
-    return self.character:getVehicle() == self.vehicle and self:animal() ~= nil
+    local animal = self:animal()
+    return A().inside(self.character) == self.vehicle and animal ~= nil and A().canPickUp(animal)
 end
 
 function MELensPickUpAnimal:start()
@@ -138,7 +144,10 @@ end
 function MELensPickUpAnimal:complete()
     local vehicle = self.vehicle
     local animal = self:animal()
-    if not animal or self.character:getVehicle() ~= vehicle then return false end
+    if not self:isValid() then return false end
+    local record = A().record(vehicle, animal)
+    local x, z = MELens.Parts.characterAt(vehicle, self.character)
+    if not record or not x or (record.x-x)^2+(record.z-z)^2 > 1.5^2 then return false end
     local data = {}
     for k, v in pairs(animal:getModData()) do data[k] = v end
     local fresh = vehicle:removeAnimalFromTrailer(animal)

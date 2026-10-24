@@ -201,26 +201,40 @@ public final class Animals {
                     slots.put(e.animal, slot);
                 }
                 AnimatedModel model = slot.model;
+                // setCharacter builds the animator immediately. It must see the
+                // animal's set, rather than AnimatedModel's mannequin default.
+                String animationState = e.state == null ? "idle" : e.state;
+                model.setAnimSetName(e.animal.GetAnimSetName());
+                model.setState(animationState);
                 if (slot.lookOf != e.animal || now - slot.lookAt > LOOK_EVERY) {
                     model.setCharacter(e.animal);
                     slot.lookOf = e.animal;
                     slot.lookAt = now;
                 }
-                model.setAnimSetName(e.animal.GetAnimSetName());
                 // setState only names the state for the next rebuild of the model: the animator takes it here (it keeps
                 // playing the state it has, so a walking animal otherwise slid in its idle pose)
-                String animationState = e.state == null ? "idle" : e.state;
-                model.setState(animationState);
                 AdvancedAnimator animator = model.getAdvancedAnimator();
                 if (!animationState.equals(animator.getCurrentStateName()) && animator.containsState(animationState)) {
                     animator.setState(animationState);
                 }
                 // the game's animals eat and drink with idleAction "eat"; Companion Dogs' dogs with cdEat and cdDrink
                 String action = e.action == null ? "" : e.action;
+                boolean moving = "walk".equals(animationState);
+                boolean feeding = "eating".equals(animationState);
+                // AnimatedModel updates its own ActionContext every frame.
+                // Naming an animator state alone is immediately undone by the
+                // native walk/eating -> idle transitions unless their variables
+                // agree. These flags belong to this render model, not the live
+                // trailer animal or Companion Dogs' outside AI.
+                model.setVariable("bMoving", moving);
+                model.setVariable("bPathfind", false);
+                model.setVariable("isAnimalEating", feeding);
+                model.setVariable("TrailerAnimation", "");
                 model.setVariable("idleAction", "drink".equals(action) ? "eat" : action);
                 model.setVariable("cdEat", "eat".equals(action));
                 model.setVariable("cdDrink", "drink".equals(action));
-                model.setVariable("animalSpeed", "walk".equals(e.state) ? 1.0f : 0.0f);
+                model.setVariable("cdRest", "sit".equals(action));
+                model.setVariable("animalSpeed", moving ? 1.0f : 0.0f);
                 model.setVariable("animalRunning", false);
                 // where it stands: the vehicle's transform of its place (the vehicle may lean or drive)
                 vehicle.getWorldPos(offset.x() + e.x, offset.y() + floor, offset.z() + e.z, at);

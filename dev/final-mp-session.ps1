@@ -13,6 +13,7 @@ param(
     [string]$Run = 'final-mp-206',
     [string]$ResumeFrom,
     [switch]$ServerJava,
+    [switch]$CompanionDogs,
     [string]$PackagePath,
     [switch]$AllowOtherGames,
     [ValidateRange(1024, 65534)][int]$ServerPort = 17361,
@@ -26,6 +27,10 @@ $explicitServerPort = $PSBoundParameters.ContainsKey('ServerPort')
 . (Join-Path $PSScriptRoot '..\scripts\common.ps1')
 . (Join-Path $PSScriptRoot 'existing-test-acknowledgements.ps1')
 $ErrorActionPreference = 'Stop'
+if ($CompanionDogs) {
+    $Lens.Dependencies += @{ Id = 'CompanionDogs'; Item = '3740052292'; Folder = 'CompanionDogs' }
+}
+$testModIds = @($Lens.Dependencies | ForEach-Object { $_.Id }) + @('RealVehicleInteriors', 'RealVehicleInteriors_Dev')
 if ($PackagePath) {
     $resolvedPackage = [IO.Path]::GetFullPath((Resolve-Path -LiteralPath $PackagePath -ErrorAction Stop).Path)
     $packageRoot = [IO.Path]::GetFullPath($Lens.Out)
@@ -57,6 +62,7 @@ if ($ResumeFrom) {
         $ancestor = [IO.Path]::GetDirectoryName($ancestor)
     }
     $resumeSession = Get-Content -LiteralPath (Join-Path $resumePath 'session.json') -Raw | ConvertFrom-Json
+    if ([bool]$CompanionDogs -ne ($resumeSession.companionDogs -eq $true)) { throw 'Resume must use the original CompanionDogs flag' }
     $resumeCredentials = Get-Content -LiteralPath (Join-Path $resumePath 'credentials.json') -Raw | ConvertFrom-Json
     $priorNoJava = $resumeSession.serverNoJava -eq $true -and $resumeSession.serverJava -ne $true
     $priorServerJava = $resumeSession.serverJava -eq $true -and $resumeSession.serverNoJava -ne $true
@@ -106,6 +112,7 @@ $driver = $null
 $serverStdout = $null; $serverStderr = $null
 $session = [ordered]@{
     serverNoJava = (-not [bool]$ServerJava); serverJava = [bool]$ServerJava
+    companionDogs = [bool]$CompanionDogs
     packagePath = $Lens.Package; allowOtherGames = [bool]$AllowOtherGames
     unmanagedGamePids = $otherGamePids; clientLuaPortA = $ClientLuaPortA; clientLuaPortB = $ClientLuaPortB
     stockClientClasses = $true; inactiveDesktops = $true
@@ -195,7 +202,8 @@ function Stage-Profile([string]$name, [bool]$includeDeveloperJava = $true) {
         New-Item -ItemType Directory -Path $javaDir -Force | Out-Null
         Copy-Item -LiteralPath $script:devJar -Destination (Join-Path $javaDir 'RealVehicleInteriors_Dev.jar') -Force
     }
-    $modList = "VERSION = 1,`nmods`n{`n    mod = ZombieBuddy,`n    mod = damnlib,`n    mod = KI5campers,`n    mod = 87fordB700,`n    mod = KI5trailers,`n    mod = RealVehicleInteriors,`n    mod = RealVehicleInteriors_Dev,`n}`nmaps`n{`n}`n"
+    $modLines = ($testModIds | ForEach-Object { "    mod = $_,`n" }) -join ''
+    $modList = "VERSION = 1,`nmods`n{`n${modLines}}`nmaps`n{`n}`n"
     [IO.File]::WriteAllText((Join-Path $mods 'default.txt'), $modList)
     [IO.File]::WriteAllText((Join-Path $mods 'reset-mods-42_00.txt'), 'Owned isolated MP test profile.')
     $options = @'
@@ -217,7 +225,13 @@ musicVolume=0
         # Keep the prior client's preferences and key bindings byte-for-byte.
         # This harness originally staged the same bounded rendering settings.
     } else {
-        $options = Add-ExistingTestAcknowledgements $options (Join-Path $Lens.TestHome 'Zomboid\options.ini')
+        $acknowledgements = Join-Path $Lens.TestHome 'Zomboid\options.ini'
+        if (-not (Test-Path -LiteralPath $acknowledgements -PathType Leaf)) {
+            # A new worktree has no established testhome yet. Match SP Prepare:
+            # copy only values the user already acknowledged, read-only.
+            $acknowledgements = Join-Path $env:USERPROFILE 'Zomboid\options.ini'
+        }
+        $options = Add-ExistingTestAcknowledgements $options $acknowledgements
         [IO.File]::WriteAllText($optionsPath, $options)
     }
     return [pscustomobject]@{ name = $name; home = $profileHome; cache = $cache; mods = $mods }
@@ -495,14 +509,14 @@ try {
     $adminSecret = if ($resumeCredentials) { [string]$resumeCredentials.adminSecret } else { [Guid]::NewGuid().ToString('N') }
     $guestSecret = if ($resumeCredentials) { [string]$resumeCredentials.guestSecret } else { [Guid]::NewGuid().ToString('N') }
     Write-Json (Join-Path $runPath 'credentials.json') @{ admin = 'MELensAdmin'; adminSecret = $adminSecret; guest = 'MELensGuest'; guestSecret = $guestSecret; serverName = $serverName; serverPort = $ServerPort }
-    $serverIni = "Open=true`nPublic=false`nPVP=false`nPauseEmpty=true`nUPnP=false`nDefaultPort=$ServerPort`nUDPPort=$($ServerPort+1)`nMods=ZombieBuddy;damnlib;KI5campers;87fordB700;KI5trailers;RealVehicleInteriors;RealVehicleInteriors_Dev`nWorkshopItems=`nMap=Muldraugh, KY`nSteamVAC=false`nDoLuaChecksum=true`nAntiCheatChecksum=2`n"
+    $serverIni = "Open=true`nPublic=false`nPVP=false`nPauseEmpty=true`nUPnP=false`nDefaultPort=$ServerPort`nUDPPort=$($ServerPort+1)`nMods=$($testModIds -join ';')`nWorkshopItems=`nMap=Muldraugh, KY`nSteamVAC=false`nDoLuaChecksum=true`nAntiCheatChecksum=2`n"
     New-Item -ItemType Directory -Path (Join-Path $serverProfile.cache 'Server') -Force | Out-Null
     $serverIniPath = Join-Path $serverProfile.cache "Server\$serverName.ini"
     $sandboxPath = Join-Path $serverProfile.cache "Server\${serverName}_SandboxVars.lua"
     if ($resumePath) {
         $serverIni = [IO.File]::ReadAllText($serverIniPath)
         foreach ($pair in @(@('DefaultPort', "$ServerPort"), @('UDPPort', "$($ServerPort+1)"),
-            @('Mods', 'ZombieBuddy;damnlib;KI5campers;87fordB700;KI5trailers;RealVehicleInteriors;RealVehicleInteriors_Dev'),
+            @('Mods', ($testModIds -join ';')),
             @('DoLuaChecksum', 'true'), @('AntiCheatChecksum', '2'), @('UPnP', 'false'))) {
             $serverIni = Set-Ini $serverIni $pair[0] $pair[1]
         }
