@@ -21,7 +21,10 @@ def load(name):
 SNAPSHOT='''local v=MELensLifecycle.vehicle;local rows={}
 for i=0,v:getPartCount()-1 do local part=v:getPartByIndex(i);local c=part:getItemContainer();local ids={}
 if c then for j=0,c:getItems():size()-1 do ids[#ids+1]=c:getItems():get(j):getID() end;table.sort(ids) end
-local item=part:getInventoryItem();local d=part:getModData();rows[part:getId()]={item=item and item:getID(),items=ids,capacity=c and c:getCapacity(),
+-- Vanilla seat-capacity lookup dereferences a full vehicle; a virtual owner
+-- temporarily has no seat container capacity. Cargo remains readable.
+local capacity=c and (not part:getId():find("^Seat") or part:getOwner().getModData~=nil) and c:getCapacity() or nil
+local item=part:getInventoryItem();local d=part:getModData();rows[part:getId()]={item=item and item:getID(),items=ids,capacity=capacity,
 condition=(part:getId():find("^MELensSpot") or part:getId():find("^SeatMELens")) and item and item:getCondition()
     or (part:getId()==MELens.Parts.GENERATOR and part:getCondition() or nil),
 data={initialized=d.MELensInitialized,on=d.on,fuel=d.fuel,water=d.water,tainted=d.tainted}} end

@@ -111,7 +111,15 @@ try {
     }
     if ($LoadWorld) {
         if ($LoadWorld -notmatch '^melens-test-[0-9]+$') { throw 'Only owned media saves may be loaded' }
-        Write-Host (Lua "MainScreen.continueLatestSave('Sandbox','$LoadWorld'); return 'loading $LoadWorld'")
+        try {
+            Write-Host (Lua "MainScreen.continueLatestSave('Sandbox','$LoadWorld'); return 'loading $LoadWorld'")
+        } catch {
+            # Continuing a save with a different active-mod set resets Lua and
+            # invalidates the endpoint's current task, after loading has begun.
+            # Keep the bounded world-readiness/owned-process checks below.
+            if ($_.Exception.Message -notmatch 'lua was reset') { throw }
+            Write-Host 'SAVE_LOAD_LUA_RESET_PENDING'
+        }
     } else {
         Write-Host (Lua (Get-Content -LiteralPath (Join-Path $Lens.Root 'dev\lua\newgame.lua') -Raw))
     }
