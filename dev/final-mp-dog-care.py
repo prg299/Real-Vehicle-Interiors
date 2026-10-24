@@ -123,15 +123,31 @@ local pr=MELens.profileFor(v);local o=v:getScript():getModel():getOffset();local
 local a=assert(CompanionDogs.spawnDog(math.floor(q:x()),math.floor(q:y()),0,"dogmale"));CompanionDogs.makeCompanion(a,owner)
 CompanionDogs.data(a).trust=100;CompanionDogs.data(a).name="MP care dog";a:setCustomName("MP care dog");CompanionDogs.transmit(a);CompanionDogs.regInvalidate();return "bonded"''')
             h.REPORT['followIn']=count(1)
-        h.lua('MELensTest={vehicle=getVehicleById('+str(lab.vid)+')};return true');h.lua(care.FIXTURE)
+        h.lua('MELensTest={vehicle=getVehicleById('+str(lab.vid)+')};ISUIHandler.setVisibleAllUI(true);return true');h.lua(care.FIXTURE)
         if not h.lua('local a=MELens.Animals.list(MELensTest.vehicle)[1];return CompanionDogs.data(a).companionToken==CompanionDogs.playerData(getPlayer()).token'):
             menu(h.lua('local a=MELens.Animals.list(MELensTest.vehicle)[1];return getText("IGUI_PD_Select",CompanionDogs.data(a).name)'))
             lab.wait(lambda:h.lua('local a=MELens.Animals.list(MELensTest.vehicle)[1];return CompanionDogs.data(a).companionToken==CompanionDogs.playerData(getPlayer()).token'),bool,'native selected companion after loading')
             h.REPORT['nativeCompanionSelection']=True
-        h.lua('ISUIHandler.setVisibleAllUI(true);return true');set_state('stay');h.REPORT['nativeStay']=all_states()
+        set_state('stay');h.REPORT['nativeStay']=all_states()
         menu(h.lua('return getText("IGUI_PD_Inspect")'))
         lab.wait(lambda:h.lua('local w=ISCDStatusWindow.instanceFor(getPlayer());return w and w:isVisible()'),bool,'native interior Inspect remains open')
         lab.capture('A','mp-native-interior-inspect');h.lua('ISCDStatusWindow.instanceFor(getPlayer()):close();return true')
+        h.REPORT['petCooldownFixture']=lab.server('local a=MELens.Animals.list(getVehicleById('+str(lab.vid)+'))[1];local last=CompanionDogs.data(a).lastPetMin;local wait=last and last+CompanionDogs.petCooldownMin()+1-CompanionDogs.worldMinutes() or 0;if wait>0 then getGameTime():setTimeOfDay(getGameTime():getTimeOfDay()+wait/60) end;return wait')
+        prior_pet=lab.server('local a=MELens.Animals.list(getVehicleById('+str(lab.vid)+'))[1];return CompanionDogs.data(a).lastPetMin or -1')
+        menu(h.lua('return getText("IGUI_PD_Pet")'))
+        lab.wait(lambda:h.lua('return getPlayer():getVariableBoolean("petanimal")'),bool,'native dedicated-server pet animation starts')
+        samples=[]
+        for _ in range(4):
+            samples.append(json.loads(h.lua('return MELensDevBones.tracks(getPlayer())')));time.sleep(.2)
+        lab.capture('A','mp-native-pet-pose')
+        pet_tracks={}
+        for sample in samples:
+            for track in sample:
+                if 'pet' in track['name'].lower() and track['blend']>.1:pet_tracks.setdefault(track['name'],[]).append(track['time'])
+        h.check(any(len(times)>1 and max(times)-min(times)>.01 for times in pet_tracks.values()),'dedicated-server pet action has no advancing weighted player clip')
+        lab.wait(lambda:lab.server('local a=MELens.Animals.list(getVehicleById('+str(lab.vid)+'))[1];return CompanionDogs.data(a).lastPetMin or -1'),lambda value:value!=prior_pet,'dedicated server accepts the native pet effect')
+        lab.wait(lambda:h.lua('return not getPlayer():getVariableBoolean("petanimal") and #ISTimedActionQueue.getTimedActionQueue(getPlayer()).queue==0'),bool,'native pet action cleans up')
+        h.REPORT['nativePet']={'before':prior_pet,'playerTracks':samples}
         before=lab.wait(all_states,lambda ss:ss['server']['animals'][0].get('upkeep') is not None,
             'first loaded Companion Dogs upkeep pass')
         lab.server('local g=getGameTime();g:setTimeOfDay(g:getTimeOfDay()+40/60);return "forty minute Stay control"')
