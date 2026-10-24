@@ -2,11 +2,11 @@
 
 Walk around inside KI5 campers, B700 buses and F700 box trucks in **Project Zomboid Build 42.21**. Furnish your vehicle, sleep, cook, wash, store supplies and take your base with you.
 
-**Current release: 2.0.12 (beta).** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541) · [Animals WIP branch](https://github.com/prg299/Real-Vehicle-Interiors/tree/animals-support)
+**Current release: 2.0.13 (beta).** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541) · [Animals WIP branch](https://github.com/prg299/Real-Vehicle-Interiors/tree/animals-support)
 
-**Next version: 2.0.13 (unreleased beta).** Includes the vehicle expansion, Viewpoint compatibility, vanilla dashboard and interior sight concealment.
+Includes the vehicle expansion, Viewpoint compatibility, vanilla dashboard and interior sight concealment.
 
-This branch adds **193 vehicle definitions across 12 body families**, including vanilla vans, step vans, E150s, Chevy step vans and additional armored trucks and ambulances. See [supported vehicles](docs/vehicles.md) for optional vehicle mods and fit details.
+Supports **193 additional vehicle definitions across 12 body families**, including vanilla vans, step vans, E150s, Chevy step vans and additional armored trucks and ambulances. See [supported vehicles](docs/vehicles.md) for optional vehicle mods and fit details.
 
 ## Requirements
 
