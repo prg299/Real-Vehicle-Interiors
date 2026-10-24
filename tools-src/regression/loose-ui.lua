@@ -43,6 +43,11 @@ do
     getSpecificPlayer=function() return nil end
     x,z=UI.standFor(v,profile,0.6,0,0,nil)
     check(x==3.6 and z==3,"absent local character fails fallback approach")
+    function player:getVehicle() return self.vehicle end
+    player.vehicle=v;player.x=.2;player.z=0;player.standing=true
+    M.walkableAt=function() error("reachable furniture should not choose another approach") end
+    x,z=I.openStandPoint(v,{wall="left",x=.8,z=0,length=.6,depth=.32},"equipmentrack",0,player)
+    check(x==.2 and z==0,"furniture replacement leaves an already reachable standing position")
     P.characterAt,M.isStanding,M.nearestWalkableAt,M.walkableAt,getSpecificPlayer=oldAt,oldStanding,oldNearest,oldWalkable,oldSpecific
     ISUIElement=MELensLooseUISaved.ISUIElement
     for _,name in ipairs({"OnFillInventoryObjectContextMenu","OnGameStart","OnMainMenuEnter","OnPostUIDraw"}) do

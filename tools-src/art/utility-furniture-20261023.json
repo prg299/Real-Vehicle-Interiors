@@ -1,0 +1,93 @@
+{
+  "tool": "Built-in image_gen for icons; Blender 3.6 rv_kit.py for meshes and baked material textures",
+  "styleReferences": [
+    "tools-src/art/icons/icon_bed.png",
+    "tools-src/art/icons/icon_cabinet.png"
+  ],
+  "masters": {
+    "metalcase": "tools-src/art/icons/icon_metalcase.png",
+    "stretcher": "tools-src/art/icons/icon_stretcher.png"
+  },
+  "prompts": {
+    "metalcase": "Create a single transparent-background inventory icon for the Real Vehicle Interiors Project Zomboid mod. Reference image is a style reference only: match its isometric three-quarter view, hand-painted realistic game furniture style, soft worn materials, muted dirty colours, careful dark edges, and readable silhouette. Subject: compact grey steel equipment cabinet, squat 0.52m wide by 0.52m deep and 0.80m high, three metal drawers, simple horizontal chrome pulls, dark recessed steel plinth, slightly raised grey sheet-steel top. No wood, labels, logos, writing, medical crosses or background. Keep entire cabinet in frame centred with 6 percent transparent margin, top/front/right visible like reference. Gently worn matte grey finish, subtle scuffs and seams, soft highlights. This icon will be used at 64x64 so clear form matters. Output 1024x1024 with real transparency.",
+    "stretcher": "Create one inventory icon with real transparent background for Project Zomboid Real Vehicle Interiors. The reference is a STYLE reference only: match its isometric three-quarter game furniture view, hand-painted worn materials, muted colours, dark seams and gently rounded edges. Subject is a compact medical transport stretcher: long narrow blue-grey vinyl mattress, no pillow or bedding, low grey steel rectangular frame, four small black caster wheels, short thin steel posts and simple chrome safety rails on both long sides, two flat black straps across the mattress. Dimensions roughly 1.5 metres long, .55 wide, .55 high. Show whole item centred with transparent padding; elevated three-quarter view showing mattress and long front side; readable silhouette for 64 pixel icon. No wood, equipment, people, writing, labels, red cross or other symbols. Same gentle realistic worn painted style as reference, no photorealistic render, no drop shadow, no backdrop. Output 1024x1024 transparent PNG."
+  },
+  "materials": [
+    "Existing authored steel, vinyl, chrome, rubber and diamondplate masters in tools-src/art/textures"
+  ],
+  "formatException": "Project Zomboid model/texture and inventory loaders require the existing PNG paths, including opaque model textures. Runtime derivatives use power-of-two dimensions.",
+  "exports": [
+    {
+      "path": "mod/RealVehicleInteriors/common/media/textures/Item_MELensRV_stretcher.png",
+      "bytes": 6380,
+      "dimensions": [
+        64,
+        64
+      ],
+      "format": "PNG",
+      "hasTransparency": true,
+      "compressedBytes": 2805,
+      "uncompressedSha256": "46d9cd04f63d51a06d09bb2e457a170a9656ebeb56cf87491cd255561f1de35e",
+      "sha256": "b6d3f848bbe09283c728a919e147ea0ca4aea36f8e293d5c276c035fa423b7f8",
+      "compression": "TinyPNG website, 2026-10-23"
+    },
+    {
+      "path": "mod/RealVehicleInteriors/common/media/textures/Item_MELensRV_metalcase.png",
+      "bytes": 6409,
+      "dimensions": [
+        64,
+        64
+      ],
+      "format": "PNG",
+      "hasTransparency": true,
+      "compressedBytes": 3299,
+      "uncompressedSha256": "9fe62f8b1f5233671367cbca1194ae6b2c89993f55ac0671d203c0a6eadc20ae",
+      "sha256": "d8f01bcceeef576dc2e0480e3bf80d64070ce4ab41304d6a0495adff2875e78a",
+      "compression": "TinyPNG website, 2026-10-23"
+    },
+    {
+      "path": "mod/RealVehicleInteriors/common/media/textures/Vehicles/MELensRV_stretcher.png",
+      "bytes": 123234,
+      "dimensions": [
+        512,
+        512
+      ],
+      "format": "PNG",
+      "hasTransparency": false,
+      "compressedBytes": 40501,
+      "uncompressedSha256": "dbe4665dfb01f42e27dd3057b5c5ab568dcacfc65e0154a22f9d6e37d6aed118",
+      "sha256": "081fff5a92dd41b2f0c8976761d22a30867189e47f055cba7f2d2b1d1c054a4a",
+      "compression": "TinyPNG website, 2026-10-23"
+    },
+    {
+      "path": "mod/RealVehicleInteriors/common/media/textures/Vehicles/MELensRV_metalcase.png",
+      "bytes": 117978,
+      "dimensions": [
+        512,
+        512
+      ],
+      "format": "PNG",
+      "hasTransparency": false,
+      "compressedBytes": 32190,
+      "uncompressedSha256": "1060fce122b2b07691cb73d97322a892921f9e323f510705b3203421881d16ab",
+      "sha256": "89772f2c37c53c4118b81ee4e1fc0d6bed5a47db6eabe2a69c18a709916ed17e",
+      "compression": "TinyPNG website, 2026-10-23"
+    },
+    {
+      "path": "mod/RealVehicleInteriors/common/media/textures/Vehicles/MELensShell_f700box_floor.png",
+      "bytes": 1225416,
+      "dimensions": [
+        512,
+        2048
+      ],
+      "format": "PNG",
+      "hasTransparency": false,
+      "compressedBytes": 280671,
+      "uncompressedSha256": "ecff63428e1c4544803dbce8321e385480686ac91b051591f4c259ae07e3414d",
+      "sha256": "aedfc14b64b698d6a99ce7244f4c0319a505b7359f022429d395513a74fa94c0",
+      "compression": "TinyPNG website, 2026-10-23",
+      "supersededBy": "cargo-furniture-20261023.json: 2026-10-24 cargo-shell atlas export; this row retains its original revision receipt"
+    }
+  ],
+  "visualReview": "Native vehicle and inventory review recorded under build/rv/factory-review-20261023-c"
+}

@@ -1,0 +1,356 @@
+{
+  "families": [
+    {
+      "family": "VanillaVan",
+      "title": "Franklin Valuline cargo van",
+      "vehicles": [
+        "Base.Van",
+        "Base.VanBeckmans",
+        "Base.VanBrewsterHarbin",
+        "Base.VanBuilder",
+        "Base.VanCarpenter",
+        "Base.VanCoastToCoast",
+        "Base.VanDeerValley",
+        "Base.VanFossoil",
+        "Base.VanGardenGods",
+        "Base.VanGardener",
+        "Base.VanGreenes",
+        "Base.VanJohnMcCoy",
+        "Base.VanJonesFabrication",
+        "Base.VanKerrHomes",
+        "Base.VanKnobCreekGas",
+        "Base.VanKnoxCom",
+        "Base.VanKorshunovs",
+        "Base.VanLouisvilleLandscaping",
+        "Base.VanMail",
+        "Base.VanMccoy",
+        "Base.VanMechanic",
+        "Base.VanMeltingPointMetal",
+        "Base.VanMetalheads",
+        "Base.VanMetalworker",
+        "Base.VanMicheles",
+        "Base.VanMobileMechanics",
+        "Base.VanMooreMechanics",
+        "Base.VanOldMill",
+        "Base.VanOvoFarm",
+        "Base.VanPennSHam",
+        "Base.VanPlattAuto",
+        "Base.VanPluggedInElectrics",
+        "Base.VanRiversideFabrication",
+        "Base.VanRosewoodworking",
+        "Base.VanSchwabSheetMetal",
+        "Base.VanSpiffo",
+        "Base.VanTreyBaines",
+        "Base.VanUncloggers",
+        "Base.VanUtility",
+        "Base.VanWPCarpentry",
+        "Base.Van_Blacksmith",
+        "Base.Van_BugWipers",
+        "Base.Van_Charlemange_Beer",
+        "Base.Van_CraftSupplies",
+        "Base.Van_Glass",
+        "Base.Van_HeritageTailors",
+        "Base.Van_KnoxDisti",
+        "Base.Van_Leather",
+        "Base.Van_LectroMax",
+        "Base.Van_Locksmith",
+        "Base.Van_Masonry",
+        "Base.Van_MassGenFac",
+        "Base.Van_Perfick_Potato",
+        "Base.Van_Transit",
+        "Base.Van_VoltMojo"
+      ],
+      "dependencies": [],
+      "representative": "Base.Van",
+      "mesh": "vehicles/Vehicles_Van"
+    },
+    {
+      "family": "VanillaPassengerVan",
+      "title": "Franklin Valuline passenger van",
+      "vehicles": [
+        "Base.VanSeats",
+        "Base.VanSeatsAirportShuttle",
+        "Base.VanSeats_Creature",
+        "Base.VanSeats_LadyDelighter",
+        "Base.VanSeats_Mural",
+        "Base.VanSeats_Prison",
+        "Base.VanSeats_Space",
+        "Base.VanSeats_Trippy",
+        "Base.VanSeats_Valkyrie"
+      ],
+      "dependencies": [],
+      "representative": "Base.VanSeats",
+      "mesh": "vehicles/Vehicles_VanSeats"
+    },
+    {
+      "family": "VanillaAmbulance",
+      "title": "Vanilla ambulance",
+      "vehicles": [
+        "Base.VanAmbulance"
+      ],
+      "dependencies": [],
+      "representative": "Base.VanAmbulance",
+      "mesh": "vehicles/Vehicles_VanAmbulance"
+    },
+    {
+      "family": "VanillaRadioVan",
+      "title": "Vanilla radio van",
+      "vehicles": [
+        "Base.VanRadio",
+        "Base.VanRadio_3N"
+      ],
+      "dependencies": [],
+      "representative": "Base.VanRadio",
+      "mesh": "vehicles/Vehicles_VanRadio"
+    },
+    {
+      "family": "VanillaStepVan",
+      "title": "Chevalier step van",
+      "vehicles": [
+        "Base.StepVan",
+        "Base.StepVanAirportCatering",
+        "Base.StepVanMail",
+        "Base.StepVan_Blacksmith",
+        "Base.StepVan_Butchers",
+        "Base.StepVan_Cereal",
+        "Base.StepVan_Citr8",
+        "Base.StepVan_CompleteRepairShop",
+        "Base.StepVan_Florist",
+        "Base.StepVan_Genuine_Beer",
+        "Base.StepVan_Glass",
+        "Base.StepVan_Heralds",
+        "Base.StepVan_HuangsLaundry",
+        "Base.StepVan_Jorgensen",
+        "Base.StepVan_LouisvilleMotorShop",
+        "Base.StepVan_LouisvilleSWAT",
+        "Base.StepVan_MarineBites",
+        "Base.StepVan_Masonry",
+        "Base.StepVan_Mechanic",
+        "Base.StepVan_MobileLibrary",
+        "Base.StepVan_Plonkies",
+        "Base.StepVan_Propane",
+        "Base.StepVan_RandisPlants",
+        "Base.StepVan_Scarlet",
+        "Base.StepVan_SmartKut",
+        "Base.StepVan_SouthEasternHosp",
+        "Base.StepVan_SouthEasternPaint",
+        "Base.StepVan_USL",
+        "Base.StepVan_Zippee"
+      ],
+      "dependencies": [],
+      "representative": "Base.StepVan",
+      "mesh": "vehicles/Vehicle_StepVan"
+    },
+    {
+      "family": "E150Short",
+      "title": "Ford E150 short van",
+      "vehicles": [
+        "Base.86fordE150",
+        "Base.86fordE150LBMWradio",
+        "Base.86fordE150beckmansBuilding",
+        "Base.86fordE150blacksmith",
+        "Base.86fordE150brewster",
+        "Base.86fordE150brushAndClay",
+        "Base.86fordE150bugWipers",
+        "Base.86fordE150ccconstruction",
+        "Base.86fordE150creatureCruiser",
+        "Base.86fordE150dnd",
+        "Base.86fordE150fossoil",
+        "Base.86fordE150greenes",
+        "Base.86fordE150knobCreek",
+        "Base.86fordE150knoxDistilery",
+        "Base.86fordE150knoxTelecom",
+        "Base.86fordE150korshunovs",
+        "Base.86fordE150ksp",
+        "Base.86fordE150kyTransit",
+        "Base.86fordE150leatherwork",
+        "Base.86fordE150lectromax",
+        "Base.86fordE150locksmith",
+        "Base.86fordE150lvLandscaping",
+        "Base.86fordE150massGenfac",
+        "Base.86fordE150med",
+        "Base.86fordE150meltingPointMetal",
+        "Base.86fordE150mesmerWagon",
+        "Base.86fordE150metalheads",
+        "Base.86fordE150michelesWoodshop",
+        "Base.86fordE150mm",
+        "Base.86fordE150mobileMechanics",
+        "Base.86fordE150mooresMechanics",
+        "Base.86fordE150oVoFarms",
+        "Base.86fordE150oldMillWaterCompany",
+        "Base.86fordE150pd",
+        "Base.86fordE150pennSham",
+        "Base.86fordE150plattAutoRepair",
+        "Base.86fordE150pluggedInElectrics",
+        "Base.86fordE150postal",
+        "Base.86fordE150quantumVessel",
+        "Base.86fordE150riversideFab",
+        "Base.86fordE150rosewoodWorking",
+        "Base.86fordE150schwab",
+        "Base.86fordE150slide",
+        "Base.86fordE150slideSpiffo",
+        "Base.86fordE150so",
+        "Base.86fordE150stoneworksMasonry",
+        "Base.86fordE150tasteTheBrew",
+        "Base.86fordE150theGardenGods",
+        "Base.86fordE150theLadyDelighter",
+        "Base.86fordE150treyBaines",
+        "Base.86fordE150uncloggers",
+        "Base.86fordE150valkyriesSpear",
+        "Base.86fordE150voltMojo",
+        "Base.86fordE150zenith"
+      ],
+      "dependencies": [
+        [
+          "2870394916",
+          "86fordE150"
+        ],
+        [
+          "2870394916",
+          "86fordE150expanded"
+        ]
+      ],
+      "representative": "Base.86fordE150",
+      "mesh": "vehicles/Vehicles_86fordE150_Body|e150_body_short"
+    },
+    {
+      "family": "E150Long",
+      "title": "Ford E150 long van",
+      "vehicles": [
+        "Base.86fordE150McCoyWoodworking",
+        "Base.86fordE150deerValley",
+        "Base.86fordE150heritageTailors",
+        "Base.86fordE150jones",
+        "Base.86fordE150kerrHomes",
+        "Base.86fordE150long",
+        "Base.86fordE150mccoy",
+        "Base.86fordE150perfick",
+        "Base.86fordE150wpCarpentry"
+      ],
+      "dependencies": [
+        [
+          "2870394916",
+          "86fordE150"
+        ],
+        [
+          "2870394916",
+          "86fordE150expanded"
+        ]
+      ],
+      "representative": "Base.86fordE150long",
+      "mesh": "vehicles/Vehicles_86fordE150_Body|e150_body_long"
+    },
+    {
+      "family": "E150Windows",
+      "title": "Ford E150 passenger van",
+      "vehicles": [
+        "Base.86fordE150LVairportShuttle",
+        "Base.86fordE150longW"
+      ],
+      "dependencies": [
+        [
+          "2870394916",
+          "86fordE150"
+        ],
+        [
+          "2870394916",
+          "86fordE150expanded"
+        ]
+      ],
+      "representative": "Base.86fordE150longW",
+      "mesh": "vehicles/Vehicles_86fordE150_Body|e150_body_long_windows"
+    },
+    {
+      "family": "ChevyStepVan",
+      "title": "Chevrolet step van",
+      "vehicles": [
+        "Base.85chevyStepVan",
+        "Base.85chevyStepVanBlacksmith",
+        "Base.85chevyStepVanButchers",
+        "Base.85chevyStepVanCitrusWave",
+        "Base.85chevyStepVanDelirosPlonkies",
+        "Base.85chevyStepVanFlorist",
+        "Base.85chevyStepVanGenuine",
+        "Base.85chevyStepVanHerald",
+        "Base.85chevyStepVanJorgensen",
+        "Base.85chevyStepVanLibrary",
+        "Base.85chevyStepVanLvAirportCatering",
+        "Base.85chevyStepVanLvMotorshop",
+        "Base.85chevyStepVanMarineBites",
+        "Base.85chevyStepVanMasonry",
+        "Base.85chevyStepVanMrHuangsLaundry",
+        "Base.85chevyStepVanPostal",
+        "Base.85chevyStepVanPropane",
+        "Base.85chevyStepVanRandys",
+        "Base.85chevyStepVanSWAT",
+        "Base.85chevyStepVanScarletOak",
+        "Base.85chevyStepVanSeHospitality",
+        "Base.85chevyStepVanSePaintingServices",
+        "Base.85chevyStepVanSmartCut",
+        "Base.85chevyStepVanSunBallz",
+        "Base.85chevyStepVanTheCompleteRepair",
+        "Base.85chevyStepVanTimelessGlass",
+        "Base.85chevyStepVanUsLogistics",
+        "Base.85chevyStepVanZippeeMarket"
+      ],
+      "dependencies": [
+        [
+          "3614034284",
+          "85chevyStepVan"
+        ],
+        [
+          "3614034284",
+          "85chevyStepVanexpanded"
+        ]
+      ],
+      "representative": "Base.85chevyStepVan",
+      "mesh": "vehicles/Vehicles_85chevyStepVan_Body|85stepvan_body"
+    },
+    {
+      "family": "F700Bank",
+      "title": "F700 armored bank truck",
+      "vehicles": [
+        "Base.87fordF700bank"
+      ],
+      "dependencies": [
+        [
+          "3110911330",
+          "87fordB700"
+        ]
+      ],
+      "representative": "Base.87fordF700bank",
+      "mesh": "vehicles/Vehicles_87fordB700_Body|f700_body_bank"
+    },
+    {
+      "family": "F700Swat",
+      "title": "F700 SWAT truck",
+      "vehicles": [
+        "Base.87fordF700swat"
+      ],
+      "dependencies": [
+        [
+          "3110911330",
+          "87fordB700"
+        ]
+      ],
+      "representative": "Base.87fordF700swat",
+      "mesh": "vehicles/Vehicles_87fordB700_Body|f700_body_swat"
+    },
+    {
+      "family": "F350Ambulance",
+      "title": "Ford F350 ambulance",
+      "vehicles": [
+        "Base.90fordF350SWAT",
+        "Base.90fordF350ambulance"
+      ],
+      "dependencies": [
+        [
+          "2952802178",
+          "90fordF350ambulance"
+        ]
+      ],
+      "representative": "Base.90fordF350ambulance",
+      "mesh": "vehicles/Vehicles_90fordF350ambulance_Body|f350_body"
+    }
+  ]
+}

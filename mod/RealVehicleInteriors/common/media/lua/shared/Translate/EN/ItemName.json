@@ -1,4 +1,7 @@
 {
+    "Base.MELensRV_Workbench": "Service Workbench",
+    "Base.MELensRV_Stretcher": "Medical Stretcher",
+    "Base.MELensRV_Metalcase": "Steel Equipment Cabinet",
     "Base.MELensRV_Bed": "RV Bed",
     "Base.MELensRV_Dinette": "RV Dinette",
     "Base.MELensRV_Kitchen": "RV Kitchenette",
@@ -10,5 +13,10 @@
     "Base.MELensRV_Box": "Cargo Box",
     "Base.MELensRV_Busseat": "Bus Seat",
     "Base.MELensRV_Busseat2": "Bus Seats (Pair)",
-    "Base.MELensRV_Shelf": "RV Shelf Unit"
+    "Base.MELensRV_Shelf": "RV Shelf Unit",
+    "Base.MELensRV_Safe": "Armored Cash Safe",
+    "Base.MELensRV_Parcels": "Stacked Delivery Parcels",
+    "Base.MELensRV_Medlocker": "Medical Supply Cabinet",
+    "Base.MELensRV_Medbench": "Utility Bench Seat",
+    "Base.MELensRV_Equipmentrack": "Equipment Rack"
 }

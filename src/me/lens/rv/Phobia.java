@@ -31,6 +31,18 @@ public final class Phobia {
 
     private Phobia() {}
 
+    /** Shared seat classification; vision and panic must agree, including remote
+     * occupants and furniture seats, without depending on client render state. */
+    static boolean isEnclosed(IsoGameCharacter character) {
+        BaseVehicle v = character == null ? null : character.getVehicle();
+        VehicleScript script = v == null ? null : v.getScript();
+        if (script == null) return false;
+        Map<String, Float> seats = ENCLOSURES.get(script.getFullName());
+        int seat = v.getSeat(character);
+        return seats != null && seat >= 0 && seat < script.getPassengerCount()
+                && seats.containsKey(script.getPassenger(seat).getId());
+    }
+
     /** Called by shared Lua for each mapped passenger position; repeating a registration is safe. */
     public static void registerEnclosure(String scriptName, String passengerId, double roomArea) {
         if (scriptName == null || scriptName.isBlank() || passengerId == null || passengerId.isBlank()

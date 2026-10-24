@@ -17,11 +17,29 @@ import zombie.scripting.objects.VehicleScript;
  */
 @Exposer.LuaClass(name = "MELensRV")
 public final class RV {
-    public static final String VERSION = "2.0.0";
+    public static final String VERSION = "2.0.13";
 
     static volatile BaseVehicle cutVehicle;
     /** Plane in the vehicle body's raw mesh space; fragments with a*x+b*y+c*z+d > 0 are discarded. */
     static volatile float planeA, planeB, planeC, planeD;
+
+    /** Native skin can be cut below the lining, with a floor limit in plane-offset units. */
+    record NativeCutInset(float farOffsetD, float nearOffsetD, float doorOffsetD, float floorLimitD) {
+        static final NativeCutInset NONE = new NativeCutInset(0f, 0f, 0f, 0f);
+
+        float apply(float d, boolean near, boolean door) {
+            float offsetD = door ? doorOffsetD : near ? nearOffsetD : farOffsetD;
+            // Zero is an exact unchanged control, including cuts already below the limit.
+            return offsetD > 0f ? Math.min(d + offsetD, floorLimitD) : d;
+        }
+    }
+    static volatile NativeCutInset nativeCutInset = NativeCutInset.NONE;
+
+    /** Cargo body faces exposed by a cut use a lining finish on their inward side. */
+    record BodyLining(float red, float green, float blue, int debug) {
+        static final BodyLining NONE = new BodyLining(0f, 0f, 0f, 0);
+    }
+    static volatile BodyLining bodyLining = BodyLining.NONE;
 
     /**
      * Walls facing the camera are cut lower, like the game's cutaway of building walls:
@@ -135,6 +153,14 @@ public final class RV {
         return Phobia.debugState(character);
     }
 
+    public static void registerVisionHull(String scriptName, String outline, String openings) {
+        Vision.register(scriptName, outline, openings);
+    }
+
+    public static String visionInfo(zombie.characters.IsoZombie observer, IsoGameCharacter target) {
+        return Vision.info(observer, target);
+    }
+
     /**
      * Resolve a runtime-added seat container without repeating VehicleScript.Loaded(),
      * which would scale the entire vehicle again. Lua owns the definitions; these
@@ -155,6 +181,33 @@ public final class RV {
         if (modelName != null) {
             keepPlanes.put(modelName, new float[] {(float) a, (float) b, (float) c, (float) d});
         }
+    }
+
+    /** Native binding truth, including the current live part after streamed adoption. */
+    public static boolean isPartModelVisible(zombie.vehicles.VehiclePart part, String modelId) {
+        BaseVehicle vehicle = part == null ? null : part.getVehicle();
+        if (vehicle == null || modelId == null || vehicle.getPartById(part.getId()) != part) return false;
+        for (var model : vehicle.models) {
+            if (model.part == part && model.scriptModel != null && modelId.equals(model.scriptModel.id)) return true;
+        }
+        return false;
+    }
+
+    /** Remove only superseded bindings for this mod's same named part. No part/item changes. */
+    public static boolean clearStalePartModels(zombie.vehicles.VehiclePart part) {
+        BaseVehicle vehicle = part == null ? null : part.getVehicle();
+        if (vehicle == null || vehicle.getPartById(part.getId()) != part) return false;
+        String id = part.getId();
+        if (!"MELensShell".equals(id) && !id.startsWith("MELensSpot")) return false;
+        boolean removed = false;
+        for (int i = vehicle.models.size() - 1; i >= 0; i--) {
+            var model = vehicle.models.get(i);
+            if (model.part != null && model.part != part && id.equals(model.part.getId()) && model.scriptModel != null) {
+                vehicle.setModelVisible(model.part, model.scriptModel, false);
+                removed = true;
+            }
+        }
+        return removed;
     }
 
     /** Same as {@link #setKeepPlane}; keep planes only ever apply in the camper you are in. */
@@ -315,6 +368,8 @@ public final class RV {
     }
 
     public static void setCutaway(BaseVehicle vehicle, double a, double b, double c, double d) {
+        nativeCutInset = NativeCutInset.NONE;
+        bodyLining = BodyLining.NONE;
         planeA = (float) a;
         planeB = (float) b;
         planeC = (float) c;
@@ -322,9 +377,35 @@ public final class RV {
         cutVehicle = vehicle;
     }
 
+    /**
+     * Lower only native body/part cuts by this raw-mesh distance. The caller supplies
+     * the plane offset at its minimum allowed height; authored lining and wheels keep
+     * their own cuts. A new cutaway or zero/invalid input restores the unchanged control.
+     */
+    public static void setNativeCutInset(double meshUnits, double floorLimitD) {
+        setNativeCutInsets(meshUnits, meshUnits, meshUnits, floorLimitD);
+    }
+
+    /** Independent native body far/near cuts and door-leaf cuts; published atomically. */
+    public static void setNativeCutInsets(double farMeshUnits, double nearMeshUnits, double doorMeshUnits, double floorLimitD) {
+        double normal = Math.sqrt((double) planeA * planeA + (double) planeB * planeB + (double) planeC * planeC);
+        double far = farMeshUnits * normal, near = nearMeshUnits * normal, door = doorMeshUnits * normal;
+        if (!Double.isFinite(far) || far < 0 || far > Float.MAX_VALUE
+                || !Double.isFinite(near) || near < 0 || near > Float.MAX_VALUE
+                || !Double.isFinite(door) || door < 0 || door > Float.MAX_VALUE
+                || (far == 0 && near == 0 && door == 0)
+                || !Double.isFinite(floorLimitD) || Math.abs(floorLimitD) > Float.MAX_VALUE) {
+            nativeCutInset = NativeCutInset.NONE;
+            return;
+        }
+        nativeCutInset = new NativeCutInset((float) far, (float) near, (float) door, (float) floorLimitD);
+    }
+
     public static void clearCutaway() {
         Weather.clear();
         cutVehicle = null;
+        nativeCutInset = NativeCutInset.NONE;
+        bodyLining = BodyLining.NONE;
         wallPainted = false;
         light = Light.NONE;
         marker = Marker.NONE;
@@ -334,6 +415,33 @@ public final class RV {
         doorPaintEnabled = false;
         windowCount = 0;
         jambCount = 0;
+    }
+
+    public static void setBodyLining(double red, double green, double blue) {
+        if (!Double.isFinite(red) || !Double.isFinite(green) || !Double.isFinite(blue)
+                || red < 0 || red > 1 || green < 0 || green > 1 || blue < 0 || blue > 1) {
+            bodyLining = BodyLining.NONE;
+            return;
+        }
+        bodyLining = new BodyLining((float) red, (float) green, (float) blue, 0);
+    }
+
+    public static void clearBodyLining() { bodyLining = BodyLining.NONE; }
+
+    public static boolean bodyLiningActive() { return bodyLining != BodyLining.NONE; }
+
+    /** Diagnostic render fixture: inward/up/backface classes in RGB. */
+    public static void setBodyLiningDebug(boolean on) {
+        setBodyLiningDebugMode(on ? 1 : 0);
+    }
+
+    /** 0 finish; 1 normal classes; 2 native texel; 3 native part mask; 4 paint alpha. */
+    public static void setBodyLiningDebugMode(double mode) {
+        BodyLining current = bodyLining;
+        if (current != BodyLining.NONE) {
+            int value = Double.isFinite(mode) && mode >= 0 && mode <= 4 && mode == Math.rint(mode) ? (int) mode : 0;
+            bodyLining = new BodyLining(current.red, current.green, current.blue, value);
+        }
     }
 
     public static void setWeatherRoom(String polygon, double floor, double ceiling) {
@@ -507,6 +615,9 @@ public final class RV {
     /** Keep everything ahead of body mesh y {@code meshY} (the front of the compartment). */
     public static void setCutFront(double meshY) {
         cutFrontY = (float) meshY;
+        // Each profile supplies its own optional height after this call. A
+        // previous vehicle's mesh-space cutoff must never leak into this one.
+        cutFrontTopZ = -1e9f;
         cutFrontEnabled = true;
     }
 

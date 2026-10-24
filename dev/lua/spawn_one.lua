@@ -40,8 +40,21 @@ if sq then
         end
     end
 end
+-- This fixture supplies its own key below. Avoid the engine's EasyUse key
+-- spawn, which can abort addToWorld for a factory trailer's empty glovebox.
+local script = getScriptManager():getVehicle("NAME")
+local neverKey = script and script:neverSpawnKey()
+-- Explicit audit/media spawns must retain their requested identity. The
+-- ordinary world spawner may replace profession vans with random variants.
+local professionKey = script and script:getName()
+local profession = ProfessionVehicles and ProfessionVehicles[professionKey]
+if profession then ProfessionVehicles[professionKey] = nil end
+if script then script:Load(script:getName(), "{ neverSpawnKey = true, }") end
 local vehicle = sq and addVehicleDebug("NAME", IsoDirections[HEADING], 0, sq)
+if script then script:Load(script:getName(), "{ neverSpawnKey = " .. tostring(neverKey) .. ", }") end
+if profession then ProfessionVehicles[professionKey] = profession end
 if not vehicle then return "NAME FAILED" end
+assert(vehicle:getScript():getFullName() == "NAME", "explicit spawn changed vehicle identity")
 vehicle:repair()
 -- Keep the stock repair result intact: the production script must preserve bare
 -- furniture spots itself. Clearing them here previously hid overfilled F700 stacks.

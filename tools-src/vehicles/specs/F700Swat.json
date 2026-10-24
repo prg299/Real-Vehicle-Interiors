@@ -1,0 +1,217 @@
+{
+    "key": "F700Swat",
+    "vehicles": [
+        "Base.87fordF700swat"
+    ],
+    "title": "F700 SWAT truck",
+    "kind": "cargo",
+    "measure": "measure_F700Swat.json",
+    "scripts": [
+        "fleet_F700Swat.json",
+        "87fordF700swat"
+    ],
+    "texture": "fleet_f700swat",
+    "reuseTexture": "f700box",
+    "mesh": {
+        "scale": 0.09000000000000001,
+        "lift": 0.6660000337604417
+    },
+    "floorY": -0.228,
+    "ceiling": 1.04,
+    "box": {
+        "x": 0.98,
+        "z": [
+            -1.523,
+            1.0
+        ]
+    },
+    "hide": {
+        "87fordF700Windowfl": {
+            "plane": [
+                0,
+                -1,
+                0,
+                11.1111
+            ]
+        },
+        "87fordF700Windowfr": {
+            "plane": [
+                0,
+                -1,
+                0,
+                11.1111
+            ]
+        },
+        "87fordF700Windowml": {
+            "plane": [
+                0,
+                -1,
+                0,
+                11.1111
+            ]
+        },
+        "87fordF700Windowmr": {
+            "plane": [
+                0,
+                -1,
+                0,
+                11.1111
+            ]
+        },
+        "87fordF700Windowrl": true,
+        "87fordF700Windowrr": true,
+        "87fordF700Windshield": {
+            "plane": [
+                0,
+                -1,
+                0,
+                11.1111
+            ]
+        },
+        "87fordF700WindshieldRear": true,
+        "87fordF700swatInterior": {
+            "plane": [
+                0,
+                -1,
+                0,
+                11.1111
+            ]
+        },
+        "87fordB700Engine": {
+            "plane": [
+                0,
+                -1,
+                0,
+                11.1111
+            ]
+        }
+    },
+    "clipBody": true,
+    "cutFront": 1.0,
+    "aisleX": 0,
+    "entry": {
+        "span": [
+            -0.5,
+            0.5
+        ],
+        "wall": "back",
+        "part": "TrunkDoor",
+        "area": "TruckBed",
+        "panelWall": "left"
+    },
+    "entryOpening": {
+        "x": [
+            -1.02,
+            1.02
+        ],
+        "y": [
+            -0.248,
+            1.06
+        ],
+        "z": [
+            -1.823,
+            -1.488
+        ]
+    },
+    "windowBoxes": [
+        {
+            "x": [
+                -0.965,
+                0.965
+            ],
+            "y": [
+                -0.21,
+                1.06
+            ],
+            "z": [
+                -1.473,
+                0.97
+            ]
+        },
+        {
+            "x": [
+                -0.94,
+                0.94
+            ],
+            "y": [
+                -0.238,
+                -0.203
+            ],
+            "z": [
+                -1.483,
+                0.96
+            ]
+        }
+    ],
+    "openings": [],
+    "extraSeats": [
+        "MELensFurnitureLeft1",
+        "MELensFurnitureLeft2",
+        "MELensFurnitureRight1",
+        "MELensFurnitureRight2"
+    ],
+    "wheelWells": [
+        {
+            "z": -0.64,
+            "inner": 0.46,
+            "halfLength": 0.52,
+            "top": -0.078
+        }
+    ],
+    "vanillaSeats": [
+        "FrontLeft",
+        "FrontRight",
+        "P2",
+        "P3",
+        "P4",
+        "P5",
+        "P6",
+        "P7"
+    ],
+    "waterTank": 40,
+    "fuelTank": 20,
+    "factoryLayout": true,
+    "spots": [
+        {
+            "wall": "left",
+            "at": 0.13,
+            "length": 1.5,
+            "depth": 0.55,
+            "default": "bed",
+            "empty": true,
+            "seats": [
+                "MELensFurnitureLeft1",
+                "MELensFurnitureLeft2"
+            ]
+        },
+        {
+            "wall": "right",
+            "at": 0.13,
+            "length": 1.5,
+            "depth": 0.55,
+            "default": "dinette",
+            "empty": true,
+            "seats": [
+                "MELensFurnitureRight1",
+                "MELensFurnitureRight2"
+            ]
+        },
+        {
+            "wall": "right",
+            "at": 0.41,
+            "length": 1.0,
+            "depth": 0.55,
+            "default": "kitchen",
+            "empty": true
+        },
+        {
+            "wall": "right",
+            "at": -0.773,
+            "length": 0.52,
+            "depth": 0.52,
+            "default": "fridge",
+            "empty": true
+        }
+    ],
+    "cutFrontTop": 1.18
+}

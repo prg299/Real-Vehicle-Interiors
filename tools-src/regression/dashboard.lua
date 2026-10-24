@@ -1,6 +1,31 @@
 -- Actual production paint-menu scheduling with explicit UI services.
 do
     local D, H = MELensDashboard, MELens.Home
+    local oldActivated = getActivatedMods
+    local enabled = {}
+    getActivatedMods = function() return { contains = function(_, id) return enabled[id] == true end } end
+    check(not MELens.Dashboard.isNeatActive(), "vanilla is the default without enabled Neat mods")
+    for _, id in ipairs({ "NeatUI_Framework", "Neat_Crafting", "Neat_Building", "Neat_Building_UIOnly", "Neat_Rocco", "NeatUI_Equipment" }) do
+        enabled = { [id] = true }
+        check(MELens.Dashboard.isNeatActive(), "enabled " .. id .. " retains rounded dashboard")
+    end
+    enabled = { CleanUI = true, SomeNeatMod = true, NeatUI_Framework = false }
+    check(not MELens.Dashboard.isNeatActive(), "unrelated names and disabled Neat framework cannot change the default")
+    getActivatedMods = oldActivated
+    check(MELensVanillaDashboard.refresh == D.refresh and MELensVanillaDashboard.queue == D.queue
+        and MELensVanillaDashboard.onPaint == D.onPaint, "both dashboard views share state, timed actions and paint behavior")
+    local calls, allow = 0, true
+    local fn = function() calls = calls + 1 end
+    local vanilla = setmetatable({}, { __index = MELensVanillaDashboard })
+    function vanilla:refresh() self.controls = {{ fn = fn, enabled = allow }} end
+    vanilla:onControl({ dashboardAction = fn })
+    check(calls == 1, "vanilla release activates the current enabled action once")
+    allow = false
+    vanilla:onControl({ dashboardAction = fn })
+    check(calls == 1, "vanilla release revalidates an action disabled while held")
+    allow = true
+    vanilla:onControl({ dashboardAction = function() end })
+    check(calls == 1, "removed vanilla controls cannot activate a stale action")
     local mouseDown, current = false, nil
     isMouseButtonDown = function(button) check(button == 0, "paint raise checks only opening left button"); return mouseDown end
     getPlayerContextMenu = function(player) check(player == 0, "paint raise uses its own player"); return current end
@@ -112,7 +137,7 @@ do
     w.paintPress = { fn = w.onPaint }
     w:close()
     check(w.pendingPaintMenu == nil and w.paintPress == nil and w.removed and not w.visible, "Dashboard close clears deferred menu focus and paint press")
-    for _, name in ipairs({ "ISPanel", "UIFont", "getTextManager", "isMouseButtonDown",
+    for _, name in ipairs({ "ISPanel", "ISCollapsableWindow", "UIFont", "getTextManager", "isMouseButtonDown",
             "getPlayerContextMenu", "ISContextMenu", "JoypadState", "getMouseX", "getMouseY", "getSoundManager" }) do
         _G[name] = MELensDashboardRegressionSaved[name]
     end

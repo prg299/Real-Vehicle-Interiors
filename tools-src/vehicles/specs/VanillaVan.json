@@ -1,0 +1,195 @@
+{
+    "key": "VanillaVan",
+    "vehicles": [
+        "Base.Van",
+        "Base.VanBeckmans",
+        "Base.VanBrewsterHarbin",
+        "Base.VanBuilder",
+        "Base.VanCarpenter",
+        "Base.VanCoastToCoast",
+        "Base.VanDeerValley",
+        "Base.VanFossoil",
+        "Base.VanGardenGods",
+        "Base.VanGardener",
+        "Base.VanGreenes",
+        "Base.VanJohnMcCoy",
+        "Base.VanJonesFabrication",
+        "Base.VanKerrHomes",
+        "Base.VanKnobCreekGas",
+        "Base.VanKnoxCom",
+        "Base.VanKorshunovs",
+        "Base.VanLouisvilleLandscaping",
+        "Base.VanMail",
+        "Base.VanMccoy",
+        "Base.VanMechanic",
+        "Base.VanMeltingPointMetal",
+        "Base.VanMetalheads",
+        "Base.VanMetalworker",
+        "Base.VanMicheles",
+        "Base.VanMobileMechanics",
+        "Base.VanMooreMechanics",
+        "Base.VanOldMill",
+        "Base.VanOvoFarm",
+        "Base.VanPennSHam",
+        "Base.VanPlattAuto",
+        "Base.VanPluggedInElectrics",
+        "Base.VanRiversideFabrication",
+        "Base.VanRosewoodworking",
+        "Base.VanSchwabSheetMetal",
+        "Base.VanSpiffo",
+        "Base.VanTreyBaines",
+        "Base.VanUncloggers",
+        "Base.VanUtility",
+        "Base.VanWPCarpentry",
+        "Base.Van_Blacksmith",
+        "Base.Van_BugWipers",
+        "Base.Van_Charlemange_Beer",
+        "Base.Van_CraftSupplies",
+        "Base.Van_Glass",
+        "Base.Van_HeritageTailors",
+        "Base.Van_KnoxDisti",
+        "Base.Van_Leather",
+        "Base.Van_LectroMax",
+        "Base.Van_Locksmith",
+        "Base.Van_Masonry",
+        "Base.Van_MassGenFac",
+        "Base.Van_Perfick_Potato",
+        "Base.Van_Transit",
+        "Base.Van_VoltMojo"
+    ],
+    "title": "Franklin Valuline cargo van",
+    "kind": "cargo",
+    "measure": "measure_VanillaVan.json",
+    "scripts": [
+        "fleet_VanillaVan.json",
+        "Van"
+    ],
+    "texture": "fleet_vanillavan",
+    "reuseTexture": "f700box",
+    "mesh": {
+        "scale": 0.01456,
+        "lift": 0.0
+    },
+    "floorY": -0.518,
+    "ceiling": 0.63,
+    "box": {
+        "x": 0.669,
+        "z": [
+            -1.975,
+            0.31
+        ]
+    },
+    "hide": {},
+    "clipBody": true,
+    "cutFront": 0.31,
+    "aisleX": -0.25,
+    "entry": {
+        "span": [
+            -0.7,
+            0.2
+        ],
+        "wall": "back",
+        "part": "DoorRear",
+        "area": "TruckBed",
+        "panelWall": "right"
+    },
+    "entryOpening": {
+        "x": [
+            -0.709,
+            0.709
+        ],
+        "y": [
+            -0.538,
+            0.65
+        ],
+        "z": [
+            -2.275,
+            -1.94
+        ]
+    },
+    "windowBoxes": [
+        {
+            "x": [
+                -0.654,
+                0.654
+            ],
+            "y": [
+                -0.5,
+                0.65
+            ],
+            "z": [
+                -1.925,
+                0.28
+            ]
+        },
+        {
+            "x": [
+                -0.629,
+                0.629
+            ],
+            "y": [
+                -0.528,
+                -0.493
+            ],
+            "z": [
+                -1.935,
+                0.27
+            ]
+        }
+    ],
+    "openings": [],
+    "extraSeats": [
+        "MELensFurnitureLeft1",
+        "MELensFurnitureLeft2"
+    ],
+    "wheelWells": [
+        {
+            "z": -1.04,
+            "inner": 0.43,
+            "halfLength": 0.4,
+            "top": -0.298
+        }
+    ],
+    "vanillaSeats": [
+        "FrontLeft",
+        "FrontRight"
+    ],
+    "waterTank": 40,
+    "fuelTank": 20,
+    "factoryLayout": true,
+    "spots": [
+        {
+            "wall": "left",
+            "at": -1.135,
+            "length": 1.5,
+            "depth": 0.55,
+            "default": "bed",
+            "empty": true,
+            "seats": [
+                "MELensFurnitureLeft1",
+                "MELensFurnitureLeft2"
+            ]
+        },
+        {
+            "wall": "front",
+            "at": 0,
+            "length": 1.0,
+            "depth": 0.55,
+            "default": "kitchen",
+            "empty": true
+        },
+        {
+            "wall": "front",
+            "at": 0.26,
+            "length": 0.52,
+            "depth": 0.52,
+            "default": "fridge",
+            "empty": true
+        }
+    ],
+    "modelShift": [
+        0,
+        0,
+        0
+    ]
+}

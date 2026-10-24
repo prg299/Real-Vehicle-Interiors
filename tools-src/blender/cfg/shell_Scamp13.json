@@ -86,7 +86,7 @@
                 0.18,
                 0.86
             ],
-            "top": -0.08,
+            "top": -0.015,
             "bottom": -0.48
         },
         {
@@ -98,7 +98,7 @@
                 0.18,
                 0.86
             ],
-            "top": -0.08,
+            "top": -0.015,
             "bottom": -0.48
         }
     ],
@@ -117,6 +117,6 @@
     "floorOutline": {
         "inset": 0.012,
         "band": 0.06,
-        "measure": "build/rv/floorplans/measure_Scamp13_floor.json"
+        "measure": "D:/Stuff/Projects/Real-Vehicle-Interiors/build/rv/floorplans/measure_Scamp13_floor.json"
     }
 }

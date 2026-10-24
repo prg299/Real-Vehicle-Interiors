@@ -13,6 +13,7 @@
 -- mesh origin (about 0.8 tiles above the Flying Cloud's floor).
 --
 
+require "MELens_Java"
 MELens = MELens or {}
 MELens.Profiles = MELens.Profiles or {}
 
@@ -174,8 +175,10 @@ end
 -- (px, py, pz). Checked in game with a calibration box: a part offset moves a model by
 -- 0.9 x offset, and KI5's campers carry a 0.06 tile shift in height and length.
 --
-function MELens.modelOffset(px, py, pz)
-    return { px / 0.9, (py - 0.06) / 0.9, (pz + 0.06) / 0.9 }
+function MELens.modelOffset(px, py, pz, profile)
+    local scale = profile and profile.vehicleScale or 0.9
+    local shift = profile and profile.modelShift or { 0, -0.06, 0.06 }
+    return { (px + shift[1]) / scale, (py + shift[2]) / scale, (pz + shift[3]) / scale }
 end
 
 --
@@ -286,9 +289,51 @@ function MELens.initFurnitureSeat(vehicle, part)
     if MELens.Parts then MELens.Parts.syncFurnitureSeats(vehicle) end
 end
 
+-- Global hide rules share Java's model-name / mesh: alias map. Remember the
+-- exact last registered body-space plane rather than reconstructing it from a
+-- profile later (several profiles may register the same alias).
+local registeredKeepPlanes = {}
+local activeBodyKeepPlanes = {}
+local noKeepPlane = { 0, 0, 0, -1 }
+
+local function writeKeepPlane(rv, model, p)
+    rv.setKeepPlane(model, p[1], p[2], p[3], p[4])
+end
+
+local function registerKeepPlane(model, a, b, c, d)
+    local p = { a, b, c, d }
+    MELensRV.setKeepPlane(model, a, b, c, d)
+    registeredKeepPlanes[model] = p
+    -- A late script registration updates the restoration baseline without
+    -- replacing the active vehicle's narrower override.
+    if activeBodyKeepPlanes[model] then
+        writeKeepPlane(MELensRV, model, activeBodyKeepPlanes[model])
+    end
+end
+
+-- Per-profile overrides are already in BODY mesh space, including translated
+-- native submodels. Only aliases touched by the previous profile are restored.
+function MELens.applyBodyKeepPlanes(profile)
+    local rv = MELensRV
+    if not rv or not rv.setKeepPlane then return end
+    local restored = false
+    for model in pairs(activeBodyKeepPlanes) do
+        writeKeepPlane(rv, model, registeredKeepPlanes[model] or noKeepPlane)
+        restored = true
+    end
+    if restored then activeBodyKeepPlanes = {} end
+    if not profile or not profile.bodyKeepPlanes then return end
+    for model, p in pairs(profile.bodyKeepPlanes) do
+        local copy = { p[1], p[2], p[3], p[4] }
+        writeKeepPlane(rv, model, copy)
+        activeBodyKeepPlanes[model] = copy
+    end
+end
+
 function MELens.addStandingPositions()
     local manager = getScriptManager()
     if not manager then return end
+    local rv = MELens.java()
     standingCounts(manager)
     for fullName, profile in pairs(MELens.Profiles) do
         local script = manager:getVehicle(fullName)
@@ -310,18 +355,18 @@ function MELens.addStandingPositions()
             -- Only with the Java part, which hides what the shell replaces (the shell
             -- itself is ME: LENS' own part, see MELens_Parts.lua); without it KI5's own
             -- interior stays as it is.
-            if profile.shell and MELensRV then
+            if profile.shell and rv then
                 local m = profile.mesh
                 for model, keep in pairs(profile.hideKI5 or {}) do
                     if keep == true then
-                        MELensRV.setKeepPlane(model, 0, 0, 0, 1)
+                        registerKeepPlane(model, 0, 0, 0, 1)
                     elseif type(keep) == "table" and keep.plane then
-                        -- any plane in the model's mesh space: a*x + b*y + c*z + d > 0 is hidden
+                        -- any plane in BODY mesh space: a*x + b*y + c*z + d > 0 is hidden
                         local p = keep.plane
-                        MELensRV.setKeepPlane(model, p[1], p[2], p[3], p[4])
+                        registerKeepPlane(model, p[1], p[2], p[3], p[4])
                     else
                         -- remove below passenger height `keep`: mesh z > lift - keep / scale
-                        MELensRV.setKeepPlane(model, 0, 0, 1, keep / m.scale - m.lift)
+                        registerKeepPlane(model, 0, 0, 1, keep / m.scale - m.lift)
                     end
                 end
             end
@@ -347,8 +392,8 @@ function MELens.addStandingPositions()
                     -- The client bridge resolves just this binding. A server runs without
                     -- it, so the game there finds no part for the seat and turns a walk-in
                     -- down; MELens_Sync.lua seats the player on their first position.
-                    if MELensRV then
-                        MELensRV.bindSeatContainer(script, "Seat" .. id, id)
+                    if rv then
+                        rv.bindSeatContainer(script, "Seat" .. id, id)
                     end
                     local passenger = script:getPassenger(index)
                     passenger:getPositionById("inside"):getOffset():set(s.inside[1], s.inside[2], s.inside[3])

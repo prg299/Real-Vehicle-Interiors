@@ -1,6 +1,6 @@
 --
--- ME: LENS camper dashboard: one window for the camper's systems, drawn by ME: LENS itself (no
--- vanilla window chrome, no other mod's code or art): a dark rounded panel with cards for the
+-- Shared camper systems and actions. The default window uses vanilla ISUI controls.
+-- When an installed Neat UI mod is enabled, retain our existing rounded panel with cards for the
 -- generator, the battery and lights, the fresh water tank and the appliances; status chips, slim
 -- bars, pill buttons and switches. The rounded shapes are white textures drawn by
 -- tools-src/art/ui_shapes.py and tinted here. Every control queues a timed action
@@ -14,6 +14,17 @@ local M = MELens
 M.Dashboard = M.Dashboard or {}
 local D = M.Dashboard
 local U = M.Utilities
+
+-- Exact installed mod IDs, including older standalone Neat releases. Do not infer
+-- activation from downloaded files or globals left behind by a Lua reload.
+function D.isNeatActive()
+    local active = getActivatedMods()
+    for _, id in ipairs({ "NeatUI_Framework", "Neat_Crafting", "Neat_Building",
+            "Neat_Building_UIOnly", "Neat_Rocco", "NeatUI_Equipment" }) do
+        if active:contains(id) then return true end
+    end
+    return false
+end
 
 ------------------------------------------------------------------------------------
 -- Style
@@ -793,12 +804,18 @@ function D.open(player, vehicle)
         D.instance:close()
     end
     local width = S.pad * 3 + S.cardW * 2
-    local window = MELensDashboard:new(getCore():getScreenWidth() / 2 - width / 2, getCore():getScreenHeight() / 2 - 220, player, vehicle)
+    local class = D.isNeatActive() and MELensDashboard or MELensVanillaDashboard
+    local window = class:new(getCore():getScreenWidth() / 2 - width / 2, getCore():getScreenHeight() / 2 - 220, player, vehicle)
     window:initialise()
     window:addToUIManager()
+    window:setX(math.max(0, (getCore():getScreenWidth() - window:getWidth()) / 2))
+    window:setY(math.max(0, math.min(window:getY(), getCore():getScreenHeight() - window:getHeight())))
     D.instance = window
     local joypad = JoypadState.players[player:getPlayerNum() + 1]
     if joypad then
         setJoypadFocus(player:getPlayerNum(), window)
     end
 end
+
+-- Load after the shared methods exist; the vanilla view reuses these actions.
+require "MELens_DashboardVanilla"

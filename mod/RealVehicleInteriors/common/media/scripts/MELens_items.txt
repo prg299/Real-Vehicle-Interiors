@@ -1,5 +1,25 @@
 module Base
 {
+    item MELensRV_Stretcher
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 12.0,
+        Icon = MELensRV_stretcher,
+        WorldStaticModel = MELensRV_stretcher_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Furniture,
+    }
+    item MELensRV_Metalcase
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 10.0,
+        Icon = MELensRV_metalcase,
+        WorldStaticModel = MELensRV_metalcase_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Furniture,
+    }
     /*
      * ME: LENS camper furniture, placed at the furniture spots inside a walk-in camper (the
      * MELensSpot parts, see MELens_Parts.lua). The pieces and their models come from

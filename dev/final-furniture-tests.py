@@ -291,11 +291,13 @@ def open_inventory_item_menu(h, interior, tap):
     raise AssertionError("heater row remained offscreen after native scrollbar clicks")
 
 
-def place_heater_from_inventory(h, interior, tap, target):
+def place_heater_from_inventory(h, interior, tap, target, capture_label=None):
     before = interior.read_state(h)
     open_inventory_item_menu(h, interior, tap)
     label = h.lua('return getText("ContextMenu_MELens_PlaceFurniture")')
     menu = interior.poll(h, lambda s: tap.menu_option(s, label) is not None, timeout=8, label="inventory Place furniture option")
+    if capture_label:
+        h.capture(capture_label+'-inventory-icon')
     option = tap.menu_option(menu, label)
     h.check(option["enabled"], "native inventory Place furniture option disabled")
     tap.native_click(h, option["x"], option["y"], "heater:inventory-Place-furniture")

@@ -15,6 +15,33 @@ import static org.lwjgl.opengl.GL30.*;
 /** Test-only keyboard/mouse queues, weather controls and completed-frame capture. */
 @Exposer.LuaClass(name="MEMCNativeLab")
 public final class ClientLab {
+    /** Read actual part-model bindings. No render/cache or inventory mutation. */
+    public static String interiorModels(zombie.vehicles.BaseVehicle vehicle) {
+        var out = new StringBuilder("[");
+        for (var model : vehicle.models) {
+            if (model.part == null || model.scriptModel == null) continue;
+            String id = model.part.getId();
+            if (!id.equals("MELensShell") && !id.startsWith("MELensSpot")) continue;
+            if (out.length() > 1) out.append(',');
+            out.append("{\"part\":\"").append(id).append("\",\"model\":\"")
+                .append(model.scriptModel.id).append("\",\"live\":")
+                .append(vehicle.getPartById(id) == model.part).append('}');
+        }
+        return out.append(']').toString();
+    }
+    /** Explicit model-loss fixture; leaves live parts, inventories and Lua caches untouched. */
+    public static int dropInteriorModels(zombie.vehicles.BaseVehicle vehicle) {
+        int count = 0;
+        for (var model : new ArrayList<>(vehicle.models)) {
+            if (model.part == null || model.scriptModel == null) continue;
+            String id = model.part.getId();
+            if (id.equals("MELensShell") || id.startsWith("MELensSpot")) {
+                vehicle.setModelVisible(model.part, model.scriptModel, false);
+                count++;
+            }
+        }
+        return count;
+    }
     public static final ConcurrentHashMap<Integer,Long> keys = new ConcurrentHashMap<>();
     public static final Field keyboardStates;
     public static final Field mouseStates;
@@ -59,6 +86,21 @@ public final class ClientLab {
     public static void weatherMask(boolean enabled) throws Exception {
         Field field=Class.forName("me.lens.rv.Weather").getDeclaredField("enabled");
         field.setAccessible(true); field.setBoolean(null,enabled);
+    }
+    /** Same native perception inputs with only the additive cabin LOS disabled. */
+    public static void visionMask(boolean enabled) throws Exception {
+        Field field=Class.forName("me.lens.rv.Vision").getDeclaredField("enabled");
+        field.setAccessible(true); field.setBoolean(null,enabled);
+    }
+    public static void forceSpot(zombie.characters.IsoZombie observer, zombie.characters.IsoPlayer target, boolean old) {
+        if(old) observer.spottedOld(target,true); else observer.spottedNew(target,true);
+    }
+    public static String zombieInfo(zombie.characters.IsoZombie z, zombie.characters.IsoPlayer p) {
+        return "{\"targetPlayer\":"+(z.getTarget()==p)+",\"targetNull\":"+(z.getTarget()==null)
+            +",\"seenSince\":"+z.timeSinceSeenFlesh+",\"seenX\":"+z.lastTargetSeenX+",\"seenY\":"+z.lastTargetSeenY
+            +",\"heardPlayer\":"+(z.soundSourceTarget==p)+",\"soundSince\":"+z.timeSinceRespondToSound
+            +",\"goalSound\":"+z.getPathFindBehavior2().isGoalSound()+",\"state\":\""
+            +(z.getCurrentState()==null?"":z.getCurrentState().getClass().getSimpleName())+"\"}";
     }
     public static volatile boolean frozenWeather;
     public static void freezeWeather(boolean frozen) { frozenWeather=frozen; }

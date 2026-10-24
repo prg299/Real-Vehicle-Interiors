@@ -1,5 +1,11 @@
 module Base
 {
+    model MELensRV_stretcher { mesh = vehicles/MELens_RV|rv_stretcher, texture = Vehicles/MELensRV_stretcher, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_stretcher_ghost { mesh = vehicles/MELens_RV|rv_stretcher, texture = Vehicles/MELensRV_stretcher, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_stretcher_ground { mesh = vehicles/MELens_RV|rv_stretcher, texture = Vehicles/MELensRV_stretcher, scale = 0.00666666, }
+    model MELensRV_metalcase { mesh = vehicles/MELens_RV|rv_metalcase, texture = Vehicles/MELensRV_metalcase, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_metalcase_ghost { mesh = vehicles/MELens_RV|rv_metalcase, texture = Vehicles/MELensRV_metalcase, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_metalcase_ground { mesh = vehicles/MELens_RV|rv_metalcase, texture = Vehicles/MELensRV_metalcase, scale = 0.00666666, }
     /*
      * ME: LENS models, made by tools-src/blender/rv_kit.py. One Blender unit is one tile
      * at scale 0.0111111 (with the vehicles' model scale of 0.9). Each has its own baked
@@ -22,6 +28,7 @@ module Base
     model MELensShell_b700_walls { mesh = vehicles/MELens_Shells|shell_b700_walls, texture = Vehicles/MELensShell_b700_walls, shader = vehiclewheel, scale = 0.0111111, }
     model MELensShell_f700box_floor { mesh = vehicles/MELens_Shells|shell_f700box_floor, texture = Vehicles/MELensShell_f700box_floor, shader = vehiclewheel, scale = 0.0111111, }
     model MELensShell_f700box_walls { mesh = vehicles/MELens_Shells|shell_f700box_walls, texture = Vehicles/MELensShell_f700box_walls, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_f700box_bulkhead { mesh = vehicles/MELens_Shells|shell_f700box_bulkhead, texture = Vehicles/MELensShell_f700box_walls, shader = vehiclewheel, scale = 0.0111111, }
 
     model MELensDecal { mesh = vehicles/MELens_Shells|decal, texture = Vehicles/MELensShell_cloud22_floor, shader = vehiclewheel, scale = 0.0111111, }
 

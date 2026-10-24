@@ -1,0 +1,84 @@
+/* Cargo/service furniture; meshes authored in tools-src/blender/rv_kit.py. */
+module Base
+{
+    item MELensRV_Workbench
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 18.0,
+        Icon = MELensRV_workbench,
+        WorldStaticModel = MELensRV_workbench_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Furniture,
+    }
+    model MELensRV_workbench { mesh = vehicles/MELens_RV|rv_workbench, texture = Vehicles/MELensRV_workbench, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_workbench_ghost { mesh = vehicles/MELens_RV|rv_workbench, texture = Vehicles/MELensRV_workbench, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_workbench_ground { mesh = vehicles/MELens_RV|rv_workbench, texture = Vehicles/MELensRV_workbench, scale = 0.00666666, }
+    item MELensRV_Safe
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 32.0,
+        Icon = MELensRV_safe,
+        WorldStaticModel = MELensRV_safe_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Furniture,
+    }
+    model MELensRV_safe { mesh = vehicles/MELens_RV|rv_safe, texture = Vehicles/MELensRV_safe, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_safe_ghost { mesh = vehicles/MELens_RV|rv_safe, texture = Vehicles/MELensRV_safe, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_safe_ground { mesh = vehicles/MELens_RV|rv_safe, texture = Vehicles/MELensRV_safe, scale = 0.00666666, }
+    item MELensRV_Parcels
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 5.0,
+        Icon = MELensRV_parcels,
+        WorldStaticModel = MELensRV_parcels_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Furniture,
+    }
+    model MELensRV_parcels { mesh = vehicles/MELens_RV|rv_parcels, texture = Vehicles/MELensRV_parcels, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_parcels_ghost { mesh = vehicles/MELens_RV|rv_parcels, texture = Vehicles/MELensRV_parcels, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_parcels_ground { mesh = vehicles/MELens_RV|rv_parcels, texture = Vehicles/MELensRV_parcels, scale = 0.00666666, }
+    item MELensRV_Medlocker
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 15.0,
+        Icon = MELensRV_medlocker,
+        WorldStaticModel = MELensRV_medlocker_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Furniture,
+    }
+    model MELensRV_medlocker { mesh = vehicles/MELens_RV|rv_medlocker, texture = Vehicles/MELensRV_medlocker, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_medlocker_ghost { mesh = vehicles/MELens_RV|rv_medlocker, texture = Vehicles/MELensRV_medlocker, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_medlocker_ground { mesh = vehicles/MELens_RV|rv_medlocker, texture = Vehicles/MELensRV_medlocker, scale = 0.00666666, }
+    item MELensRV_Medbench
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 14.0,
+        Icon = MELensRV_medbench,
+        WorldStaticModel = MELensRV_medbench_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Furniture,
+    }
+    model MELensRV_medbench { mesh = vehicles/MELens_RV|rv_medbench, texture = Vehicles/MELensRV_medbench, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_medbench_ghost { mesh = vehicles/MELens_RV|rv_medbench, texture = Vehicles/MELensRV_medbench, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_medbench_ground { mesh = vehicles/MELens_RV|rv_medbench, texture = Vehicles/MELensRV_medbench, scale = 0.00666666, }
+    item MELensRV_Equipmentrack
+    {
+        DisplayCategory = Furniture,
+        ItemType = base:normal,
+        Weight = 12.0,
+        Icon = MELensRV_equipmentrack,
+        WorldStaticModel = MELensRV_equipmentrack_ground,
+        MechanicsItem = false,
+        Tooltip = Tooltip_MELensRV_Furniture,
+    }
+    model MELensRV_equipmentrack { mesh = vehicles/MELens_RV|rv_equipmentrack, texture = Vehicles/MELensRV_equipmentrack, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_equipmentrack_ghost { mesh = vehicles/MELens_RV|rv_equipmentrack, texture = Vehicles/MELensRV_equipmentrack, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensRV_equipmentrack_ground { mesh = vehicles/MELens_RV|rv_equipmentrack, texture = Vehicles/MELensRV_equipmentrack, scale = 0.00666666, }
+    /* Appearance adapter for Base.HamRadio1; no new inventory item or furniture piece. */
+    model MELensRV_hamradio_ground { mesh = vehicles/MELens_RV|rv_hamradio, texture = Vehicles/MELensRV_hamradio, scale = 0.00666666, }
+}

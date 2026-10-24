@@ -5,6 +5,16 @@ function check(ok, message)
     assert(ok, message)
 end
 function require(_) end
+-- A usable client bridge, with optional methods supplied by each focused double.
+function completeJava(methods)
+    local rv = methods or {}
+    for _, name in ipairs({"setKeepPlane","bindSeatContainer","setCutaway","clearCutaway"}) do
+        rv[name] = rv[name] or function() end
+    end
+    rv.isPartModelVisible=rv.isPartModelVisible or function() return true end
+    rv.clearStalePartModels=rv.clearStalePartModels or function() return false end
+    return rv
+end
 function getScriptManager() return nil end
 function isClient() return true end
 function isServer() return true end

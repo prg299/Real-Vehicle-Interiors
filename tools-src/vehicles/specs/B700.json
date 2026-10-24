@@ -60,7 +60,7 @@
         "87fordB700Doora": true,
         "mesh:b700_door_fr_a": true
     },
-    "cutFront": 2.24,
+    "cutFront": 1.99,
     "entry": {
         "object": "b700_door_fr",
         "wall": "right",
@@ -159,12 +159,27 @@
                 2.0,
                 2.18
             ]
+        },
+        {
+            "x": [
+                -1.14,
+                1.14
+            ],
+            "y": [
+                0.505,
+                1.13
+            ],
+            "z": [
+                1.95,
+                2.24
+            ]
         }
     ],
     "wheelWells": [
         {
             "z": -2.47,
-            "inner": 0.64
+            "inner": 0.47,
+            "halfLength": 0.51
         }
     ],
     "waterTank": 100,
@@ -257,6 +272,12 @@
             ]
         }
     ],
-    "cutFrontTop": 0.55,
+    "cutFrontTop": 0.50,
+    "cowlReturn": {
+        "height": 0.498,
+        "rear": 1.99,
+        "x": [-1.12, 1.12],
+        "thickness": 0.006
+    },
     "openingPad": 0.06
 }

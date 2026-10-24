@@ -16,11 +16,12 @@ def load(name):
     spec.loader.exec_module(m)
     return m
 
-def enter(h, vehicle, heading):
+def enter(h, vehicle, heading, walk_approach=True):
     assert not h.lua('return getPlayer():getVehicle()~=nil'), 'start outside'
     spawn = (ROOT/'dev/lua/spawn_one.lua').read_text().replace('NAME',vehicle)
     spawn = spawn.replace('tonumber("7")','tonumber("-4")').replace('local HEADING = "E"',f'local HEADING = "{heading}"')
     h.lua(spawn)
+    if not walk_approach:time.sleep(1)
     h.lua('''local p=getPlayer();local v=MELensTest.vehicle;local q=Vector3f.new()
 v:getPassengerPositionWorldPos(v:getPassengerPosition(MELens.cabinSeat(v),"outside"),q)
 p:setX(q:x());p:setY(q:y());p:setLastX(q:x());p:setLastY(q:y())
@@ -30,8 +31,19 @@ p:faceLocation(q:x(),q:y());ISUIHandler.setVisibleAllUI(true);return true''')
 v:getPassengerPositionWorldPos(v:getPassengerPosition(MELens.cabinSeat(v),"inside"),q)
 local dx,dy=q:x()-p:getX(),q:y()-p:getY();local sx,sy=dx-dy,dx+dy
 return getCore():getKey(math.abs(sx)>math.abs(sy) and (sx>0 and "Right" or "Left") or (sy>0 and "Backward" or "Forward"))''')
-    h.lua(f'MEMCNativeLab.holdKey({int(approach)},150);return true')
+    if walk_approach:h.lua(f'MEMCNativeLab.holdKey({int(approach)},150);return true')
     time.sleep(.6)
+    # The approach updates the game's nearby-vehicle cache, but its final point
+    # can fall outside a small trailer's native door-use area. Re-centre this
+    # setup fixture before testing Interact; do not call an entry handler.
+    usable=h.lua('''local p=getPlayer();local v=MELensTest.vehicle;local part=v:getUseablePart(p)
+return part and part:getId()==MELens.profileFor(v).standing.door or false''')
+    if not usable:
+        position=h.lua('''local p=getPlayer();local v=MELensTest.vehicle;local q=Vector3f.new()
+v:getPassengerPositionWorldPos(v:getPassengerPosition(MELens.cabinSeat(v),"outside"),q)
+p:setX(q:x());p:setY(q:y());p:setLastX(q:x());p:setLastY(q:y());return {x=q:x(),y=q:y()}''')
+        h.REPORT.setdefault('entryPositionFixtures',[]).append(dict(vehicle=vehicle,**position))
+        time.sleep(.5)
     key=int(h.lua('return getCore():getKey("Interact")'))
     h.lua(f'MEMCNativeLab.holdKey({key},200);return true')
     deadline=time.monotonic()+40
@@ -49,12 +61,16 @@ def main():
     p.add_argument('--sex',choices=['male','female'])
     p.add_argument('--bed-index',type=int,default=1)
     a=p.parse_args()
-    run=(ROOT/'build/rv'/a.run).resolve()
-    assert run.is_relative_to(ROOT/'build/rv')
+    logical_run=ROOT/'build/rv'/a.run
+    assert logical_run.parent==ROOT/'build/rv', 'run must be one owned folder name'
+    run=logical_run.resolve()
+    artifact_root=(Path(os.environ['LOCALAPPDATA'])/'RVI-TestArtifacts').resolve()
+    assert run.is_relative_to(ROOT/'build/rv') or run.is_relative_to(artifact_root)
     interior=load('final-interior-tests')
     tap,h=interior.load_helpers()
     h.configure(output=run/a.label)
-    h.SCREENS=run/'home/Zomboid/Screenshots'
+    session=json.loads((run/'native-session.json').read_text('utf-8-sig'))
+    h.SCREENS=Path(next(x.split('=',1)[1] for x in session['command'] if x.startswith('-cachedir=')))/'Screenshots'
     def sample_until(case,predicate,timeout=35):
         seen=[];end=time.monotonic()+timeout;next_shot=0
         while time.monotonic()<end:
@@ -110,10 +126,11 @@ local q=Vector3f.new();v:getPassengerLocalPos(v:getSeat(p),q);r.passengerY=q:y()
 local bs=MELens.Bed.states[p];r.bedTurn=bs and (bs.phase=="Enter" and bs.entryTurn or bs.place.turn)
 local P=MELens.Parts;local pr=MELens.profileFor(v);local spot=pr.spots[MELensBedTestSpotIndex]
 local o=v:getScript():getModel():getOffset();local origin=Vector3f.new();local base=v:getWorldPos(0,0,0,origin):z()
-r.bedGeometry={x=spot.x,z=spot.z,wall=spot.wall,top=pr.floorY+.28,modelOffsetY=o:y()}
+local piece=P.pieceAt(P.spotPart(v,MELensBedTestSpotIndex));local mattressTop=P.kit(piece).height-.02
+r.bedGeometry={x=spot.x,z=spot.z,wall=spot.wall,top=pr.floorY+mattressTop,modelOffsetY=o:y()}
 r.bedCorners={}
 for i,pair in ipairs({{-.75,0},{.75,0},{.75,.55},{-.75,.55}}) do
-local x,z=P.spotPoint(spot,pair[1],pair[2]);local h=pr.floorY+.28
+local x,z=P.spotPoint(spot,pair[1],pair[2]);local h=pr.floorY+mattressTop
 v:getWorldPos(o:x()+x,o:y()+h,o:z()+z,q)
 local sx,sy=ISCoordConversion.ToScreen(q:x(),q:y(),base+(o:y()+h)/2.44949)
 r.bedCorners[i]={x=sx/getCore():getZoom(0),y=sy/getCore():getZoom(0)}

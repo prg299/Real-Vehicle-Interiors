@@ -8,6 +8,9 @@ do
     check(P.fits(profile.spots[82], "bed") and P.fits(profile.spots[83], "dinette"), "salvaged bed/dinette cannot fit truck")
     check(P.fits(profile.spots[82], "dinette") and P.fits(profile.spots[83], "bed"), "truck furniture cannot swap sides")
     check(P.roomFor(profile, { [82] = "bed" }, 83, "dinette"), "bed and dinette overlap across aisle")
+    check(P.roomFor(profile, { [82] = "bed" }, 64, "kitchen"), "F700 blocks adjacent same-wall bed and kitchen")
+    check(P.roomFor(profile, { [64] = "kitchen" }, 82, "bed"), "F700 adjacent furniture depends on placement order")
+    check(not P.roomFor(profile, { [82] = "bed" }, 69, "kitchen"), "F700 accepts kitchen overlapping bed end")
     local collision = false
     for i = 1, 63 do
         if not P.roomFor(profile, { [i] = "box" }, 82, "bed") then collision = true end
