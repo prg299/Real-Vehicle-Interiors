@@ -152,7 +152,16 @@ local function adapt(menu, player, animal, first, seen)
 end
 
 function C.menu(player, animal, context)
+    if not C.inside(player, animal) then return end
     local first = #(context.options or {}) + 1
-    triggerEvent("OnClickedAnimalForContext", player:getPlayerNum(), context, { animal }, false)
+    -- Vanilla's menu dereferences getCurrentSquare for its distance check.
+    -- Trailer animals have no world square. Lend the builder the actor's loaded
+    -- square for this synchronous event only; never add the animal to the world.
+    local square, actorSquare = animal:getCurrentSquare(), player:getCurrentSquare()
+    if not actorSquare then return end
+    animal:setCurrent(actorSquare)
+    local ok, err = pcall(triggerEvent, "OnClickedAnimalForContext", player:getPlayerNum(), context, { animal }, false)
+    animal:setCurrent(square)
+    if not ok then error(err) end
     adapt(context, player, animal, first, {})
 end

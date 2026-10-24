@@ -1,4 +1,5 @@
 """Real inventory/world mouse animal actions, followed by labelled animation fixtures."""
+import argparse
 import importlib.util
 import json
 import os
@@ -13,8 +14,9 @@ def load(name):
     module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);return module
 
 def main():
+    parser=argparse.ArgumentParser();parser.add_argument('--output-name',default='animals-input');args=parser.parse_args()
     run=ROOT/'build/rv'/os.environ['RVI_CAPTURE_RUN']
-    interior=load('final-interior-tests');tap,h=interior.load_helpers();h.configure(run/'animals-input')
+    interior=load('final-interior-tests');tap,h=interior.load_helpers();h.configure(run/args.output_name)
     furniture=load('final-furniture-tests')
     session=json.loads((run/'native-session.json').read_text('utf-8-sig'))
     h.SCREENS=Path(next(x.split('=',1)[1] for x in session['command'] if x.startswith('-cachedir=')))/'Screenshots'
@@ -25,6 +27,15 @@ def main():
         while not h.lua(code):
             h.check(time.monotonic()<end,'timeout: '+code);time.sleep(.15)
     def models():return json.loads(h.lua('return MELensDevAnimalModels.snapshot()'))
+    def room_fixture():
+        h.lua('local p=getPlayer();if p:getVehicle() then p:getVehicle():exit(p) end;MELensMedia.cameraOff();MELensTest=MELensTest or {all={}};return true')
+        spawn=(ROOT/'dev/lua/spawn_one.lua').read_text('utf-8').replace('NAME','Base.87fordF700box').replace('local HEADING = "E"','local HEADING = "N"')
+        h.lua(spawn)
+        h.lua('''local v=MELensTest.vehicle;local P=MELens.Parts
+for i in ipairs(MELens.profileFor(v).spots) do local part=P.spotPart(v,i);part:getItemContainer():removeAllItems();part:setInventoryItem(instanceItem(P.EMPTY_ITEM));P.applyPiece(v,part) end
+assert(v:enter(MELens.cabinSeat(v),getPlayer()));return true''')
+        wait('return MELens.isStanding(getPlayer()) and not MELens.pathing(getPlayer())')
+        time.sleep(1)
     def pose(label,kind,offset=0):
         h.lua('''local v=MELensTest.vehicle;local A=MELens.Animals
 for _,animal in ipairs(A.list(v)) do local r=A.record(v,animal)
@@ -54,8 +65,8 @@ r.x=r.x+'''+str(offset)+''';r.f=0 end;return true''')
         return samples
     try:
         h.REPORT['scope']=__doc__
-        h.lua('MELensTest={all={}};return true')
-        load('bed-tests').enter(h,'Base.Trailer54FlyingCloud22','N')
+        h.REPORT['fixtures']=['owned empty cargo room and test-only seat entry','native carried hen','empty cargo room for animation review']
+        room_fixture()
         h.lua((ROOT/'dev/lua/feature-fixture.lua').read_text('utf-8'));h.lua(interior.FIXTURE);h.lua(furniture.FIXTURE)
         fixture('give:hen')
         h.lua('''MELensInteriorTest.heater=getPlayer():getPrimaryHandItem();MELensInteriorTest.heaterIndex=nil
@@ -67,16 +78,26 @@ MELensAnimalTest={hen=MELensInteriorTest.heater:getAnimal(),itemId=MELensInterio
         tap.native_click(h,option['x'],option['y'],'animal:inventory-drop')
         wait('return #MELens.Animals.list(MELensTest.vehicle)==1 and #ISTimedActionQueue.getTimedActionQueue(getPlayer()).queue==0')
         h.REPORT['mouseDrop']=True;h.capture('native-inventory-drop')
+        time.sleep(1)
         h.lua('''function MELensAnimalTest.point()
 local v=MELensTest.vehicle;local pr=MELens.profileFor(v);local a=MELens.AnimalsUI.shown(v)[1];assert(a)
 local o=v:getScript():getModel():getOffset();local q=Vector3f.new();local base=v:getWorldPos(0,0,0,q):z()
+for _,offset in ipairs({{0,0},{.15,0},{-.15,0},{0,.15},{0,-.15}}) do
 for _,height in ipairs({.15,.25,.05,.4}) do
-v:getWorldPos(o:x()+a.x,o:y()+pr.floorY+height,o:z()+a.z,q)
+v:getWorldPos(o:x()+a.x+offset[1],o:y()+pr.floorY+height,o:z()+a.z+offset[2],q)
 local sx,sy=ISCoordConversion.ToScreen(q:x(),q:y(),base+(o:y()+pr.floorY+height)/2.44949)
-local hit=MELens.Interact.pick(v,pr,sx,sy)
-if hit and hit.animal==a.animal then return {x=sx/getCore():getZoom(0),y=sy/getCore():getZoom(0),header=MELens.AnimalsUI.nameOf(a.animal)} end end
+local zoom=getCore():getZoom(0);local px,py=math.floor(sx/zoom),math.floor(sy/zoom)
+for _,pixel in ipairs({{0,0},{1,0},{-1,0},{0,1},{0,-1}}) do
+local x,y=px+pixel[1],py+pixel[2];local hit=MELens.Interact.pick(v,pr,x*zoom,y*zoom)
+if hit and hit.animal==a.animal then return {x=x,y=y,header=MELens.AnimalsUI.nameOf(a.animal)} end end end end
 error("no pickable animal point") end;return true''')
         point=h.lua('return MELensAnimalTest.point()')
+        header=h.lua('return MELensAnimalTest.hen:getFullName()')
+        interior.choose(h,tap,point,[header,h.lua('return getText("ContextMenu_AnimalInfo")')],'animal:info')
+        wait('local ui=UIManager.getUI();for i=0,ui:size()-1 do local w=ui:get(i):getTable();if w and w.Type=="ISAnimalUI" and w.animal==MELensAnimalTest.hen and w:isVisible() then return true end end;return false')
+        h.REPORT['nativeVanillaInfo']=True;h.capture('normal-vanilla-animal-info-inside')
+        h.lua('local ui=UIManager.getUI();for i=ui:size()-1,0,-1 do local w=ui:get(i):getTable();if w and w.Type=="ISAnimalUI" and w.animal==MELensAnimalTest.hen then w:close() end end;return true')
+        h.check(not h.lua('return MELensAnimalTest.hen:getCurrentSquare()~=nil'),'menu borrowed a permanent world square for the hen')
         interior.choose(h,tap,point,[h.lua('return MELensAnimalTest.hen:getFullName()'),h.lua('return getText("ContextMenu_PickUpAnimal",MELensAnimalTest.hen:getFullName())')],'animal:pickup')
         wait('return #MELens.Animals.list(MELensTest.vehicle)==0 and getPlayer():getInventory():getCountTypeRecurse("Animal")==1 and #ISTimedActionQueue.getTimedActionQueue(getPlayer()).queue==0')
         h.REPORT['mousePickup']=True;h.REPORT['pickupState']=fixture('state');h.capture('native-world-pickup')
@@ -87,7 +108,7 @@ error("no pickable animal point") end;return true''')
 p:setPrimaryHandItem(nil);p:setSecondaryHandItem(nil)
 local inv=p:getInventory();local items=inv:getItems();for i=items:size()-1,0,-1 do if instanceof(items:get(i),"AnimalInventoryItem") then inv:Remove(items:get(i)) end end
 return true''')
-        load('bed-tests').enter(h,'Base.87fordF700box','N')
+        room_fixture()
         h.lua('''local v=MELensTest.vehicle;local P=MELens.Parts;local pr=MELens.profileFor(v)
 for i in ipairs(pr.spots) do local part=P.spotPart(v,i);part:getItemContainer():removeAllItems()
 part:setInventoryItem(instanceItem(P.EMPTY_ITEM));P.showPiece(part,true,false) end

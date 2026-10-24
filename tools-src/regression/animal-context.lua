@@ -6,10 +6,12 @@ do
     local inside,characterAt,standingThen,walkTo,facePoint=A.inside,M.Parts.characterAt,M.standingThen,M.walkTo,M.facePoint
     local pickupNew=MELensPickUpAnimal.new
     local v={getModData=function(self) return self.data end,data={}}
-    local p={getPlayerNum=function() return 2 end}
+    local actorSquare={}
+    local p={getPlayerNum=function() return 2 end,getCurrentSquare=function() return actorSquare end}
     local animal={getVehicle=function() return v end,getAnimalID=function() return 123 end,
         isDead=function() return false end,getHealth=function() return 1 end,
-        isExistInTheWorld=function() return false end,getFeedByHandAnim=function() return 'nativeFeed' end}
+        isExistInTheWorld=function() return false end,getFeedByHandAnim=function() return 'nativeFeed' end,
+        getCurrentSquare=function(self) return self.current end,setCurrent=function(self,square) self.current=square end}
     v.data[A.KEY]={['123']={x=.3,z=0}}
     A.inside=function(player) if player==p then return v,{} end end
     M.Parts.characterAt=function() return 0,0 end
@@ -32,11 +34,17 @@ do
     local dashboard=function() error('unrelated dashboard was invoked') end
     local context={options={{name='Dashboard',onSelect=dashboard}},getSubMenu=function() return sub end}
     triggerEvent=function(event,playerNum,menu,animals,test)
+        check(animal:getCurrentSquare()==actorSquare,'vanilla menu cannot measure an interior animal without a world square')
         check(event=='OnClickedAnimalForContext' and playerNum==2 and menu==context and animals[1]==animal and test==false,
             'interior menu does not use the real world animal event contract')
         menu.options[#menu.options+1]={name='Native animal',iconTexture='native species',subOption=1}
     end
     C.menu(p,animal,context)
+    check(animal:getCurrentSquare()==nil,'native menu leaked the borrowed world square onto a trailer animal')
+    local eventBuilder=triggerEvent
+    triggerEvent=function() error('menu builder fixture') end
+    check(not pcall(C.menu,p,animal,context) and animal:getCurrentSquare()==nil,'failed native menu builder leaks a world square')
+    triggerEvent=eventBuilder
     check(#context.options==2 and context.options[2].name=='Native animal' and context.options[2].iconTexture=='native species',
         'native menu hierarchy, label or icon changed')
     check(context.options[1].onSelect==dashboard and sub.options[1].toolTip=='native tooltip','unrelated menu or native tooltip changed')
