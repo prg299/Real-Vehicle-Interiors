@@ -22,7 +22,7 @@ local P = M.Parts
 require "MELens_Bed"
 local B = M.Bed
 
-M.VERSION = "2.0.13"
+M.VERSION = "2.0.14"
 
 local CABIN_VAR = "MELensCabin"      -- "Idle" / "Walk": the standing poses
 local SEAT_VAR = "MELensCabinSeat"   -- "true" while entering, standing in or leaving
