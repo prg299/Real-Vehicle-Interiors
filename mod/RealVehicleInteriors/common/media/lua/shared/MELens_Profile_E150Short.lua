@@ -1767,11 +1767,11 @@ do
         },
     },
 }
-    fitted.aisleX = -0.075
+    fitted.aisleX = 0.075
     for _,s in ipairs({
     {
-        wall = "left",
-        x = 0.697,
+        wall = "right",
+        x = -0.697,
         z = -1.043,
         length = 1.5,
         depth = 0.55,
@@ -1781,8 +1781,8 @@ do
         seats = { "MELensFurnitureLeft1" },
     },
     {
-        wall = "right",
-        x = -0.697,
+        wall = "left",
+        x = 0.697,
         z = -1.013,
         length = 1.1,
         depth = 0.4,

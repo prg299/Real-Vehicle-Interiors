@@ -49,4 +49,5 @@ module Base
     model MELensShell_fleet_f350ambulance_walls { mesh = vehicles/MELens_Fleet|shell_fleet_f350ambulance_walls, texture = Vehicles/MELensShell_f700box_walls, shader = vehiclewheel, scale = 0.0111111, }
     model MELensShell_fleet_f350ambulance_bulkhead { mesh = vehicles/MELens_Fleet|shell_fleet_f350ambulance_bulkhead, texture = Vehicles/MELensShell_f700box_walls, shader = vehiclewheel, scale = 0.0111111, }
     model MELensShell_fleet_f350ambulance_entry { mesh = vehicles/MELens_Fleet|shell_fleet_f350ambulance_entry, texture = Vehicles/MELensShell_f700box_walls, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_fleet_f350ambulance_side_entry { mesh = vehicles/MELens_Fleet|shell_fleet_f350ambulance_side_entry, texture = Vehicles/MELensShell_f700box_walls, shader = vehiclewheel, scale = 0.0111111, }
 }

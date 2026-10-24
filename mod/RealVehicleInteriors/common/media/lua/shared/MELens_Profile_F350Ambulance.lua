@@ -9,9 +9,12 @@ local profile = {
     floorY = -0.088,
     mesh = { scale = 0.09, lift = 0.6660000337604417 },
     shell = {
-        models = { "MELensShell_fleet_f350ambulance_floor", "MELensShell_fleet_f350ambulance_walls", "MELensShell_fleet_f350ambulance_bulkhead", "MELensShell_fleet_f350ambulance_entry" },
+        models = { "MELensShell_fleet_f350ambulance_floor", "MELensShell_fleet_f350ambulance_walls", "MELensShell_fleet_f350ambulance_bulkhead", "MELensShell_fleet_f350ambulance_entry", "MELensShell_fleet_f350ambulance_side_entry" },
         entryModel = 4,
         entryDoor = "DoorRear",
+        extraDoors = {
+            { model = 5, part = "DoorRearRight" },
+        },
     },
     hideKI5 = {
         ["90fordF350ambulanceseatstr0"] = true,
@@ -43,7 +46,7 @@ local profile = {
         },
     },
     light = {
-        interiorModels = { "MELensShell_fleet_f350ambulance_floor", "MELensShell_fleet_f350ambulance_walls", "MELensShell_fleet_f350ambulance_bulkhead", "MELensShell_fleet_f350ambulance_entry" },
+        interiorModels = { "MELensShell_fleet_f350ambulance_floor", "MELensShell_fleet_f350ambulance_walls", "MELensShell_fleet_f350ambulance_bulkhead", "MELensShell_fleet_f350ambulance_entry", "MELensShell_fleet_f350ambulance_side_entry" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,
@@ -321,11 +324,11 @@ do
         },
     },
 }
-    fitted.aisleX = -0.075
+    fitted.aisleX = 0.075
     for _,s in ipairs({
     {
-        wall = "left",
-        x = 0.95,
+        wall = "right",
+        x = -0.95,
         z = -2.956,
         length = 1.5,
         depth = 0.55,
@@ -335,8 +338,8 @@ do
         seats = { "MELensFurnitureLeft1" },
     },
     {
-        wall = "right",
-        x = -0.95,
+        wall = "left",
+        x = 0.95,
         z = -2.926,
         length = 1.1,
         depth = 0.4,
@@ -394,6 +397,7 @@ do
         default = "medlocker",
         factory = true,
         pieces = { "medlocker" },
+        empty = true,
     },
     {
         wall = "right",
@@ -404,6 +408,7 @@ do
         default = "medlocker",
         factory = true,
         pieces = { "medlocker" },
+        empty = true,
     },
 }) do fitted.spots[#fitted.spots+1]=s end
     MELens.Profiles["Base.90fordF350ambulance"] = fitted

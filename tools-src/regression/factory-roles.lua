@@ -4,7 +4,7 @@ do
     local profiles=MELens.Profiles
     local function factoryPieces(pr)
         local pieces={}
-        for _,spot in ipairs(pr.spots) do if spot.factory then
+        for _,spot in ipairs(pr.spots) do if spot.factory and not spot.empty then
             pieces[spot.default]=(pieces[spot.default] or 0)+1
         end end
         return pieces
@@ -14,6 +14,26 @@ do
             if pack[1]==item and pack[2]>0 then return true end
         end
         return false
+    end
+    for _,name in ipairs({"Base.VanAmbulance","Base.86fordE150med","Base.90fordF350ambulance"}) do
+        local pr=assert(profiles[name]);local stretcher,bench
+        for _,spot in ipairs(pr.spots) do if spot.factory then
+            if spot.default=="stretcher" then stretcher=spot end
+            if spot.default=="medbench" then bench=spot end
+        end end
+        check(stretcher and stretcher.wall=="right" and stretcher.x<0,"ambulance stretcher is on the wrong side: "..name)
+        check(bench and bench.wall=="left" and bench.x>0,"ambulance attendant bench must oppose the stretcher: "..name)
+        check(stretcher.z<pr.door.z+1.1,"ambulance stretcher moved away from the rear door: "..name)
+    end
+    local ambulance=profiles["Base.90fordF350ambulance"]
+    local v={getScript=function() return {getFullName=function() return "Base.90fordF350ambulance" end} end}
+    check(#ambulance.spots==12 and ambulance.legacySpotCount==4,"ambulance placement slot IDs changed")
+    for _,index in ipairs({11,12}) do
+        local spot=ambulance.spots[index]
+        check(spot.wall=="right" and spot.default=="medlocker" and spot.factory and spot.empty,
+            "KI5 side-door shelves must start empty")
+        check(MELens.Parts.factoryPiece(v,index,spot)==nil,"KI5 side-door shelves still auto-fill")
+        check(MELens.Parts.fits(spot,"medlocker"),"empty KI5 shelf slot no longer accepts its furniture")
     end
     -- Native labels whose shortened/script-specific spellings used to silently
     -- fall back to tool freight, or to unrelated books/canned-food distributions.

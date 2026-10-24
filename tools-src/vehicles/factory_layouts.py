@@ -158,6 +158,9 @@ def layout(spec, base, role):
             if abs(x)+width/2>half:return False
         spot=dict(wall=wall,x=round(x,3),z=round(z,3),length=width,depth=depth,
                   default=piece,factory=True,pieces=[piece])
+        # Retain the placement contract while leaving selected factory bays bare.
+        if piece in spec.get('factoryEmpty',{}).get(role,{}).get(wall,[]):
+            spot['empty']=True
         # All dimensions are in passenger space. Check the actual 3D footprints.
         box=mv.footprint(spot)
         for other in result:
@@ -171,8 +174,8 @@ def layout(spec, base, role):
         result.append(spot);return True
 
     if role=='medical':
-        add('stretcher','left',rear+.90,1)
-        add('medbench','right',rear+.93,2)
+        add('stretcher','right',rear+.90,1)
+        add('medbench','left',rear+.93,2)
         # Cabinets across the bulkhead; longer ambulances get additional side banks.
         for x in (-.27,.27):add('medlocker','front',x)
         for wall in ('left','right'):

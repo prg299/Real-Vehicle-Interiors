@@ -796,16 +796,29 @@ end
 -- Closed cargo doors need their own inside skin: the native leaf can be single-sided.
 -- Only change the model when the real door state changes; never persist render state.
 P.shellDoorStates = setmetatable({}, { __mode = "k" })
+local function shellDoorVisible(vehicle, id)
+    local leaf = vehicle:getPartById(id)
+    local door = leaf and leaf:getDoor()
+    return door ~= nil and leaf:getInventoryItem() ~= nil and not door:isOpen(), leaf
+end
+
+local function syncShellDoor(vehicle, part, model, id, cacheKey, force)
+    local visible, leaf = shellDoorVisible(vehicle, id)
+    cacheKey = cacheKey or leaf
+    if force or not cacheKey or P.shellDoorStates[cacheKey] ~= visible then
+        part:setModelVisible("MELensShell" .. model, visible)
+        if cacheKey then P.shellDoorStates[cacheKey] = visible end
+    end
+end
+
 function P.syncShellDoors(vehicle, profile, force)
     local shell = profile and profile.shell
     if not shell or not shell.entryModel then return end
     local part = vehicle:getPartById(P.SHELL)
-    local leaf = vehicle:getPartById(shell.entryDoor)
-    local door = leaf and leaf:getDoor()
-    local visible = door ~= nil and leaf:getInventoryItem() ~= nil and not door:isOpen()
-    if part and (force or P.shellDoorStates[vehicle] ~= visible) then
-        part:setModelVisible("MELensShell" .. shell.entryModel, visible)
-        P.shellDoorStates[vehicle] = visible
+    if not part then return end
+    syncShellDoor(vehicle, part, shell.entryModel, shell.entryDoor, vehicle, force)
+    for _, lining in ipairs(shell.extraDoors or {}) do
+        syncShellDoor(vehicle, part, lining.model, lining.part, nil, force)
     end
 end
 
@@ -832,20 +845,14 @@ function P.refreshShell(vehicle, profile)
         return
     end
     for i = 1, #profile.shell.models do
-        if i ~= profile.shell.entryModel and not rv.isPartModelVisible(part, "MELensShell" .. i) then
+        local doorId = i == profile.shell.entryModel and profile.shell.entryDoor or nil
+        for _, lining in ipairs(profile.shell.extraDoors or {}) do
+            if lining.model == i then doorId = lining.part; break end
+        end
+        local visible = not doorId or shellDoorVisible(vehicle, doorId)
+        if rv.isPartModelVisible(part, "MELensShell" .. i) ~= visible then
             P.initShell(vehicle, part)
             return
-        end
-    end
-    -- The door's desired state can also remain cached across an engine rebuild.
-    local entry = profile.shell.entryModel
-    if entry then
-        local leaf = vehicle:getPartById(profile.shell.entryDoor)
-        local door = leaf and leaf:getDoor()
-        local visible = door ~= nil and leaf:getInventoryItem() ~= nil and not door:isOpen()
-        if rv.isPartModelVisible(part, "MELensShell" .. entry) ~= visible then
-            if rv.clearStalePartModels then rv.clearStalePartModels(part) end
-            P.syncShellDoors(vehicle, profile, true)
         end
     end
 end

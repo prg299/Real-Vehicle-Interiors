@@ -1094,7 +1094,7 @@ def build_shell(measure, spec, tex_dir):
     # metre on a bus) is how coarse the door's edges would be, and a door leaf standing a few centimetres outside
     # the lining then shows the ground behind it in a slit. The rings get a point at each side opening's edges
     # first, so the cut-out is exactly the opening.
-    rings = split_rings_at_openings(rings, spec.get("openings", []))
+    rings = split_rings_at_openings(rings, spec.get("openings", [])+[d['box'] for d in spec.get('doorLinings',[])])
     n = len(rings[0][1])
 
     def P(px, py, pz):
@@ -1116,6 +1116,7 @@ def build_shell(measure, spec, tex_dir):
     perimeter = arc[-1]
     walls = UVBuilder(name + "_walls")
     entry = UVBuilder(name + "_entry") if spec.get("entryOpening") else None
+    door_linings = [(d['box'], UVBuilder(name+'_'+d['suffix'])) for d in spec.get('doorLinings',[])]
     zs = [z for _, z in rings[-1][1]]
     axis_lo, axis_hi = min(zs) + 0.9, max(zs) - 0.9
     holes = spec.get("openings", [])
@@ -1129,6 +1130,8 @@ def build_shell(measure, spec, tex_dir):
             mz = (r0[i][1] + r0[j][1] + r1[i][1] + r1[j][1]) / 4
             my = (h0 + h1) / 2
             target=walls
+            for box,builder in door_linings:
+                if in_box(mx,my,mz,box):target=builder;break
             if any(in_box(mx, my, mz, box) for box in holes):
                 if entry and not spec.get('rearClosure') and in_box(mx,my,mz,spec["entryOpening"]):target=entry
                 else:continue
@@ -1146,6 +1149,26 @@ def build_shell(measure, spec, tex_dir):
                 target.poly([P(r0[i][0], h0, r0[i][1]), P(r1[i][0], h1, r1[i][1]),
                             P(r1[j][0], h1, r1[j][1]), P(r0[j][0], h0, r0[j][1])],
                            [wall_uv(u0,v0),wall_uv(u0,v1),wall_uv(u1,v1),wall_uv(u1,v0)], -inward)
+    for lining in spec.get('doorLinings',[]):
+        threshold=lining.get('threshold')
+        if not threshold:continue
+        inner,outer=threshold['innerX'],threshold['outerX']
+        bottom=threshold['bottomY'];underside=bottom-threshold.get('thickness',.025)
+        z0,z1=lining['box']['z']
+        side=1 if inner>0 else -1
+        assert bottom<floor_y and side*outer>side*inner
+        def doorway_face(points,normal):
+            corners=[P(*point) for point in points]
+            uv=[wall_uv((point[2]-z0)/perimeter,(point[1]-floor_y)/(top-floor_y)) for point in points]
+            # The floor edge, step and jamb returns are exposed from either
+            # camera side when the native door is open or missing.
+            walls.poly(corners,uv,normal);walls.poly(corners,uv,-normal)
+        doorway_face([(inner,bottom,z0),(inner,floor_y,z0),(inner,floor_y,z1),(inner,bottom,z1)],P(side,0,0))
+        doorway_face([(inner,bottom,z0),(outer,bottom,z0),(outer,bottom,z1),(inner,bottom,z1)],P(0,1,0))
+        doorway_face([(inner,underside,z0),(inner,underside,z1),(outer,underside,z1),(outer,underside,z0)],P(0,-1,0))
+        doorway_face([(outer,underside,z0),(outer,underside,z1),(outer,bottom,z1),(outer,bottom,z0)],P(side,0,0))
+        for z,direction in ((z0,-1),(z1,1)):
+            doorway_face([(inner,underside,z),(outer,underside,z),(outer,top,z),(inner,top,z)],P(0,0,direction))
     for corner_return in spec.get("cornerReturns", []):
         # Angular body outlines omit some real corner turns. Add a narrow
         # opaque skin between the unchanged lining arc and the exact native
@@ -1457,6 +1480,8 @@ def build_shell(measure, spec, tex_dir):
         # The original door is a thin exterior mesh. Supply its inside skin at
         # precisely the removed lining segments; Lua hides it for an open/missing door.
         objects.append(entry.finish())
+    for box,builder in door_linings:
+        objects.append(builder.finish())
     if spec.get("cabBulkhead"):
         # The cab and its cargo partition remain opaque at every wall setting.
         # A solid skin closes the otherwise exposed backfaces of factory cab parts.

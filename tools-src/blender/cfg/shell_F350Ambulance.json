@@ -1117,5 +1117,31 @@
         "z": -0.37,
         "depth": 0.063
     },
-    "sharpCorners": true
+    "sharpCorners": true,
+    "doorLinings": [
+        {
+            "part": "DoorRearRight",
+            "suffix": "side_entry",
+            "box": {
+                "x": [
+                    -1.1,
+                    -0.9
+                ],
+                "y": [
+                    -0.108,
+                    1.31
+                ],
+                "z": [
+                    -1.713,
+                    -0.981
+                ]
+            },
+            "threshold": {
+                "innerX": -0.95,
+                "outerX": -1.065,
+                "bottomY": -0.315,
+                "thickness": 0.025
+            }
+        }
+    ]
 }

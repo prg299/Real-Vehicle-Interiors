@@ -153,6 +153,11 @@ def main():
             # cutFront+.002 so its perimeter still seals the native cab.
             spec['cabBulkhead'] = dict(depth=.063)
             spec['cutFrontTop'] = 1.10  # keep the measured cab roof, cut the taller lightbar
+            spec['factoryEmpty'] = {'medical': {'right': ['medlocker']}}
+            # Closed native f350_door_rr measured in passenger space in Blender.
+            spec['doorLinings'] = [dict(part='DoorRearRight',suffix='side_entry',box=dict(
+                x=[-1.1,-.9],y=[floor-.02,ceiling+.02],z=[-1.713,-.981]),
+                threshold=dict(innerX=-.95,outerX=-1.065,bottomY=-.315,thickness=.025))]
         elif key in ('F700Bank', 'F700Swat'):
             # The distinct armored cabs reach 1.295m and 1.142m respectively.
             spec['cutFrontTop'] = 1.33 if key == 'F700Bank' else 1.18
@@ -166,7 +171,7 @@ def main():
         path = ROOT / f'tools-src/vehicles/specs/{key}.json'
         path.write_text(json.dumps(spec, indent=4) + '\n', encoding='utf-8', newline='\n')
         mv.build(str(path))
-        for suffix in ('floor', 'walls', 'bulkhead', 'entry'):
+        for suffix in ['floor', 'walls', 'bulkhead', 'entry']+[d['suffix'] for d in spec.get('doorLinings',[])]:
             material = 'floor' if suffix == 'floor' else 'walls'
             declarations.append(f'    model MELensShell_{texture}_{suffix} {{ mesh = vehicles/MELens_Fleet|shell_{texture}_{suffix}, texture = Vehicles/MELensShell_f700box_{material}, shader = vehiclewheel, scale = 0.0111111, }}')
         coverage.append(dict(family=key, title=row['title'], vehicles=row['vehicles'], dependencies=row['dependencies'],

@@ -886,6 +886,8 @@ def build(spec_path):
         import shell_rings
         lining = shell_rings.build(measure, shell_cfg)
         shell_cfg["cowlReturn"] = measured_cowl_return(hull_measure, spec["cowlReturn"], lining["room_ring"])
+    if spec.get("doorLinings"):
+        shell_cfg["doorLinings"] = spec["doorLinings"]
     with open(os.path.join(CFG, "shell_%s.json" % key), "w", encoding="utf-8", newline="\n") as handle:
         json.dump(shell_cfg, handle, indent=4)
 
@@ -895,6 +897,9 @@ def build(spec_path):
         shell_models.append("MELensShell_%s_bulkhead" % spec["texture"])
     if shell_cfg.get("entryOpening"):
         shell_models.append("MELensShell_%s_entry" % spec["texture"])
+    entry_model = len(shell_models)
+    for lining in shell_cfg.get("doorLinings", []):
+        shell_models.append("MELensShell_%s_%s" % (spec["texture"], lining["suffix"]))
     hide = {}
     for model, keep in spec.get("hide", {}).items():
         if keep is True or isinstance(keep, dict):
@@ -954,8 +959,11 @@ def build(spec_path):
         "fuelTank": spec.get("fuelTank", 20),
     }
     if shell_cfg.get("entryOpening"):
-        profile["shell"]["entryModel"] = len(shell_models)
+        profile["shell"]["entryModel"] = entry_model
         profile["shell"]["entryDoor"] = entry["part"]
+    if shell_cfg.get("doorLinings"):
+        profile["shell"]["extraDoors"] = [{"model": entry_model+i+1, "part": d["part"]}
+                                           for i,d in enumerate(shell_cfg["doorLinings"])]
     if "mesh" in spec:
         # A short cargo body can have its ceiling below the nominal High cut.
         # Keep the cut under that measured ceiling: otherwise its roof flange

@@ -5,6 +5,7 @@
 - Prevents startup crashes from an incomplete or outdated Java bridge and reports the missing API with update/approval instructions.
 - Restores shell and furniture model bindings after engine resets or streamed part replacements, preserving installed furniture, stored items and utility state.
 - Brings Shift-running inside vehicles up to the normal vanilla running pace.
+- Moves ambulance stretchers to the opposite side, keeps the two F350 side-door shelf bays empty and available, and makes the side-door lining follow the actual door state.
 - Seals cargo cab cutaways with fitted full-height partitions and gives work trucks and vans metal floors.
 - Adds matching medical stretchers and steel equipment cabinets, with vehicle-appropriate factory fittings and medical supplies.
 - Fills new interiors with vehicle-specific loot, cash safes, delivery parcels, medical storage and attendant benches. Keeps the ambulance stretcher near the rear doors.

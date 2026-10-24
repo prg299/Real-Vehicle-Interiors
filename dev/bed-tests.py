@@ -61,12 +61,16 @@ def main():
     p.add_argument('--sex',choices=['male','female'])
     p.add_argument('--bed-index',type=int,default=1)
     a=p.parse_args()
-    run=(ROOT/'build/rv'/a.run).resolve()
-    assert run.is_relative_to(ROOT/'build/rv')
+    logical_run=ROOT/'build/rv'/a.run
+    assert logical_run.parent==ROOT/'build/rv', 'run must be one owned folder name'
+    run=logical_run.resolve()
+    artifact_root=(Path(os.environ['LOCALAPPDATA'])/'RVI-TestArtifacts').resolve()
+    assert run.is_relative_to(ROOT/'build/rv') or run.is_relative_to(artifact_root)
     interior=load('final-interior-tests')
     tap,h=interior.load_helpers()
     h.configure(output=run/a.label)
-    h.SCREENS=run/'home/Zomboid/Screenshots'
+    session=json.loads((run/'native-session.json').read_text('utf-8-sig'))
+    h.SCREENS=Path(next(x.split('=',1)[1] for x in session['command'] if x.startswith('-cachedir=')))/'Screenshots'
     def sample_until(case,predicate,timeout=35):
         seen=[];end=time.monotonic()+timeout;next_shot=0
         while time.monotonic()<end:

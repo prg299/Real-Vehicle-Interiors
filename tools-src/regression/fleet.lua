@@ -82,10 +82,10 @@ do
         for index,spot in ipairs(pr.spots) do
           if spot.factory then
             local piece=spot.default
-            check(P.factoryPiece(v,index,pr.spots[index])==piece,"wrong service fitting: "..name)
+            check(P.factoryPiece(v,index,pr.spots[index])==(not spot.empty and piece or nil),"wrong service fitting: "..name)
             check(P.fits(pr.spots[index],piece),"service fitting does not fit: "..name..":"..piece)
             check(P.roomFor(pr,fitted,index,piece),"service fittings overlap: "..name)
-            fitted[index]=piece
+            if not spot.empty then fitted[index]=piece end
             check(piece~="bed" and (piece~="kitchen" or pr.factoryRole=="catering"),"service vehicle receives inappropriate residential furniture")
           end
         end

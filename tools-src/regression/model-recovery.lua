@@ -59,5 +59,27 @@ do
     check(not shell.visible.MELensShell3,"missing rear door gains an inside leaf")
     stale=true;P.refreshShell(v,M.profileFor(v))
     check(shell.visible.MELensShell1 and not shell.visible.MELensShell3,"adopted shell repair does not preserve missing door")
+    local side=part("SideDoor");side.item={};local sideOpened=false
+    function side:getDoor() return {isOpen=function() return sideOpened end} end
+    local getPart=v.getPartById
+    function v:getPartById(id) return id=="SideDoor" and side or getPart(self,id) end
+    local profile=M.profileFor(v)
+    profile.shell.models[4]="side_entry"
+    profile.shell.extraDoors={{model=4,part="SideDoor"}}
+    leaf.item={};P.initShell(v,shell)
+    check(shell.visible.MELensShell3 and shell.visible.MELensShell4,"independent closed door skins missing")
+    sideOpened=true;P.syncShellDoors(v,profile)
+    check(shell.visible.MELensShell3 and not shell.visible.MELensShell4,"opening side door also changes rear door")
+    unchanged=writes;P.syncShellDoors(v,profile)
+    check(writes==unchanged,"unchanged side-door state rewrites native models every frame")
+    shell.visible={};P.refreshShell(v,profile)
+    check(shell.visible.MELensShell1 and shell.visible.MELensShell3 and not shell.visible.MELensShell4,
+        "model recovery fills an open side door")
+    sideOpened=false;P.syncShellDoors(v,profile)
+    check(shell.visible.MELensShell4,"closing side door leaves a hole")
+    side.item=nil;P.syncShellDoors(v,profile)
+    check(not shell.visible.MELensShell4 and shell.visible.MELensShell3,"missing side door leaves a floating inside skin")
+    stale=true;P.refreshShell(v,profile)
+    check(shell.visible.MELensShell1 and not shell.visible.MELensShell4,"stale-part repair restores a missing side door")
     MELensRV,M.Profiles,P.shown,P.ghosts,P.shellDoorStates=old.rv,old.profiles,old.shown,old.ghosts,old.doors
 end
