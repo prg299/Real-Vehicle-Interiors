@@ -190,10 +190,8 @@ end
 local function release(r)
     local chr = r.chr
     if not chr then return end
-    if MELensRV then
-        MELensRV.setStanding(chr, false)
-        MELensRV.clearFacingOf(chr)
-    end
+    if MELensRV and MELensRV.setStanding then MELensRV.setStanding(chr, false) end
+    if MELensRV and MELensRV.clearFacingOf then MELensRV.clearFacingOf(chr) end
     -- These variables belong to RVI and must not leak into an ordinary vehicle
     -- seat. Keep unrelated flags such as damnlib's damnVehicle untouched.
     chr:clearVariable(CABIN_VAR)
@@ -229,10 +227,8 @@ local function applyRemote()
             if not chr:getVariableBoolean(SEAT_VAR) then chr:setVariable(SEAT_VAR, "true") end
             local pose = r.running and "Run" or r.w and "Walk" or "Idle"
             if chr:getVariableString(CABIN_VAR) ~= pose then chr:setVariable(CABIN_VAR, pose) end
-            if MELensRV then
-                MELensRV.setStanding(chr, true)
-                MELensRV.setFacing(chr, f)
-            end
+            if MELensRV and MELensRV.setStanding then MELensRV.setStanding(chr, true) end
+            if MELensRV and MELensRV.setFacing then MELensRV.setFacing(chr, f) end
         elseif r.bound or (vehicle and not validSeat) or (chr and chr:getOnlineID() ~= id)
                 or getTimestampMs() - r.received > PENDING_MS then
             release(r)

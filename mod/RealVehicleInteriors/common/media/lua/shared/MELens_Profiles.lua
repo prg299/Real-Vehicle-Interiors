@@ -13,6 +13,7 @@
 -- mesh origin (about 0.8 tiles above the Flying Cloud's floor).
 --
 
+require "MELens_Java"
 MELens = MELens or {}
 MELens.Profiles = MELens.Profiles or {}
 
@@ -332,6 +333,7 @@ end
 function MELens.addStandingPositions()
     local manager = getScriptManager()
     if not manager then return end
+    local rv = MELens.java()
     standingCounts(manager)
     for fullName, profile in pairs(MELens.Profiles) do
         local script = manager:getVehicle(fullName)
@@ -353,7 +355,7 @@ function MELens.addStandingPositions()
             -- Only with the Java part, which hides what the shell replaces (the shell
             -- itself is ME: LENS' own part, see MELens_Parts.lua); without it KI5's own
             -- interior stays as it is.
-            if profile.shell and MELensRV then
+            if profile.shell and rv then
                 local m = profile.mesh
                 for model, keep in pairs(profile.hideKI5 or {}) do
                     if keep == true then
@@ -390,8 +392,8 @@ function MELens.addStandingPositions()
                     -- The client bridge resolves just this binding. A server runs without
                     -- it, so the game there finds no part for the seat and turns a walk-in
                     -- down; MELens_Sync.lua seats the player on their first position.
-                    if MELensRV then
-                        MELensRV.bindSeatContainer(script, "Seat" .. id, id)
+                    if rv then
+                        rv.bindSeatContainer(script, "Seat" .. id, id)
                     end
                     local passenger = script:getPassenger(index)
                     passenger:getPositionById("inside"):getOffset():set(s.inside[1], s.inside[2], s.inside[3])

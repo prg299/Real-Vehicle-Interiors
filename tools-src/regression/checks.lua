@@ -21,7 +21,7 @@ end
 local serverScript, clientScript = newScript(), newScript()
 MELensRV = nil
 P.extendScript(serverScript, profile)
-MELensRV = {}
+MELensRV = completeJava()
 P.extendScript(clientScript, profile)
 check(#serverScript.ids == #clientScript.ids, "part counts differ with/without Java")
 for i, id in ipairs(serverScript.ids) do check(id == clientScript.ids[i], "network part index differs: " .. id) end
@@ -313,6 +313,15 @@ local occupied = character(9)
 emit("OnServerCommand", "MELens", "pos", { p = 9, v = 99, s = 3, x = 0, z = 0 })
 emit("OnTick")
 check(not occupied.vehicle and lateVehicle:getCharacter(3) == ghost, "remote snapshot overwrote another passenger")
+-- A partial loader table must not turn a valid server snapshot or release into a Lua crash.
+MELensRV={}
+local partial=character(10);local partialVehicle=truck(100)
+emit("OnServerCommand", "MELens", "pos", {p=10,v=100,s=2,x=0,z=0})
+check(pcall(function() emit("OnTick") end) and partial.vehicle==partialVehicle,
+    "partial Java bridge breaks remote membership presentation")
+partialVehicle.passengers[2]=nil;partial.vehicle=nil
+check(pcall(function() emit("OnTick") end) and M.Sync.remote[10]==nil,
+    "partial Java bridge breaks remote release")
 MELensRV = savedLensJava
 
 local session = { player = localPlayer, vehicle = v, seat = 4, x = 0, z = 0, facing = 0, moving = false }

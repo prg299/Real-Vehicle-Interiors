@@ -22,7 +22,7 @@ local STAND_OFF = 0.17        -- tiles in front of a piece where you stand to us
 local Z_LEVEL = 2.44949       -- a floor level in the game's 3D units (tiles)
 
 local function java()
-    return MELensRV
+    return M.java()
 end
 
 ------------------------------------------------------------------------------------
@@ -762,6 +762,7 @@ function I.updateReach(player, dt)
     local key = ""
     local profile = M.profileFor(vehicle)
     if profile then
+        P.refreshShell(vehicle, profile)
         -- A preview (the green see-through piece) only stands where the placing mode's mouse is now: one left behind
         -- (reported after placing, having started placing several times) goes, whatever left it there.
         local active = M.Placement and M.Placement.active
@@ -851,6 +852,6 @@ end
 function I.reset()
     reachKey = nil
     hums = {}
-    P.shown = {}
-    P.ghosts = {}
+    P.shown = setmetatable({}, { __mode = "k" })
+    P.ghosts = setmetatable({}, { __mode = "k" })
 end

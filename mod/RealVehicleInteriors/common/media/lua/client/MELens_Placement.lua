@@ -21,7 +21,7 @@ local STRENGTH = 0.55
 local HOVER_STRENGTH = 1.0
 
 local function java()
-    return MELensRV
+    return M.java()
 end
 
 local function say(player, key, ...)

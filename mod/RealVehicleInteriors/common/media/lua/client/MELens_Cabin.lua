@@ -43,7 +43,7 @@ local lastMs = nil
 local placeVec, localA, localB
 
 local function java()
-    return MELensRV
+    return M.java()
 end
 
 local function say(player, key, ...)

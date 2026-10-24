@@ -63,7 +63,7 @@ do
         -- Compare emitted pieces and their previews: both need the same scale.
         local chunks={}
         local script={getName=function() return name end,Load=function(_,_,text) chunks[#chunks+1]=text end}
-        local bridge=MELensRV;MELensRV={}
+        local bridge=MELensRV;MELensRV=completeJava()
         P.extendScript(script,pr)
         MELensRV=bridge
         local text=table.concat(chunks)

@@ -22,14 +22,14 @@ local old = { rv = MELensRV, profiles = M.Profiles, manager = getScriptManager,
     doors = M.Parts.syncShellDoors }
 local planes, writes = {}, {}
 local function noop() end
-MELensRV = {
+MELensRV = completeJava({
     setKeepPlane = function(model, a, b, c, d)
         planes[model] = { a, b, c, d }
         writes[#writes + 1] = model
     end,
     setCutaway = noop, clearCutaway = noop, clearNearCut = noop,
     clearFacing = noop, clearMarker = noop, clearStanding = noop,
-}
+})
 local function plane(model, a, b, c, d, message)
     local p = planes[model]
     check(p and p[1] == a and p[2] == b and p[3] == c and p[4] == d, message)

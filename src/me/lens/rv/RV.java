@@ -183,6 +183,33 @@ public final class RV {
         }
     }
 
+    /** Native binding truth, including the current live part after streamed adoption. */
+    public static boolean isPartModelVisible(zombie.vehicles.VehiclePart part, String modelId) {
+        BaseVehicle vehicle = part == null ? null : part.getVehicle();
+        if (vehicle == null || modelId == null || vehicle.getPartById(part.getId()) != part) return false;
+        for (var model : vehicle.models) {
+            if (model.part == part && model.scriptModel != null && modelId.equals(model.scriptModel.id)) return true;
+        }
+        return false;
+    }
+
+    /** Remove only superseded bindings for this mod's same named part. No part/item changes. */
+    public static boolean clearStalePartModels(zombie.vehicles.VehiclePart part) {
+        BaseVehicle vehicle = part == null ? null : part.getVehicle();
+        if (vehicle == null || vehicle.getPartById(part.getId()) != part) return false;
+        String id = part.getId();
+        if (!"MELensShell".equals(id) && !id.startsWith("MELensSpot")) return false;
+        boolean removed = false;
+        for (int i = vehicle.models.size() - 1; i >= 0; i--) {
+            var model = vehicle.models.get(i);
+            if (model.part != null && model.part != part && id.equals(model.part.getId()) && model.scriptModel != null) {
+                vehicle.setModelVisible(model.part, model.scriptModel, false);
+                removed = true;
+            }
+        }
+        return removed;
+    }
+
     /** Same as {@link #setKeepPlane}; keep planes only ever apply in the camper you are in. */
     public static void setCutKeepPlane(String modelName, double a, double b, double c, double d) {
         setKeepPlane(modelName, a, b, c, d);

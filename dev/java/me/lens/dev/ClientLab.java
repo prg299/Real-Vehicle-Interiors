@@ -15,6 +15,33 @@ import static org.lwjgl.opengl.GL30.*;
 /** Test-only keyboard/mouse queues, weather controls and completed-frame capture. */
 @Exposer.LuaClass(name="MEMCNativeLab")
 public final class ClientLab {
+    /** Read actual part-model bindings. No render/cache or inventory mutation. */
+    public static String interiorModels(zombie.vehicles.BaseVehicle vehicle) {
+        var out = new StringBuilder("[");
+        for (var model : vehicle.models) {
+            if (model.part == null || model.scriptModel == null) continue;
+            String id = model.part.getId();
+            if (!id.equals("MELensShell") && !id.startsWith("MELensSpot")) continue;
+            if (out.length() > 1) out.append(',');
+            out.append("{\"part\":\"").append(id).append("\",\"model\":\"")
+                .append(model.scriptModel.id).append("\",\"live\":")
+                .append(vehicle.getPartById(id) == model.part).append('}');
+        }
+        return out.append(']').toString();
+    }
+    /** Explicit model-loss fixture; leaves live parts, inventories and Lua caches untouched. */
+    public static int dropInteriorModels(zombie.vehicles.BaseVehicle vehicle) {
+        int count = 0;
+        for (var model : new ArrayList<>(vehicle.models)) {
+            if (model.part == null || model.scriptModel == null) continue;
+            String id = model.part.getId();
+            if (id.equals("MELensShell") || id.startsWith("MELensSpot")) {
+                vehicle.setModelVisible(model.part, model.scriptModel, false);
+                count++;
+            }
+        }
+        return count;
+    }
     public static final ConcurrentHashMap<Integer,Long> keys = new ConcurrentHashMap<>();
     public static final Field keyboardStates;
     public static final Field mouseStates;

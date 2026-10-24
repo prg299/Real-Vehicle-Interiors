@@ -5,7 +5,7 @@ do
     check(P.fits(slot,"equipmentrack"),"declared factory model cannot return to its slot")
     check(not P.fits(slot,"medlocker"),"factory slot accepts furniture without a declared model")
     local oldPart,oldSize,oldRV=P.spotPart,M.LooseUI.size,MELensRV
-    MELensRV={canShow=function() return true end}
+    MELensRV=completeJava({canShow=function() return true end})
     M.LooseUI.size=function(item) return item.w,item.h,item.d end
     local rows={}
     local function item(id,w,h,d)

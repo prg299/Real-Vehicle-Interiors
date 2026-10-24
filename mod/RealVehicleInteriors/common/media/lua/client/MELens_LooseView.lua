@@ -32,7 +32,7 @@ local retryAt = 0
 local tumbles = {}           -- vehicle id -> how many times things fell by the last look
 
 local function java()
-    return MELensRV
+    return M.java()
 end
 
 local function num(value)

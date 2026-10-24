@@ -17,6 +17,7 @@
 -- or the server in multiplayer).
 --
 require "MELens_RVKit"
+require "MELens_Java"
 
 MELens = MELens or {}
 local M = MELens
@@ -540,8 +541,8 @@ end
 -- furniture). `shown` remembers what each part shows, as changing a vehicle's models
 -- rebuilds its model instances. `ghost` sets the piece previewed there (placing
 -- furniture; false clears it); without it the preview stays as it is.
-P.shown = {}
-P.ghosts = {}
+P.shown = setmetatable({}, { __mode = "k" })
+P.ghosts = setmetatable({}, { __mode = "k" })
 
 -- The engine can rebuild container stats after installing, loading or repairing a part.
 -- Repair both the installed item's source capacity and the live container, without replacing either.
@@ -583,15 +584,32 @@ function P.syncFurnitureSeats(vehicle)
 end
 
 function P.showPiece(part, force, ghost)
+    if not part then return end
+    local rv = M.java()
+    if rv then
+        local vehicle = part:getVehicle()
+        if vehicle:getPartById(part:getId()) ~= part then
+            P.shown[part], P.ghosts[part] = nil, nil
+            return
+        end
+    end
     P.syncCapacity(part)
-    if not MELensRV or not part then return end
+    if not rv then return end
     if ghost ~= nil then
         P.ghosts[part] = ghost or nil
     end
     local piece = P.pieceAt(part) or ""
     local preview = P.ghosts[part]
     local key = piece .. "|" .. (preview or "")
-    if not force and P.shown[part] == key then return end
+    local stale = rv.clearStalePartModels and rv.clearStalePartModels(part)
+    if not force and not stale and P.shown[part] == key then
+        -- Engine model lists can be cleared/rebound while the installed item and
+        -- this Lua cache survive. Inspect actual current-part ownership as well.
+        local valid = not rv.isPartModelVisible
+            or ((piece == "" or rv.isPartModelVisible(part, piece))
+                and (not preview or rv.isPartModelVisible(part, "ghost_" .. preview)))
+        if valid then return end
+    end
     -- only the models this spot declares (a cargo spot has just the box)
     for _, name in ipairs(P.piecesFor(P.spotOf(part:getVehicle(), part))) do
         part:setModelVisible(name, name == piece)
@@ -793,12 +811,43 @@ end
 
 -- Shells are drawn only in the occupied vehicle; the entry skin follows its door.
 function P.initShell(vehicle, part)
-    if not MELensRV then return end
+    local rv = M.java()
+    if not rv or not part or vehicle:getPartById(P.SHELL) ~= part then return end
+    if rv.clearStalePartModels then rv.clearStalePartModels(part) end
     local profile = M.profileFor(vehicle)
     for i = 1, profile and profile.shell and #profile.shell.models or 0 do
         part:setModelVisible("MELensShell" .. i, true)
     end
     P.syncShellDoors(vehicle, profile, true)
+end
+
+-- Called on the client's existing throttled furniture refresh. Restores render
+-- bindings only; never runs create/init loot, replaces a part or writes inventory.
+function P.refreshShell(vehicle, profile)
+    local rv = M.java()
+    local part = vehicle and vehicle:getPartById(P.SHELL)
+    if not rv or not rv.isPartModelVisible or not part or not profile.shell then return end
+    if rv.clearStalePartModels and rv.clearStalePartModels(part) then
+        P.initShell(vehicle, part)
+        return
+    end
+    for i = 1, #profile.shell.models do
+        if i ~= profile.shell.entryModel and not rv.isPartModelVisible(part, "MELensShell" .. i) then
+            P.initShell(vehicle, part)
+            return
+        end
+    end
+    -- The door's desired state can also remain cached across an engine rebuild.
+    local entry = profile.shell.entryModel
+    if entry then
+        local leaf = vehicle:getPartById(profile.shell.entryDoor)
+        local door = leaf and leaf:getDoor()
+        local visible = door ~= nil and leaf:getInventoryItem() ~= nil and not door:isOpen()
+        if rv.isPartModelVisible(part, "MELensShell" .. entry) ~= visible then
+            if rv.clearStalePartModels then rv.clearStalePartModels(part) end
+            P.syncShellDoors(vehicle, profile, true)
+        end
+    end
 end
 
 ------------------------------------------------------------------------------------
@@ -904,7 +953,7 @@ end
 -- there) between server and clients by the part's place in the list.
 function P.extendScript(script, profile)
     local area = profile.standing.area
-    local java = MELensRV ~= nil
+    local java = M.java() ~= nil
     if profile.shell then
         local o = M.modelOffset(0, 0, 0, profile)
         local modelScale = 0.9 / (profile.vehicleScale or 0.9)
