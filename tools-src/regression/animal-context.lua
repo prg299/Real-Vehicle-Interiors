@@ -3,7 +3,7 @@ do
     local M,A,C=MELens,MELens.Animals,MELens.AnimalContext
     local saved={triggerEvent=triggerEvent,AnimalContextMenu=AnimalContextMenu,
         luautils=luautils,ISTimedActionQueue=ISTimedActionQueue,ISPetAnimal=ISPetAnimal,CompanionDogs=CompanionDogs}
-    local inside,characterAt,standingThen,walkTo=A.inside,M.Parts.characterAt,M.standingThen,M.walkTo
+    local inside,characterAt,standingThen,walkTo,facePoint=A.inside,M.Parts.characterAt,M.standingThen,M.walkTo,M.facePoint
     local pickupNew=MELensPickUpAnimal.new
     local v={getModData=function(self) return self.data end,data={}}
     local p={getPlayerNum=function() return 2 end}
@@ -16,6 +16,8 @@ do
     M.standingThen=function(_,fn) fn() end
     local paths=0
     M.walkTo=function(_,_,_,fn) paths=paths+1;fn() end
+    local turned=false
+    M.facePoint=function(player,x,z) check(player==p and x==.3 and z==0,'animal action targets its old world position');return turned end
     local standFor=M.LooseUI.standFor
     M.LooseUI.standFor=function() return 0,0 end
     local queue={}
@@ -50,6 +52,8 @@ do
     end)
     check(#queue==1 and queue[1]==action and paths==1,'native action did not use shared interior walking or retained an outside walk')
     check(action:isValid(),'valid native inventory action rejected inside')
+    check(action:waitToStart(),'native animal action starts before the cabin turn')
+    turned=true;check(not action:waitToStart(),'native animal action never starts after the cabin turn')
     action:start()
     check(action.nativeStart and action.anim=='nativeFeed' and action.hand=='native bottle','native action setup/held model lost')
     v.data[A.KEY]['123'].x=5
@@ -88,6 +92,7 @@ do
     local beforePaths=paths
     check(C.invoke(p,animal,native,animal,p)=='native result' and paths==beforePaths,'outside callback gained interior routing')
     A.inside,M.Parts.characterAt,M.standingThen,M.walkTo=inside,characterAt,standingThen,walkTo
+    M.facePoint=facePoint
     M.LooseUI.standFor=standFor;MELensPickUpAnimal.new=pickupNew
     for key,value in pairs(saved) do _G[key]=value end
     if saved.ISPetAnimal==nil then ISPetAnimal=nil end

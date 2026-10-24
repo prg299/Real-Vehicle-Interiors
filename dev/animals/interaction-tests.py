@@ -77,7 +77,7 @@ local hit=MELens.Interact.pick(v,pr,sx,sy)
 if hit and hit.animal==a.animal then return {x=sx/getCore():getZoom(0),y=sy/getCore():getZoom(0),header=MELens.AnimalsUI.nameOf(a.animal)} end end
 error("no pickable animal point") end;return true''')
         point=h.lua('return MELensAnimalTest.point()')
-        interior.choose(h,tap,point,[point['header'],h.lua('return getText("ContextMenu_PickUpAnimalBody")')],'animal:pickup')
+        interior.choose(h,tap,point,[h.lua('return MELensAnimalTest.hen:getFullName()'),h.lua('return getText("ContextMenu_PickUpAnimal",MELensAnimalTest.hen:getFullName())')],'animal:pickup')
         wait('return #MELens.Animals.list(MELensTest.vehicle)==0 and getPlayer():getInventory():getCountTypeRecurse("Animal")==1 and #ISTimedActionQueue.getTimedActionQueue(getPlayer()).queue==0')
         h.REPORT['mousePickup']=True;h.REPORT['pickupState']=fixture('state');h.capture('native-world-pickup')
 

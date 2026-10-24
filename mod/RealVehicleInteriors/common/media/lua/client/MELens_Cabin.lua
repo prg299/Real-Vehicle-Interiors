@@ -1213,6 +1213,17 @@ function M.facingOf(player)
     return nil
 end
 
+-- Timed actions target cabin coordinates, not a trailer animal's old world square.
+-- Return true once the ordinary cabin turn has reached the requested direction.
+function M.facePoint(player, x, z)
+    local s = session
+    if not s or s.player ~= player then return false end
+    local dx, dz = x - s.x, z - s.z
+    if dx * dx + dz * dz < 1e-6 then return true end
+    s.targetFacing = facingFor(dx, dz)
+    return math.abs(angleDiff(s.targetFacing, s.facing)) < 0.04
+end
+
 -- Whether you are walking to a point now (M.walkTo) or about to do something on arrival.
 function M.pathing(player)
     return session ~= nil and session.player == player and (session.path ~= nil or session.onArrive ~= nil)

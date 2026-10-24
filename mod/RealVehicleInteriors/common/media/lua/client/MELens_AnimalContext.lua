@@ -45,7 +45,19 @@ Events.OnGameStart.Add(C.wrapPickup)
 
 local function decorate(action, player, animal)
     if action.animal ~= animal then return action end
-    local valid, start = action.isValid, action.start
+    local valid, start, update, wait = action.isValid, action.start, action.update, action.waitToStart
+    local function face()
+        local _, _, record = C.inside(player, animal)
+        return record and M.facePoint(player, record.x, record.z)
+    end
+    action.waitToStart = function(self)
+        if C.inside(player, animal) then return not face() end
+        return wait and wait(self) or false
+    end
+    action.update = function(self)
+        if update then update(self) end
+        face()
+    end
     action.isValid = function(self)
         local vehicle = C.inside(player, animal)
         if not vehicle or not A.nearAnimal(vehicle, animal, player) then return false end
@@ -57,6 +69,7 @@ local function decorate(action, player, animal)
     end
     action.start = function(self)
         start(self)
+        face()
         if self.Type == "ISCDPetDog" then
             -- The native pet setup works for passengers too. CD's usual start
             -- skips it solely because a trailer passenger is outside the world.
@@ -111,7 +124,7 @@ function C.invoke(player, animal, callback, ...)
     M.standingThen(player, function()
         local _, _, record = C.inside(player, animal)
         if not record then return end
-        local x, z = M.LooseUI.standFor(vehicle, profile, record.x, record.z, 0, player)
+        local x, z = M.LooseUI.standFor(vehicle, profile, record.x, record.z, 0, player, 0.65)
         M.walkTo(player, x, z, function()
             if not C.inside(player, animal) then return end
             for _, action in ipairs(queued) do add(decorate(action, player, animal)) end

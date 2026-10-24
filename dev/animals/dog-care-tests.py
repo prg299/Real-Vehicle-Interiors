@@ -171,6 +171,12 @@ MELensDogCare.owner={key=d.ownerKey,name=d.ownerName};d.ownerKey="rvi_other_owne
 d.ownerKey=o.key;d.ownerName=o.name;CompanionDogs.regInvalidate();return true''');close_menus()
         # Native Follow/Stay commands, followed by real exit, test the complete
         # interaction instead of fixture state changes used by the older MP run.
+        # The normal CD menu requires selecting a bonded dog after a cold load.
+        # Exercise that native command rather than silently repairing its token.
+        if not h.lua('local a=MELens.Animals.list(MELensTest.vehicle)[1];return CompanionDogs.data(a).companionToken==CompanionDogs.playerData(getPlayer()).token'):
+            dog_menu(h.lua('local a=MELens.Animals.list(MELensTest.vehicle)[1];return getText("IGUI_PD_Select",CompanionDogs.data(a).name)'))
+            wait(lambda:h.lua('local a=MELens.Animals.list(MELensTest.vehicle)[1];return CompanionDogs.data(a).companionToken==CompanionDogs.playerData(getPlayer()).token'),label='native companion selection')
+            h.REPORT['nativeCompanionSelection']=True
         dog_state('stay');dog_state('follow')
         wait(snap,lambda s:s['animals'][0]['state']=='follow');exit_native()
         wait(snap,lambda s:len(s['animals'])==0,'native Follow takes dog outside',timeout=60)

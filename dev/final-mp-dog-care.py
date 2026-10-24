@@ -124,6 +124,10 @@ local a=assert(CompanionDogs.spawnDog(math.floor(q:x()),math.floor(q:y()),0,"dog
 CompanionDogs.data(a).trust=100;CompanionDogs.data(a).name="MP care dog";a:setCustomName("MP care dog");CompanionDogs.transmit(a);CompanionDogs.regInvalidate();return "bonded"''')
             h.REPORT['followIn']=count(1)
         h.lua('MELensTest={vehicle=getVehicleById('+str(lab.vid)+')};return true');h.lua(care.FIXTURE)
+        if not h.lua('local a=MELens.Animals.list(MELensTest.vehicle)[1];return CompanionDogs.data(a).companionToken==CompanionDogs.playerData(getPlayer()).token'):
+            menu(h.lua('local a=MELens.Animals.list(MELensTest.vehicle)[1];return getText("IGUI_PD_Select",CompanionDogs.data(a).name)'))
+            lab.wait(lambda:h.lua('local a=MELens.Animals.list(MELensTest.vehicle)[1];return CompanionDogs.data(a).companionToken==CompanionDogs.playerData(getPlayer()).token'),bool,'native selected companion after loading')
+            h.REPORT['nativeCompanionSelection']=True
         h.lua('ISUIHandler.setVisibleAllUI(true);return true');set_state('stay');h.REPORT['nativeStay']=all_states()
         menu(h.lua('return getText("IGUI_PD_Inspect")'))
         lab.wait(lambda:h.lua('local w=ISCDStatusWindow.instanceFor(getPlayer());return w and w:isVisible()'),bool,'native interior Inspect remains open')

@@ -5,6 +5,7 @@ import java.util.Map;
 import me.zed_0xff.zombie_buddy.Exposer;
 import zombie.characters.animals.IsoAnimal;
 import zombie.core.skinnedmodel.advancedanimation.AnimatedModel;
+import zombie.vehicles.BaseVehicle;
 
 /** Read-only observation of the actual interior models, never the animal's outside animator. */
 @Exposer.LuaClass(name="MELensDevAnimalModels")
@@ -27,7 +28,8 @@ public final class AnimalModels {
             if(out.length()>1)out.append(',');
             out.append("{\"id\":").append(animal.getAnimalID())
                 .append(",\"type\":").append(quote(animal.getAnimalType()))
-                .append(",\"active\":").append(animal.getVehicle()==owner)
+                .append(",\"active\":").append(owner instanceof BaseVehicle vehicle
+                    && vehicle.getAnimalById(animal.getAnimalID()) == animal)
                 .append(",\"requestedSet\":").append(quote(animal.GetAnimSetName()))
                 .append(",\"modelSet\":").append(quote(model.GetAnimSetName()))
                 .append(",\"loadedSet\":").append(quote(model.getAdvancedAnimator().animSet==null ? null : model.getAdvancedAnimator().animSet.name))

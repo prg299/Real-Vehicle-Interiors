@@ -6,6 +6,7 @@ same Lua tick; it is a builder comparison, not an outside-world mouse-input clai
 import argparse
 import importlib.util
 import json
+import math
 import os
 from pathlib import Path
 import time
@@ -64,16 +65,29 @@ def main():
     try:
         h.REPORT.update(scope=__doc__,fixtures=['existing disposable bonded companion','noon lighting only','hidden world-builder reference in the same Lua tick'])
         h.lua('MELensTest={vehicle=assert(getPlayer():getVehicle())};ISUIHandler.setVisibleAllUI(true);getGameTime():setTimeOfDay(12);return true')
+        h.REPORT['petCooldownFixture']=h.lua('local a=MELens.Animals.list(MELensTest.vehicle)[1];local last=CompanionDogs.data(a).lastPetMin;local now=CompanionDogs.worldMinutes();local wait=last and last+CompanionDogs.petCooldownMin()+1-now or 0;if wait>0 then getGameTime():setTimeOfDay(getGameTime():getTimeOfDay()+wait/60) end;return wait')
         h.lua(care.FIXTURE);open_dog();reference=h.lua(REFERENCE)
         h.check(reference['actual']==reference['expected'],'interior names, order, icons, disabled states or tooltips differ from the normal world menu')
-        h.REPORT['sameTickWorldMenuReference']=reference;h.capture('normal-world-style-dog-menu-inside')
+        h.REPORT['sameTickWorldMenuReference']=reference;open_dog();h.capture('normal-world-style-dog-menu-inside')
         click_option(h.lua('return getText("IGUI_PD_Inspect")'))
         wait(lambda:h.lua('local w=ISCDStatusWindow.instanceFor(getPlayer());return w and w:isVisible()'),label='native Inspect stays visible')
         h.capture('normal-dog-inspect-inside');h.lua('ISCDStatusWindow.instanceFor(getPlayer()):close();return true')
         before=h.lua('local a=MELens.Animals.list(MELensTest.vehicle)[1];return {pet=CompanionDogs.data(a).lastPetMin,uid=CompanionDogs.ensureUid(a)}')
         open_dog();click_option(h.lua('return getText("IGUI_PD_Pet")'))
         wait(lambda:h.lua('return getPlayer():getVariableBoolean("petanimal")'),label='native pet animation starts inside')
+        h.lua('getPlayerInventory(0):setVisible(false);getPlayerLoot(0):setVisible(false);return true')
         h.capture('native-pet-animation-inside')
+        for i in range(3):
+            time.sleep(.5);h.capture('native-pet-animation-inside-'+str(i+1))
+            h.REPORT.setdefault('petPoseSamples',[]).append(h.lua('local p=getPlayer();local v=MELensTest.vehicle;local r=MELens.Animals.record(v,MELens.Animals.list(v)[1]);local x,z=MELens.Parts.characterAt(v,p);return {models=MELensDevAnimalModels.snapshot(),tracks=MELensDevBones.tracks(p),pet=p:getVariableBoolean("petanimal"),facing=MELens.facingOf(p),expected=math.atan2(-(r.x-x),r.z-z)}'))
+        for sample in h.REPORT['petPoseSamples']:
+            delta=(sample['facing']-sample['expected']+math.pi)%(2*math.pi)-math.pi
+            h.check(abs(delta)<.05,'player pets away from the animal')
+        tracks={}
+        for sample in h.REPORT['petPoseSamples']:
+            for track in json.loads(sample['tracks']):
+                if 'pet' in track['name'].lower() and track['blend']>.1:tracks.setdefault(track['name'],[]).append(track['time'])
+        h.check(any(len(times)>1 and max(times)-min(times)>.01 for times in tracks.values()),'no advancing weighted player pet animation')
         after=wait(lambda:h.lua('local a=MELens.Animals.list(MELensTest.vehicle)[1];return {pet=CompanionDogs.data(a).lastPetMin,uid=CompanionDogs.ensureUid(a),queue=#ISTimedActionQueue.getTimedActionQueue(getPlayer()).queue,anim=getPlayer():getVariableBoolean("petanimal"),idle=a:getVariableString("idleAction")}'),
             lambda s:s.get('pet') is not None and s.get('pet')!=before.get('pet') and s['queue']==0 and not s['anim'],label='native pet authority effect and cleanup',seconds=60)
         h.check(after['uid']==before['uid'] and after.get('idle')!='petting','pet changed identity or left the petting animation active')
