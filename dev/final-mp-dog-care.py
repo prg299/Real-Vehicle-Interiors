@@ -1,4 +1,4 @@
-"""Two-peer native Companion Dogs commands, outside Bring, care and restart identity."""
+"""Two-peer native dog ownership, carry/drop, commands, care, Bring and restart."""
 import argparse
 import importlib.util
 import json
@@ -22,8 +22,10 @@ def main():
 
     def read(side):
         code=animal.READ.replace('VID',str(lab.vid))+'''
-for i,a in ipairs(MELens.Animals.list(v)) do local d=CompanionDogs.data(a);local r=r.animals[i]
-r.uid=d.uid;r.token=d.companionToken;r.owner=d.ownerKey;r.state=CompanionDogs.getState(a);r.upkeep=d.lastUpkeepMin;r.health=a:getHealth() end
+for _,a in ipairs(MELens.Animals.list(v)) do local d=CompanionDogs.data(a)
+for _,row in ipairs(r.animals) do if row.id==a:getAnimalID() then
+row.uid=d.uid;row.token=d.companionToken;row.owner=d.ownerKey;row.state=CompanionDogs.getState(a)
+row.upkeep=d.lastUpkeepMin;row.health=a:getHealth();row.hunger=CompanionDogs.getHunger(a) end end end
 r.sqlId=v:getSqlId();r.hours=getGameTime():getWorldAgeHours()
 '''
         r=json.loads(lab.server(driver.JSON_ENCODER+code+'return enc(r)')) if side=='server' else (h if side=='A' else lab.b).lua(code+'return r')
@@ -33,12 +35,16 @@ r.sqlId=v:getSqlId();r.hours=getGameTime():getWorldAgeHours()
     def all_states():return {side:read(side) for side in ('A','B','server')}
     def count(n):return lab.wait(all_states,lambda ss:all(len(s['animals'])==n for s in ss.values()),str(n)+' dogs on server and both peers',timeout=60)
 
-    def menu(label):
-        point=h.lua('return MELensDogCare.point()');lab.input('A',x=point['x'],y=point['y'],right=True)
+    def menu(label,side='A',enabled=True):
+        api=h if side=='A' else lab.b
+        # Setup cleanup only; actions under test still use native mouse input.
+        api.lua('local m=getPlayerContextMenu(0);if m then m:hideAndChildren() end;return true')
+        point=api.lua('return MELensDogCare.point()');lab.input(side,x=point['x'],y=point['y'],right=True)
         for title in (point['name'],label):
-            rows=lab.wait(lambda:h._sequence(h.lua(animal.MENUS)),lambda rr:any(r['name']==title for r in rr),'native dog menu '+title,timeout=10)
-            r=next(r for r in rows if r['name']==title);h.check(r['enabled'],'disabled dog command '+title)
-            lab.input('A',x=r['x'],y=r['y']);time.sleep(.2)
+            rows=lab.wait(lambda:h._sequence(api.lua(animal.MENUS)),lambda rr:any(r['name']==title for r in rr),'native dog menu '+title,timeout=10)
+            r=next(r for r in rows if r['name']==title)
+            h.check(r['enabled']==(enabled if title==label else True),'unexpected command availability '+title)
+            lab.input(side,x=r['x'],y=r['y']);time.sleep(.2)
 
     def set_state(state):
         for attempt in range(5):
@@ -51,6 +57,47 @@ r.sqlId=v:getSqlId();r.hours=getGameTime():getWorldAgeHours()
         lab.wait(lambda:h.lua('return not MELens.pathing(getPlayer()) and #ISTimedActionQueue.getTimedActionQueue(getPlayer()).queue==0'),bool,'owner at exit')
         lab.input('A',key=int(h.lua('return getCore():getKey("Interact")')))
         lab.wait(lambda:h.lua('return getPlayer():getVehicle()==nil'),bool,'native owner Interact exit')
+
+    def carry_case():
+        before=count(1);uid=before['server']['animals'][0]['uid']
+        # The guest stays a real non-owner; no ownership fixture is needed in MP.
+        lab.b.lua('MELensTest={vehicle=getVehicleById('+str(lab.vid)+')};ISUIHandler.setVisibleAllUI(true);return true')
+        lab.b.lua(care.FIXTURE)
+        position=lambda:lab.b.lua('local x,z=MELens.Parts.characterAt(MELensTest.vehicle,getPlayer());return {x=x,z=z,path=MELens.pathing(getPlayer())}')
+        origin=position()
+        menu(lab.b.lua('return getText("ContextMenu_PickUpAnimalBody")'),side='B',enabled=False)
+        time.sleep(.6)
+        after=count(1)
+        settled=position()
+        h.check(after['server']['animals'][0]['uid']==uid and after['B']['carried']==0
+                and not settled['path'] and abs(settled['x']-origin['x'])<1e-4 and abs(settled['z']-origin['z'])<1e-4,
+                'guest pickup click changed the dog or underlying player movement')
+        h.REPORT['guestPickupRejected']=after;lab.capture('B','mp-non-owner-pickup-disabled')
+        lab.b.lua('getPlayerContextMenu(0):hideAndChildren();return true')
+
+        def carried():
+            return h.lua('local it=getPlayer():getInventory():getFirstTypeRecurse("Animal");local a=it and it:getAnimal();return {count=getPlayer():getInventory():getCountTypeRecurse("Animal"),id=it and it:getID(),uid=a and CompanionDogs.ensureUid(a)}')
+
+        menu(h.lua('return getText("ContextMenu_PickUpAnimalBody")'))
+        item=lab.wait(carried,lambda s:s['count']==1,'native owner pickup creates one carried dog')
+        h.check(item['uid']==uid,'pickup changed companion UID');h.REPORT['nativePickup']=count(0)
+        exit_owner();h.check(carried()['uid']==uid,'native exit lost carried dog')
+        h.REPORT['carryOutside']=carried();lab.capture('A','mp-owner-carries-dog-outside')
+        lab.enter_e('A');h.check(carried()['uid']==uid,'native re-entry lost carried dog')
+
+        interior=load('final-interior-tests');tap,_=interior.load_helpers();furniture=load('final-furniture-tests')
+        h.lua((ROOT/'dev/lua/feature-fixture.lua').read_text('utf-8'));h.lua(interior.FIXTURE);h.lua(furniture.FIXTURE)
+        h.lua('MELensInteriorTest.heater=getPlayer():getInventory():getItemWithID('+str(item['id'])+');MELensInteriorTest.heaterIndex=nil;return true')
+        furniture.open_inventory_item_menu(h,interior,tap)
+        title=h.lua('return getText("ContextMenu_Drop")')
+        rows=lab.wait(lambda:h._sequence(h.lua(animal.MENUS)),lambda rr:any(r['name']==title for r in rr),'native inventory Drop option')
+        row=next(r for r in rows if r['name']==title);h.check(row['enabled'],'inventory Drop is disabled')
+        lab.input('A',x=row['x'],y=row['y'])
+        after=lab.wait(all_states,lambda ss:all(len(s['animals'])==1 and s['animals'][0]['uid']==uid
+            and s['animals'][0]['state']=='stay' for s in ss.values()),'inventory Drop preserves identity and Stay on both peers')
+        lab.wait(carried,lambda s:s['count']==0,'inventory Drop removes carried item')
+        h.REPORT['nativeCarryRoundTrip']=after;lab.capture('A','mp-native-inventory-drop-dog')
+        h.lua('local w=getPlayerInventory(0);if w then w:setVisible(false) end;return true')
 
     try:
         h.REPORT.update(scope=__doc__,fixtures=['bonded world dog at real entrance','empty owned cargo room','separate stocked bowls','controlled needs and 10-minute server-clock advance'])
@@ -78,6 +125,7 @@ CompanionDogs.data(a).trust=100;a:setCustomName("MP care dog");CompanionDogs.tra
         menu(h.lua('return getText("IGUI_PD_Inspect")'))
         lab.wait(lambda:h.lua('local w=ISCDStatusWindow.instanceFor(getPlayer());return w and w:isVisible()'),bool,'native interior Inspect remains open')
         lab.capture('A','mp-native-interior-inspect');h.lua('ISCDStatusWindow.instanceFor(getPlayer()):close();return true')
+        carry_case()
         lab.server('''local v=getVehicleById('''+str(lab.vid)+''');local A=MELens.Animals;local a=A.list(v)[1];local r=A.record(v,a)
 for _,kind in ipairs({"food","water"}) do local b=MELens.Loose.floorContainer(v):AddItem("Base.CompanionDogsBowl");b:getModData()[kind=="food" and "cdFoodMeals" or "cdWater"]=100
 CompanionDogs.refreshDishModel(b,true);local x,z=A.freePoint(v,MELens.profileFor(v),r.x+(kind=="food" and .3 or -.3),r.z,"none")
