@@ -1,0 +1,29 @@
+{
+  "tool": "built-in ImageGen",
+  "date": "2026-10-24",
+  "master": "header-master.png",
+  "dimensions": [
+    2243,
+    701
+  ],
+  "prompt": "Use case: ads-marketing. Create one reusable raster title-band background for the Steam Workshop gallery of Real Vehicle Interiors, a Project Zomboid vehicle interior mod. This is BACKGROUND ART ONLY, no words, no letters, no icons, no logo, no pictures of vehicles, no screenshots. A restrained very dark charcoal grey textured paper/painted metal band with extremely subtle worn texture, a fine muted olive seam near the lower edge, quiet and functional like Project Zomboid's vanilla dark UI. Uniform dark upper and central areas must be clean enough to support crisp white title typography applied separately. Wide composition, 8:1 aspect ratio, target 2048 by 256 pixels. No gradients to bright colors, no hazard stripes, no busy grunge, no ornamental corners, no illustrated subject. The gallery uses real green-grass daylight game screenshots beneath this strip; this band should sit calmly above them. Entire image opaque. High-quality restrained material texture.",
+  "usage": "Background only. Gameplay and UI remain real native captures. Final cards use deterministic crop/resize and typography export through the existing PIL workflow.",
+  "originalGameplay": [
+    {
+      "file": "tools-src/art/workshop-gallery-20261024/originals/cover-entering-camper.gif",
+      "sha256": "6708cdc58bd967f8813a2908e0d26a8a396fe5e9099b9bcc45453ee5e3aeef9f"
+    },
+    {
+      "file": "tools-src/art/workshop-gallery-20261024/originals/furniture-ground.jpg",
+      "sha256": "bc9149058ab319696f3b22fb639a41969f1463433469bf69e8b7cc6dbcbd2bfc"
+    },
+    {
+      "file": "tools-src/art/workshop-gallery-20261024/originals/walking-inside-camper.gif",
+      "sha256": "366530c872b3ee4c49d87472663b4bfd729da0b5273848d9e2325f7a49a9ace6"
+    },
+    {
+      "file": "tools-src/art/workshop-gallery-20261024/originals/zombies-attacking-rv.gif",
+      "sha256": "4ec9bed1f01a29b50ac8a90de24302991645960f90cc20c027ec6f85114df71f"
+    }
+  ]
+}
