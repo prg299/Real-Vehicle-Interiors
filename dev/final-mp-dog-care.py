@@ -106,7 +106,14 @@ r.sqlId=v:getSqlId();r.hours=getGameTime():getWorldAgeHours()
         h.REPORT.update(scope=__doc__,fixtures=['bonded world dog at real entrance','empty owned cargo room','separate stocked bowls','controlled needs and 10-minute server-clock advance'])
         if args.verify_source:
             previous=json.loads(args.verify_source.read_text('utf-8'));expected=previous['savedCompanion']
-            lab.vid=int(h.lua('local v=assert(getPlayer():getVehicle());return v:getId()'))
+            # A reconnect may place players outside their saved vehicle. Resolve
+            # the existing vehicle by persistent SQL ID and use real Interact
+            # input to re-enter; never spawn a replacement for the restart check.
+            find='local it=getCell():getVehicles():iterator();while it:hasNext() do local v=it:next();if v:getSqlId()=='+str(expected['sqlId'])+' then return v:getId() end end;return -1'
+            lab.vid=lab.wait(lambda:int(lab.server(find)),lambda value:value>=0,'saved vehicle loads after dedicated-server restart')
+            for side,api in (('A',h),('B',lab.b)):
+                lab.wait(lambda:api.lua('return getVehicleById('+str(lab.vid)+')~=nil'),bool,'saved vehicle replicated on '+side)
+                if not api.lua('return getPlayer():getVehicle()~=nil'):lab.enter_e(side)
             ss=count(1);a=ss['server']['animals'][0]
             h.check(all(a[k]==expected[k] for k in ('id','uid','token','owner','state')) and ss['server']['sqlId']==expected['sqlId'],'server restart changed dog identity, owner or Stay')
             h.check(ss['server']['floor']==previous['savedFloor'],'server restart changed interior food/water stocks')
