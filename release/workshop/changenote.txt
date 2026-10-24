@@ -1,21 +1,5 @@
-2.0.8 - Feedback fixes, F700 furniture, Shift-running and traits
+2.0.14 - Unloaded-vehicle utilities hotfix
 
-Fixes from player feedback:
-- Walking inside now ends fast-forward, as walking anywhere else does. Walking to furniture by clicking still keeps it, like the game outside.
-- Reduces pauses when picking up or placing furniture and cargo boxes, especially in a full F700.
-- The F700 box truck takes RV furniture now: clear the boxes along a wall and a kitchenette, washroom, fridge, wardrobe, cabinet, heater or shelf fits there. Boxes and furniture keep out of each other's way. Existing trucks keep their boxes where they are.
-- Clears leftover green furniture placement previews.
-- Lying down on a bed or getting up no longer flickers through a standing pose on the bed.
-- Sends generator battery-charge changes to multiplayer clients more promptly.
-
-Also in 2.0.8:
-- Keeps the hood out of the cargo cutaway shading, removing the false dark band.
-- Vehicle repair no longer fills deliberately empty cargo slots, preserving varied box-stack heights.
-- Existing saved boxes and their contents are preserved. Extra boxes already installed can be picked up normally.
-- Adds Shift/Run movement inside interiors and smooths other players moving around inside.
-- Clears stale interior animation flags after seat changes and exits.
-- Enclosed interiors suppress Agoraphobic outdoor panic and scale Claustrophobic panic to cabin size. MP trait effects require ZombieBuddy's Java loader on the server too.
-
-Known beta limitations:
-- Fresh MP bus/save-reload, loose-item right-click and complete trait-suite verification remain pending.
-- An occasional server-side standing-passenger position reset with the engine running remains under investigation.
+- Fixes the repeated MELens_Utilities.lua busy/updateGenerator error when Project Zomboid updates an unloaded vehicle.
+- Utility callbacks now recognize the game's VirtualVehicle proxy and leave saved appliance state intact until the full vehicle loads again.
+- Furniture, stored items, water, fuel, stable IDs and the Java component are preserved.

@@ -1,4 +1,7 @@
 {
+    "IGUI_VehiclePartMELensRV_workbench": "Service Workbench",
+    "IGUI_VehiclePartMELensRV_stretcher": "Medical Stretcher",
+    "IGUI_VehiclePartMELensRV_metalcase": "Equipment Cabinet",
     "IGUI_MELens_OptionsTitle": "Real Vehicle Interiors",
     "IGUI_MELens_WallHeight": "Wall height inside campers",
     "IGUI_MELens_WallHeightTooltip": "How much of the camper walls stays visible while you are inside. Lower walls show more of the interior.",
@@ -114,5 +117,10 @@
     "IGUI_VehiclePartMELensRV_shelf": "Shelf Unit",
     "IGUI_MELens_ReasonTall": "It is too tall for that shelf.",
     "IGUI_MELens_AnimalNoRoom": "There is no room for it in here.",
-    "IGUI_MELens_AnimalNotAlive": "It is not alive."
+    "IGUI_MELens_AnimalNotAlive": "It is not alive.",
+    "IGUI_VehiclePartMELensRV_safe": "Armored Cash Safe",
+    "IGUI_VehiclePartMELensRV_parcels": "Stacked Delivery Parcels",
+    "IGUI_VehiclePartMELensRV_medlocker": "Medical Supply Cabinet",
+    "IGUI_VehiclePartMELensRV_medbench": "Utility Bench Seat",
+    "IGUI_VehiclePartMELensRV_equipmentrack": "Equipment Rack"
 }

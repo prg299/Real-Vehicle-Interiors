@@ -1,0 +1,354 @@
+{
+  "date": "2026-10-23",
+  "plan": "Role-specific factory fitouts using six movable furniture assets; retained aisles and original vehicle cargo. Open shelf models are empty; the native item renderer displays actual container contents.",
+  "styleReferences": [
+    "tools-src/art/icons/icon_metalcase.png",
+    "tools-src/art/icons/icon_box.png",
+    "tools-src/art/icons/icon_busseat.png"
+  ],
+  "iconGeneration": {
+    "tool": "image_gen.imagegen",
+    "commonPrompt": "Use case: stylized-concept. Make ONE inventory icon for a 1993 Project Zomboid vehicle-interior furniture mod. Isolated elevated three-quarter isometric view, see top/front/right, orthographic, hand-painted worn game prop with dark precise edges, restrained highlights and fine surface wear, muted believable palette matching existing grey steel cabinet, cardboard box and vinyl bus-seat icons. Object fully visible, centered with padding, genuine transparent background, no floor, no shadow outside object, no writing, no logos, no UI, no border. Should remain legible as a 64x64 game inventory icon.",
+    "promptSubjects": {
+      "safe": "Compact dark charcoal steel cash safe, thick recessed door, silver combination dial and handle, heavy hinges, restrained wear.",
+      "parcels": "Three stacked taped cardboard delivery parcels, mixed kraft brown shades, no writing or logos.",
+      "medlocker": "Pale grey ambulance medical cabinet with lower cupboard, open upper shelves containing white bandage boxes and small medicine bottles, retaining rails.",
+      "medbench": "Two-place blue-grey vinyl ambulance bench, pale steel base with underseat storage and dark seat belts.",
+      "equipmentrack": "Compact grey steel service equipment rack, three shelves with red tool case, olive equipment case and small cardboard boxes behind retaining rails.",
+      "workbench": "Use case: stylized-concept. Create ONE transparent inventory icon for a 1993 Project Zomboid vehicle interior mod. Subject: compact grey steel mobile service workbench 90cm wide,40cm deep,78cm tall. Worn medium-brown laminated plywood worktop with a narrow low rear steel rim. Two shallow grey steel drawers under the worktop, sturdy four steel legs with a dark low open shelf, restrained scratches. EMPTY worktop and empty lower shelf, no tools, no radios, no stored items. Orthographic elevated three-quarter view showing top/front/right. Match existing softly hand-painted worn grey steel cabinet and blue-grey vinyl bench inventory icons: muted desaturated colours, dark precise edges, fine scuffs, restrained highlights, crisp silhouette at 64x64. Center full object with padding. Genuine transparent background, no floor, no outside shadow, no text, no logos, no UI, no border."
+    },
+    "promptRecord": "Common art direction plus the subject description; original individual subject wording is summarized here.",
+    "fullResolutionMasters": {
+      "safe": "tools-src/art/icons/icon_safe.png",
+      "parcels": "tools-src/art/icons/icon_parcels.png",
+      "medlocker": "tools-src/art/icons/icon_medlocker.png",
+      "medbench": "tools-src/art/icons/icon_medbench.png",
+      "equipmentrack": "tools-src/art/icons/icon_equipmentrack.png",
+      "workbench": "tools-src/art/icons/icon_workbench.png"
+    },
+    "originalOutputs": {
+      "safe": "C:/Users/erika/.codex/generated_images/01a14fc2-3e4e-7741-9b49-4c0291af3f08/exec-1e387eab-2726-4663-87ad-dee9ddd6cf8d.png",
+      "parcels": "C:/Users/erika/.codex/generated_images/01a14fc2-3e4e-7741-9b49-4c0291af3f08/exec-9e535c55-f2b5-4b0c-ace7-907bdfc40601.png",
+      "medlocker": "C:/Users/erika/.codex/generated_images/01a14fc2-3e4e-7741-9b49-4c0291af3f08/exec-ae7b2390-79de-46e7-b3d8-af0f120b2017.png",
+      "medbench": "C:/Users/erika/.codex/generated_images/01a14fc2-3e4e-7741-9b49-4c0291af3f08/exec-c2724b3b-1afd-48d8-969a-52ca8efbc35a.png",
+      "equipmentrack": "C:/Users/erika/.codex/generated_images/01a14fc2-3e4e-7741-9b49-4c0291af3f08/exec-5610ed27-e5d5-45ed-9f6e-f3e987bf38fb.png",
+      "workbench": "C:/Users/erika/.codex/generated_images/01a14fc2-3e4e-7741-9b49-4c0291af3f08/exec-fb9015e8-9787-4efb-b8c8-4deba9364783.png"
+    },
+    "emptyShelfEdits": {
+      "tool": "image_gen.imagegen",
+      "preservedOriginalMasters": true,
+      "prompt": "Edit the existing isometric icon, preserving worn painted style, muted palette and transparency. Remove all stored supplies from the open shelves, retaining cabinet/rack geometry and retaining rails. Medical cabinet refinement removes upper glass doors and handles and the middle drawer, preserving only the lower closed cupboard.",
+      "finalEquipmentRack": "exec-03b1c3b7-cb75-4152-a02c-dd7c5ac08335.png",
+      "finalMedicalCabinet": "exec-4dad49d0-fc97-4ad4-acab-15bb2ba31413.png"
+    }
+  },
+  "geometry": {
+    "tool": "Blender 3.6",
+    "source": "tools-src/blender/rv_kit.py",
+    "export": "mod/RealVehicleInteriors/common/media/models_X/vehicles/MELens_RV.fbx",
+    "materials": "Existing RV furniture palette, bevels and ambient-occlusion bake",
+    "openShelves": "No baked stock or conditional fake-stock variants"
+  },
+  "formatException": "Opaque vehicle textures retain the existing game model PNG contract. Icons have meaningful alpha. Both dimensions are powers of two.",
+  "assets": [
+    {
+      "piece": "safe",
+      "kind": "texture",
+      "runtime": "mod/RealVehicleInteriors/common/media/textures/Vehicles/MELensRV_safe.png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "format": "PNG",
+      "alphaRange": [
+        255,
+        255
+      ],
+      "sha256": "a234415dd899dc52d013e1e370d43f2b5574f37f1d94f72156311227b60b300f",
+      "beforeBytes": 90283,
+      "afterBytes": 22751,
+      "compression": "TinyPNG website; tinified (2).zip; final revisions selected",
+      "master": "tools-src/blender/rv_kit.py"
+    },
+    {
+      "piece": "safe",
+      "kind": "icon",
+      "runtime": "mod/RealVehicleInteriors/common/media/textures/Item_MELensRV_safe.png",
+      "dimensions": [
+        64,
+        64
+      ],
+      "format": "PNG",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "sha256": "c5cdf12f629ea70f4b693387d4fb35ba14143ff2e7473d3a517784dc1fae421a",
+      "beforeBytes": 5577,
+      "afterBytes": 2794,
+      "compression": "TinyPNG website; tinified (2).zip; final revisions selected",
+      "master": "tools-src/art/icons/icon_safe.png"
+    },
+    {
+      "piece": "parcels",
+      "kind": "texture",
+      "runtime": "mod/RealVehicleInteriors/common/media/textures/Vehicles/MELensRV_parcels.png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "format": "PNG",
+      "alphaRange": [
+        255,
+        255
+      ],
+      "sha256": "132f9d166905fc9344c4946363c45b926d07e89e8e223c5652b219d1f48b03da",
+      "beforeBytes": 126735,
+      "afterBytes": 40731,
+      "compression": "TinyPNG website; tinified (2).zip; final revisions selected",
+      "master": "tools-src/blender/rv_kit.py"
+    },
+    {
+      "piece": "parcels",
+      "kind": "icon",
+      "runtime": "mod/RealVehicleInteriors/common/media/textures/Item_MELensRV_parcels.png",
+      "dimensions": [
+        64,
+        64
+      ],
+      "format": "PNG",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "sha256": "2e86473cee5507fd5c7f4c001d98e0fb895fbf0dd78fabb82868da9564bf5c68",
+      "beforeBytes": 7210,
+      "afterBytes": 3572,
+      "compression": "TinyPNG website; tinified (2).zip; final revisions selected",
+      "master": "tools-src/art/icons/icon_parcels.png"
+    },
+    {
+      "piece": "medlocker",
+      "kind": "texture",
+      "runtime": "mod/RealVehicleInteriors/common/media/textures/Vehicles/MELensRV_medlocker.png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "format": "PNG",
+      "alphaRange": [
+        255,
+        255
+      ],
+      "sha256": "b087eef6e555c57cb2ee5768be964f45e47888d3e555a57b1e25b4a73a979d4e",
+      "beforeBytes": 130540,
+      "afterBytes": 52440,
+      "compression": "TinyPNG website; tinified (3).zip",
+      "master": "tools-src/blender/rv_kit.py"
+    },
+    {
+      "piece": "medlocker",
+      "kind": "icon",
+      "runtime": "mod/RealVehicleInteriors/common/media/textures/Item_MELensRV_medlocker.png",
+      "dimensions": [
+        64,
+        64
+      ],
+      "format": "PNG",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "sha256": "1c90390d0f374810b265dab47b7aba2efc40604b9d6fa9d02178f653a50f7f3d",
+      "beforeBytes": 4068,
+      "afterBytes": 2451,
+      "compression": "TinyPNG website; tinified (3).zip",
+      "master": "tools-src/art/icons/icon_medlocker.png"
+    },
+    {
+      "piece": "medbench",
+      "kind": "texture",
+      "runtime": "mod/RealVehicleInteriors/common/media/textures/Vehicles/MELensRV_medbench.png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "format": "PNG",
+      "alphaRange": [
+        255,
+        255
+      ],
+      "sha256": "ab77594f4ec2f88b614d25e010161c7cac3ad2369268f64f0cccde719f1a9ee5",
+      "beforeBytes": 132101,
+      "afterBytes": 49223,
+      "compression": "TinyPNG website; tinified (2).zip; final revisions selected",
+      "master": "tools-src/blender/rv_kit.py"
+    },
+    {
+      "piece": "medbench",
+      "kind": "icon",
+      "runtime": "mod/RealVehicleInteriors/common/media/textures/Item_MELensRV_medbench.png",
+      "dimensions": [
+        64,
+        64
+      ],
+      "format": "PNG",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "sha256": "21216acd4c496a3afb9eff088225c2dfa908c87ccbc1121c20996196657a304c",
+      "beforeBytes": 7152,
+      "afterBytes": 3295,
+      "compression": "TinyPNG website; tinified (2).zip; final revisions selected",
+      "master": "tools-src/art/icons/icon_medbench.png"
+    },
+    {
+      "piece": "equipmentrack",
+      "kind": "texture",
+      "runtime": "mod/RealVehicleInteriors/common/media/textures/Vehicles/MELensRV_equipmentrack.png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "format": "PNG",
+      "alphaRange": [
+        255,
+        255
+      ],
+      "sha256": "d6a97c1bc3be1c9a7806da94b09f863016d9edba626be29401bf7149a4adf690",
+      "beforeBytes": 126416,
+      "afterBytes": 38600,
+      "compression": "TinyPNG website; tinified (3).zip",
+      "master": "tools-src/blender/rv_kit.py"
+    },
+    {
+      "piece": "equipmentrack",
+      "kind": "icon",
+      "runtime": "mod/RealVehicleInteriors/common/media/textures/Item_MELensRV_equipmentrack.png",
+      "dimensions": [
+        64,
+        64
+      ],
+      "format": "PNG",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "sha256": "35933763fc637b89441396eee872c86e67e470c3023198d2ffdf6316b1bb4058",
+      "beforeBytes": 6120,
+      "afterBytes": 2835,
+      "compression": "TinyPNG website; tinified (3).zip",
+      "master": "tools-src/art/icons/icon_equipmentrack.png"
+    },
+    {
+      "piece": "workbench",
+      "kind": "texture",
+      "runtime": "mod/RealVehicleInteriors/common/media/textures/Vehicles/MELensRV_workbench.png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "format": "PNG",
+      "alphaRange": [
+        255,
+        255
+      ],
+      "beforeBytes": 124003,
+      "afterBytes": 39276,
+      "sha256": "5c186766c6a31d4b6490c45e12138f93f2f4efc286e34ccb702009934948d6f7",
+      "compression": "TinyPNG website; 2026-10-24; 2 images optimized",
+      "master": "tools-src/art/masters/workbench-texture.png"
+    },
+    {
+      "piece": "workbench",
+      "kind": "icon",
+      "runtime": "mod/RealVehicleInteriors/common/media/textures/Item_MELensRV_workbench.png",
+      "dimensions": [
+        64,
+        64
+      ],
+      "format": "PNG",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "beforeBytes": 7910,
+      "afterBytes": 3416,
+      "sha256": "f780a53909a10d7d05809d5d0ffc33605f3ac493596a0e11331a6c2c045010a0",
+      "compression": "TinyPNG website; 2026-10-24; 2 images optimized",
+      "master": "tools-src/art/icons/icon_workbench.png"
+    },
+    {
+      "piece": "hamradio",
+      "kind": "texture",
+      "runtime": "mod/RealVehicleInteriors/common/media/textures/Vehicles/MELensRV_hamradio.png",
+      "dimensions": [
+        512,
+        512
+      ],
+      "format": "PNG",
+      "alphaRange": [
+        255,
+        255
+      ],
+      "beforeBytes": 119911,
+      "afterBytes": 37260,
+      "sha256": "916d3f762691c38ce999248a64992ace884f274e01711ffbcc343c5fe4aec8a0",
+      "compression": "TinyPNG website; 2026-10-24",
+      "master": "tools-src/art/masters/hamradio-texture-v2.png"
+    },
+    {
+      "piece": "cargo-shell",
+      "kind": "floor",
+      "runtime": "mod/RealVehicleInteriors/common/media/textures/Vehicles/MELensShell_f700box_floor.png",
+      "master": "tools-src/art/masters/f700box-floor-20261024.png",
+      "dimensions": [
+        512,
+        2048
+      ],
+      "format": "PNG",
+      "alphaRange": [
+        255,
+        255
+      ],
+      "beforeBytes": 1220744,
+      "afterBytes": 282434,
+      "sha256": "cccd7ed5e79a089844e57bbd6caa91590971285c60ed5d19bbd1ce25664c3c21",
+      "compression": "TinyPNG website; 2026-10-24; tinified (4).zip; no resizing"
+    },
+    {
+      "piece": "cargo-shell",
+      "kind": "walls",
+      "runtime": "mod/RealVehicleInteriors/common/media/textures/Vehicles/MELensShell_f700box_walls.png",
+      "master": "tools-src/art/masters/f700box-walls-20261024.png",
+      "dimensions": [
+        2048,
+        256
+      ],
+      "format": "PNG",
+      "alphaRange": [
+        255,
+        255
+      ],
+      "beforeBytes": 217773,
+      "afterBytes": 59265,
+      "sha256": "12c028a1210d3af1f4496a1ad9ef16ccec892db20ce27dd772bbb7a269a9057b",
+      "compression": "TinyPNG website; 2026-10-24; tinified (4).zip; no resizing"
+    }
+  ],
+  "visualReview": "2026-10-24 native original-size reviews: immersive-audit-20261024-o/open-storage-visual (actual empty/restocked medical cabinet, rack and workbench); audit-gallery-r-final-20261024.jsonl (all 24 final 1600x900 JPEGs); factory and empty-shell review receipts consolidated in build/rv/immersive-interiors-20261024-review.json. Full-resolution masters are retained; the 15 runtime derivatives have recorded TinyPNG receipts and dimensions.",
+  "removedAssets": {
+    "woodenFreightCrate": "Removed before release at owner request; cardboard parcels retained. Original master and provenance archived outside the repository."
+  },
+  "updated": "2026-10-24",
+  "radioAdapter": {
+    "purpose": "Show the actual stored Base.HamRadio1 upright on the service workbench; no furniture or inventory item added",
+    "tool": "image_gen.imagegen concept; Blender 3.6 geometry and existing painted material bake",
+    "conceptMaster": "tools-src/art/masters/hamradio-concept.png",
+    "originalOutput": "C:/Users/erika/.codex/generated_images/01a14fc2-3e4e-7741-9b49-4c0291af3f08/exec-52c3bdb2-f11c-4bfc-af80-d2e4239d36b3.png",
+    "prompt": "Use case: stylized-concept. Create a single asset design reference for a compact early-1990s tabletop HAM radio transceiver for a Project Zomboid style vehicle interior. It must match the existing muted painted 3D furniture art: worn grey steel, almost-black rubber and faceplate, softened bevels, subtle grime, small dull green frequency display, one large black tuning knob, three smaller round knobs, short horizontal speaker grille, simple top carry handle, short rear whip antenna. Broad box proportions: 36 cm wide, 24 cm deep, 24 cm case height with antenna reaching 40 cm. The radio stands upright on four little rubber feet. Three quarter isometric front view from above, camera sees front and right side and top; fully visible on neutral warm grey background, no extra objects, no labels or readable typography, no branding, no glowing sci-fi elements. Low-detail believable game prop, hand-painted subdued material texture with softly lit top and darker side, no outlines. This is a Blender construction reference for the actual radio already stored on a service workbench, not furniture and not a separate new inventory item.",
+    "nativeModelFallback": "Only when Base.HamRadio1 has no native model; other mods and future native model declarations take precedence",
+    "orientationCorrection": "Radio mesh faces the aisle; all original inventory IDs and packing bounds retained"
+  }
+}

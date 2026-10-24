@@ -16,10 +16,18 @@ param(
     [switch]$Stock,        # run with the stock game classes first (no optimization overrides)
     [switch]$NoDebug,
     [switch]$AllowOtherGames,   # launch although another project's isolated test game runs (never next to the real game)
-    [int]$Instance = 1          # 2: a second game beside the first, with its own profile folder and Lua endpoint
+    [int]$Instance = 1,          # 2: a second game beside the first, with its own profile folder and Lua endpoint
+    [string]$ProfilePath        # optional run-owned profile inside build/rv
 )
 
 . (Join-Path $PSScriptRoot 'common.ps1')
+if ($ProfilePath) {
+    $profile = [IO.Path]::GetFullPath($ProfilePath)
+    if (-not $profile.StartsWith($Lens.Out + '\', [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Test profiles must stay inside build/rv'
+    }
+    $Lens.TestHome = $profile
+}
 if ($Instance -gt 1) {
     $Lens.TestHome = $Lens.TestHome + $Instance
     $Lens.LuaPort = $Lens.LuaPort + 2 * ($Instance - 1)

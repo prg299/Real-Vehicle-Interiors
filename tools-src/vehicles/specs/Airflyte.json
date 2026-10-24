@@ -13,6 +13,10 @@
     ],
     "texture": "airflyte",
     "floorOutline": { "inset": 0.012, "band": 0.06 },
+    "cornerReturns": [
+        {"side": 1, "end": 1, "x": [0.90, 1.01], "z": [1.8, 2.4]},
+        {"side": -1, "end": 1, "x": [-1.01, -0.90], "z": [1.8, 2.4]}
+    ],
     "hide": {
         "TrailerKI5shastaAirflyteInterior": "ceiling",
         "TrailerKI5shastaAstrodomeInterior": "ceiling",

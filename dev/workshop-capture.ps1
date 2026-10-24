@@ -1,7 +1,16 @@
 # Owned gameplay-media capture on an inactive desktop. Run the entire lifetime through run-heavy.mjs.
 param([string]$Run = 'workshop-20261017', [switch]$GroundOnly, [string]$Scenario, [string]$LoadWorld,
+    [switch]$FreshProfile, [ValidateRange(1,60)][int]$ReviewMinutes = 30,
+    [switch]$LowMemory, [string]$ProfilePath,
+    [string]$Driver, [string[]]$DriverArguments = @(),
     [switch]$AllowOtherGames) # this game/input/capture stay on a separate inactive desktop
 . (Join-Path $PSScriptRoot '..\scripts\common.ps1')
+if ($ProfilePath) {
+    $profile = [IO.Path]::GetFullPath($ProfilePath)
+    if (-not $profile.StartsWith($Lens.Out + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Profile must stay inside build/rv' }
+    if ($FreshProfile) { throw 'Use either an existing profile or FreshProfile' }
+    $Lens.TestHome = $profile
+}
 $runPath = [IO.Path]::GetFullPath((Join-Path $Lens.Out $Run))
 if (-not $runPath.StartsWith($Lens.Out + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Invalid media output' }
 New-Item -ItemType Directory -Path $runPath -Force | Out-Null
@@ -13,17 +22,11 @@ foreach ($path in @('testhome\Zomboid\mods\RealVehicleInteriors', 'dev-classes',
 $otherGames = @(Get-LensGameProcesses)
 if ($otherGames.Count -and -not $AllowOtherGames) { throw 'Another Project Zomboid game is running; capture deferred' }
 if ($otherGames.Count) { Write-Host "Other game PIDs left untouched: $($otherGames.ProcessId -join ', ')" }
-& (Join-Path $Lens.Root 'scripts\testgame.ps1') -Mode Prepare
-# Reuse the existing isolated input/framebuffer adapter for the loading-screen click.
-$devClasses = Join-Path $Lens.Out 'dev-classes'
-$adapter = Join-Path $Lens.Root '..\me-motorclub\tools\java\ClientLab.java'
-$textAdapter = Join-Path $Lens.Root 'dev\java\me\lens\dev\TextInput.java'
-$cp = "$(Join-Path $Lens.GameRoot 'projectzomboid.jar');$(Join-Path $Lens.GameRoot 'ZombieBuddy.jar');$devClasses"
-& (Join-Path $Lens.Jdk 'javac.exe') --release 25 -d $devClasses -cp $cp $adapter $textAdapter
-if ($LASTEXITCODE) { throw 'Input adapter compilation failed' }
-$devJar = Join-Path $Lens.TestHome 'Zomboid\mods\RealVehicleInteriors_Dev\42.21\media\java\RealVehicleInteriors_Dev.jar'
-& (Join-Path $Lens.Jdk 'jar.exe') --create --file $devJar -C $devClasses .
-if ($LASTEXITCODE) { throw 'Input adapter packaging failed' }
+if ($FreshProfile) {
+    $Lens.TestHome = Join-Path $runPath 'home'
+    if (Test-Path -LiteralPath $Lens.TestHome) { throw 'Fresh profile already exists; choose a new Run' }
+}
+& (Join-Path $Lens.Root 'scripts\testgame.ps1') -Mode Prepare -ProfilePath $Lens.TestHome
 $homeDir = $Lens.TestHome
 $cache = Join-Path $homeDir 'Zomboid'
 $screens = Join-Path $cache 'Screenshots'
@@ -33,11 +36,13 @@ $text = [IO.File]::ReadAllText($options)
 $text = [regex]::Replace($text, '(?m)^width=.*$', 'width=1280')
 $text = [regex]::Replace($text, '(?m)^height=.*$', 'height=720')
 $text = [regex]::Replace($text, '(?m)^textureCompression=.*$', 'textureCompression=true')
-$text = [regex]::Replace($text, '(?m)^texture2x=.*$', 'texture2x=true')
+$texture2x = if ($LowMemory) { 'false' } else { 'true' }
+$text = [regex]::Replace($text, '(?m)^texture2x=.*$', "texture2x=$texture2x")
 [IO.File]::WriteAllText($options, $text)
 $zbConfig = Join-Path $homeDir 'zombie_buddy'
 $java = Join-Path $Lens.GameRoot 'jre64\bin\java.exe'
-$command = @($java, '-Xms256m', '-Xmx3072m', '-XX:MaxDirectMemorySize=256m', '-XX:ReservedCodeCacheSize=192m',
+$heap = if ($LowMemory) { '-Xmx2048m' } else { '-Xmx3072m' }
+$command = @($java, '-Xms256m', $heap, '-XX:MaxDirectMemorySize=256m', '-XX:ReservedCodeCacheSize=192m',
     '--enable-native-access=ALL-UNNAMED', '--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED',
     '-Djava.awt.headless=true', '-Djava.library.path=win64/;.', '-XX:-OmitStackTraceInFastThrow',
     '-Dzomboid.steam=0', "-Duser.home=$homeDir", '-Dpzopt.enabled=false', '-Dpzopt.gcMode=stock', '-Dpzopt.jitSteady=false', '-Dpzopt.aotCache=false',
@@ -47,14 +52,15 @@ $command = @($java, '-Xms256m', '-Xmx3072m', '-XX:MaxDirectMemorySize=256m', '-X
 $configPath = Join-Path $runPath 'native-session.json'
 @{ command = $command; cwd = $Lens.GameRoot } | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath $configPath -Encoding utf8
 $psi = [Diagnostics.ProcessStartInfo]::new()
-$psi.FileName = $(if ($env:RVI_PYTHON) { $env:RVI_PYTHON } else { (Get-Command python -ErrorAction Stop).Source })
-$psi.ArgumentList.Add((Join-Path $Lens.Root '..\..\tools\windows-test-session.py'))
+$psi.FileName = Get-LensPython
+$psi.ArgumentList.Add((Join-Path $Lens.Root 'dev\windows-test-session.py'))
 $psi.ArgumentList.Add($configPath)
 $psi.UseShellExecute = $false; $psi.CreateNoWindow = $true
 $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true
 $psi.Environment['PATH'] = "$($Lens.GameRoot)\win64;$($Lens.GameRoot);$env:PATH"
 foreach ($key in @('JAVA_TOOL_OPTIONS', '_JAVA_OPTIONS', 'JDK_JAVA_OPTIONS')) { [void]$psi.Environment.Remove($key) }
 $keeper = $null; $gameId = 0; $gameStartedAt = $null
+$driverExitCode = 0
 
 function OwnedGameAlive {
     if (-not $gameId -or -not $gameStartedAt) { return $false }
@@ -63,7 +69,7 @@ function OwnedGameAlive {
 }
 
 function Lua([string]$code) {
-    $r = Invoke-WebRequest -Uri 'http://127.0.0.1:18470/lua?depth=3&sandbox=false' -Method Post -Body ([Text.Encoding]::UTF8.GetBytes($code)) -TimeoutSec 8
+    $r = Invoke-WebRequest -Uri 'http://127.0.0.1:18470/lua?depth=3&sandbox=false' -Method Post -Body ([Text.Encoding]::UTF8.GetBytes($code)) -TimeoutSec 60
     $result = $r.Content | ConvertFrom-Json
     if (-not $result.ok) { throw "Capture Lua: $($result.error) $($result.stack)" }
     return $result.result
@@ -105,7 +111,15 @@ try {
     }
     if ($LoadWorld) {
         if ($LoadWorld -notmatch '^melens-test-[0-9]+$') { throw 'Only owned media saves may be loaded' }
-        Write-Host (Lua "MainScreen.continueLatestSave('Sandbox','$LoadWorld'); return 'loading $LoadWorld'")
+        try {
+            Write-Host (Lua "MainScreen.continueLatestSave('Sandbox','$LoadWorld'); return 'loading $LoadWorld'")
+        } catch {
+            # Continuing a save with a different active-mod set resets Lua and
+            # invalidates the endpoint's current task, after loading has begun.
+            # Keep the bounded world-readiness/owned-process checks below.
+            if ($_.Exception.Message -notmatch 'lua was reset') { throw }
+            Write-Host 'SAVE_LOAD_LUA_RESET_PENDING'
+        }
     } else {
         Write-Host (Lua (Get-Content -LiteralPath (Join-Path $Lens.Root 'dev\lua\newgame.lua') -Raw))
     }
@@ -166,8 +180,16 @@ try {
         if (-not $scenarioPath.StartsWith((Join-Path $Lens.Root 'dev') + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Scenario must be an owned dev script' }
         & $scenarioPath
     }
+    if ($Driver) {
+        $driverPath = [IO.Path]::GetFullPath((Join-Path $Lens.Root $Driver))
+        if (-not $driverPath.StartsWith((Join-Path $Lens.Root 'dev') + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Driver must be an owned dev script' }
+        $env:RVI_CAPTURE_RUN = $Run
+        & $psi.FileName $driverPath @DriverArguments
+        $driverExitCode = $LASTEXITCODE
+        if ($driverExitCode) { Write-Warning "Native driver failed: $driverExitCode; keeping owned review window for diagnosis" }
+    }
     # Bounded review window. Only commands written by this task are evaluated in this owned profile.
-    $deadline = [DateTime]::UtcNow.AddMinutes(30)
+    $deadline = [DateTime]::UtcNow.AddMinutes($ReviewMinutes)
     Write-Host "REVIEW_READY $runPath"
     while ([DateTime]::UtcNow -lt $deadline) {
         if (-not (OwnedGameAlive)) { break }
@@ -176,11 +198,24 @@ try {
             $q = Get-Content -LiteralPath $request -Raw | ConvertFrom-Json
             Remove-Item -LiteralPath $request
             if ($q.action -eq 'stop') { break }
-            if ($q.lua) { $result = Lua $q.lua; $result | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $runPath 'response.json') -Encoding utf8 }
+            if ($q.driver) {
+                $driverPath = [IO.Path]::GetFullPath((Join-Path $Lens.Root $q.driver))
+                if (-not $driverPath.StartsWith((Join-Path $Lens.Root 'dev') + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Driver must be an owned dev script' }
+                $env:RVI_CAPTURE_RUN = $Run
+                & $psi.FileName $driverPath @($q.arguments)
+                $driverExitCode = $LASTEXITCODE
+                @{exitCode=$LASTEXITCODE} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $runPath 'driver-result.json') -Encoding utf8
+            }
+            if ($q.lua) {
+                try { $result = Lua $q.lua }
+                catch { $result = @{ok=$false;error=$_.Exception.Message} }
+                $result | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $runPath 'response.json') -Encoding utf8
+            }
             if ($q.shot) { Shot $q.shot }
         }
         Start-Sleep -Milliseconds 300
     }
+    if ($driverExitCode) { throw "Native driver failed: $driverExitCode" }
 } finally {
     if (OwnedGameAlive) {
         try { [void](Lua 'getCore():quitToDesktop(); return "quitting"') } catch { }

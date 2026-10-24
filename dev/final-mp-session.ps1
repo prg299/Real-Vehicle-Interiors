@@ -98,8 +98,8 @@ foreach ($port in @($ServerPort, ($ServerPort + 1), $ClientLuaPortA, $ClientLuaP
 }
 if (-not (Test-Path -LiteralPath (Join-Path $Lens.Package '42.21\media\java\RealVehicleInteriors.jar'))) { throw 'Build the package first' }
 New-Item -ItemType Directory -Path $runPath | Out-Null
-$python = $(if ($env:RVI_PYTHON) { $env:RVI_PYTHON } else { (Get-Command python -ErrorAction Stop).Source })
-$keeperScript = [IO.Path]::GetFullPath((Join-Path $Lens.Root '..\..\tools\windows-test-session.py'))
+$python = Get-LensPython
+$keeperScript = [IO.Path]::GetFullPath((Join-Path $Lens.Root 'dev\windows-test-session.py'))
 $server = $null
 $clients = [Collections.Generic.List[object]]::new()
 $driver = $null
@@ -441,7 +441,6 @@ try {
     $classes = Join-Path $runPath 'dev-classes'
     New-Item -ItemType Directory -Path $classes | Out-Null
     $sources = @(Get-ChildItem -LiteralPath (Join-Path $Lens.Root 'dev\java') -Recurse -Filter '*.java' | ForEach-Object FullName)
-    $sources += [IO.Path]::GetFullPath((Join-Path $Lens.Root '..\me-motorclub\tools\java\ClientLab.java'))
     $cp = "$(Join-Path $Lens.GameRoot 'projectzomboid.jar');$(Join-Path $Lens.GameRoot 'ZombieBuddy.jar')"
     & (Join-Path $Lens.Jdk 'javac.exe') -J-Xmx256m --release 25 -d $classes -cp $cp @sources
     if ($LASTEXITCODE) { throw 'Owned MP developer adapter compilation failed' }

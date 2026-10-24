@@ -30,7 +30,7 @@ def prepare(game_root, output):
     output.mkdir(parents=True, exist_ok=True)
     for name, result in prepared:
         (output / name).write_bytes(result)
-    print(f'Prepared {len(prepared)} shaders; exact published shader hashes match')
+    print(f'Prepared {len(prepared)} shaders; exact recipe output hashes match')
 
 
 if __name__ == '__main__':

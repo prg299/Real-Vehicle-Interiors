@@ -28,19 +28,27 @@ public final class LuaRegression {
         String shared = "mod/RealVehicleInteriors/common/media/lua/shared/";
         String client = "mod/RealVehicleInteriors/common/media/lua/client/";
         for (String name : new String[] {
-            "tools-src/regression/setup.lua", shared + "MELens_RVKit.lua",
+            "tools-src/regression/setup.lua", shared + "MELens_RVKit.lua", shared + "MELens_Java.lua",
             shared + "MELens_Profiles.lua", shared + "MELens_Profile_F700box.lua",
             shared + "MELens_WalkGrid_F700box_Shell.lua",
             shared + "MELens_Profile_B700.lua", shared + "MELens_WalkGrid_B700_Shell.lua",
             shared + "MELens_Parts.lua", shared + "MELens_Utilities.lua", shared + "TimedActions/MELens_Actions.lua",
             client + "MELens_Interact.lua", shared + "MELens_Sync.lua", shared + "MELens_Phobia.lua",
-            "tools-src/regression/phobia.lua", "tools-src/regression/checks.lua",
-            "tools-src/regression/lifecycle.lua", shared + "MELens_Home.lua",
+            "tools-src/regression/f700.lua", "tools-src/regression/phobia.lua", "tools-src/regression/checks.lua",
+            "tools-src/regression/lifecycle.lua", "tools-src/regression/java-readiness.lua",
+            "tools-src/regression/model-recovery.lua", shared + "MELens_Home.lua",
             "tools-src/regression/utilities.lua", "tools-src/regression/lamps.lua",
             "tools-src/regression/personalization.lua", "tools-src/regression/interior-actions.lua",
             "tools-src/regression/dashboard-setup.lua", client + "MELens_Dashboard.lua",
+            client + "MELens_DashboardVanilla.lua",
             "tools-src/regression/dashboard.lua", "tools-src/regression/loose-ui-setup.lua",
-            client + "MELens_LooseUI.lua", "tools-src/regression/loose-ui.lua"
+            client + "MELens_LooseUI.lua", "tools-src/regression/loose-ui.lua",
+            client + "MELens_Bed.lua", "tools-src/regression/bed.lua",
+            "tools-src/regression/standing.lua", "tools-src/regression/entry-setup.lua",
+            "game:media/lua/client/Vehicles/TimedActions/ISEnterVehicle.lua",
+            "tools-src/regression/profile-keep-planes.lua",
+            client + "MELens_Cabin.lua", "tools-src/regression/entry.lua",
+            "tools-src/regression/profile-keep-planes.lua"
         }) {
             if (name.endsWith("/MELens_Home.lua")) {
                 var events = (KahluaTable) env.rawget("Events");
@@ -55,11 +63,54 @@ public final class LuaRegression {
                     events.rawset(eventName, event);
                 }
             }
-            var chunk = LuaCompiler.loadstring(Files.readString(root.resolve(name), StandardCharsets.UTF_8), name, env);
+            Path source = name.startsWith("game:") ? Path.of(args[1], name.substring(5)) : root.resolve(name);
+            var chunk = LuaCompiler.loadstring(Files.readString(source, StandardCharsets.UTF_8), name, env);
             Object[] result = thread.pcall(chunk, new Object[0]);
             if (!Boolean.TRUE.equals(result[0])) {
                 throw new AssertionError(name + ": " + java.util.Arrays.toString(result));
             }
+        }
+        // Load every generated family/grid, including optional vehicle mods that
+        // are absent from these engine doubles, before checking shared contracts.
+        try (var files = Files.list(root.resolve(shared))) {
+            for (Path source : files.filter(p -> p.getFileName().toString().startsWith("MELens_Profile_")
+                    || p.getFileName().toString().startsWith("MELens_WalkGrid_")).sorted().toList()) {
+                Object[] result = thread.pcall(LuaCompiler.loadstring(Files.readString(source, StandardCharsets.UTF_8),
+                    source.toString(), env), new Object[0]);
+                if (!Boolean.TRUE.equals(result[0])) throw new AssertionError(java.util.Arrays.toString(result));
+            }
+        }
+        Path fleet = root.resolve("tools-src/regression/fleet.lua");
+        thread.pcall(LuaCompiler.loadstring("ISUIElement={derive=function() return {} end};"
+            + "Events.OnFillInventoryObjectContextMenu={Add=function() end}", "placement-load-doubles", env), new Object[0]);
+        Object[] placement = thread.pcall(LuaCompiler.loadstring(Files.readString(root.resolve(client + "MELens_Placement.lua"),
+            StandardCharsets.UTF_8), "MELens_Placement.lua", env), new Object[0]);
+        if (!Boolean.TRUE.equals(placement[0])) throw new AssertionError(java.util.Arrays.toString(placement));
+        Object[] fleetResult = thread.pcall(LuaCompiler.loadstring(Files.readString(fleet, StandardCharsets.UTF_8),
+            fleet.toString(), env), new Object[0]);
+        if (!Boolean.TRUE.equals(fleetResult[0])) throw new AssertionError(java.util.Arrays.toString(fleetResult));
+        Object[] looseGeometry = thread.pcall(LuaCompiler.loadstring(Files.readString(
+            root.resolve(shared + "MELens_Loose.lua"), StandardCharsets.UTF_8), "MELens_Loose.lua", env), new Object[0]);
+        if (!Boolean.TRUE.equals(looseGeometry[0])) throw new AssertionError(java.util.Arrays.toString(looseGeometry));
+        Object[] floorPlacement = thread.pcall(LuaCompiler.loadstring(Files.readString(
+            root.resolve("tools-src/regression/factory-floor-placement.lua"), StandardCharsets.UTF_8), "factory-floor-placement.lua", env), new Object[0]);
+        if (!Boolean.TRUE.equals(floorPlacement[0])) throw new AssertionError(java.util.Arrays.toString(floorPlacement));
+        Object[] factoryRoles = thread.pcall(LuaCompiler.loadstring(Files.readString(
+            root.resolve("tools-src/regression/factory-roles.lua"), StandardCharsets.UTF_8), "factory-roles.lua", env), new Object[0]);
+        if (!Boolean.TRUE.equals(factoryRoles[0])) throw new AssertionError(java.util.Arrays.toString(factoryRoles));
+        for (String name : new String[] { shared + "MELens_VisionGeometry.lua", shared + "MELens_Vision.lua",
+                "tools-src/regression/vision.lua" }) {
+            Object[] checked = thread.pcall(LuaCompiler.loadstring(Files.readString(root.resolve(name), StandardCharsets.UTF_8),
+                    name, env), new Object[0]);
+            if (!Boolean.TRUE.equals(checked[0])) throw new AssertionError(name + ": " + java.util.Arrays.toString(checked));
+        }
+        thread.pcall(LuaCompiler.loadstring("Events.OnGameStart={Add=function() end};"
+            + "Events.OnMainMenuEnter={Add=function() end}", "shelf-load-doubles", env), new Object[0]);
+        for (String name : new String[] { client + "MELens_LooseView.lua",
+                "tools-src/regression/shelf-contents.lua" }) {
+            Object[] checked = thread.pcall(LuaCompiler.loadstring(Files.readString(root.resolve(name), StandardCharsets.UTF_8),
+                    name, env), new Object[0]);
+            if (!Boolean.TRUE.equals(checked[0])) throw new AssertionError(name + ": " + java.util.Arrays.toString(checked));
         }
         System.out.println("ME_LENS regression assertions=" + env.rawget("assertions")
             + " productionLua=true engineDoubles=true nativeInput=false");

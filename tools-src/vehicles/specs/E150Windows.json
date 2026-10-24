@@ -1,0 +1,238 @@
+{
+    "key": "E150Windows",
+    "vehicles": [
+        "Base.86fordE150LVairportShuttle",
+        "Base.86fordE150longW"
+    ],
+    "title": "Ford E150 passenger van",
+    "kind": "cargo",
+    "measure": "measure_E150Windows.json",
+    "scripts": [
+        "fleet_E150Windows.json",
+        "86fordE150longW"
+    ],
+    "texture": "fleet_e150windows",
+    "reuseTexture": "f700box",
+    "mesh": {
+        "scale": 0.09000000000000001,
+        "lift": 0.6660000337604417
+    },
+    "floorY": -0.058,
+    "ceiling": 0.97,
+    "box": {
+        "x": 0.727,
+        "z": [
+            -2.278,
+            0.24
+        ]
+    },
+    "hide": {
+        "86fordE150windshielda": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
+        "86fordE150doorfla": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
+        "86fordE150doorfra": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
+        "86fordE150windshieldreara": true,
+        "86fordE150doorrla": true,
+        "86fordE150doorrra": true,
+        "86fordE150doorbla": true,
+        "86fordE150doorbra": true,
+        "86fordE150seatml": true,
+        "86fordE150seatmm": true,
+        "86fordE150seatmr": true,
+        "86fordE150seatrl": true,
+        "86fordE150seatrm": true,
+        "86fordE150seatrr": true,
+        "86fordE150seatbl": true,
+        "86fordE150seatbm": true,
+        "86fordE150seatbr": true,
+        "86fordE150Roofrack0": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
+        "86fordE150windshield": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
+        "86fordE150windowfl": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
+        "86fordE150windowfr": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
+        "86fordE150windowrl": true,
+        "86fordE150windowrr": true,
+        "86fordE150windowbl": true,
+        "86fordE150windowbr": true,
+        "86fordE150rearWindshield": true,
+        "86fordE150interior": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
+        "86fordE150interiorLongW": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        }
+    },
+    "clipBody": true,
+    "cutFront": 0.24,
+    "aisleX": -0.25,
+    "entry": {
+        "span": [
+            -0.7,
+            0.2
+        ],
+        "wall": "back",
+        "part": "TrunkDoor",
+        "area": "TruckBed",
+        "panelWall": "right"
+    },
+    "entryOpening": {
+        "x": [
+            -0.767,
+            0.767
+        ],
+        "y": [
+            -0.078,
+            0.99
+        ],
+        "z": [
+            -2.578,
+            -2.243
+        ]
+    },
+    "windowBoxes": [
+        {
+            "x": [
+                -0.712,
+                0.712
+            ],
+            "y": [
+                -0.04,
+                0.99
+            ],
+            "z": [
+                -2.228,
+                0.21
+            ]
+        },
+        {
+            "x": [
+                -0.687,
+                0.687
+            ],
+            "y": [
+                -0.068,
+                -0.033
+            ],
+            "z": [
+                -2.238,
+                0.2
+            ]
+        }
+    ],
+    "openings": [],
+    "extraSeats": [
+        "MELensFurnitureLeft1",
+        "MELensFurnitureLeft2"
+    ],
+    "wheelWells": [
+        {
+            "z": -1.34,
+            "inner": 0.6,
+            "halfLength": 0.37,
+            "top": 0.102
+        }
+    ],
+    "vanillaSeats": [
+        "BackLeft",
+        "BackMiddle",
+        "BackRight",
+        "FrontLeft",
+        "FrontRight",
+        "MiddleLeft",
+        "MiddleMiddle",
+        "MiddleRight",
+        "RearLeft",
+        "RearMiddle",
+        "RearRight"
+    ],
+    "waterTank": 40,
+    "fuelTank": 20,
+    "factoryLayout": true,
+    "spots": [
+        {
+            "wall": "left",
+            "at": -1.438,
+            "length": 1.5,
+            "depth": 0.55,
+            "default": "bed",
+            "empty": true,
+            "seats": [
+                "MELensFurnitureLeft1",
+                "MELensFurnitureLeft2"
+            ]
+        },
+        {
+            "wall": "front",
+            "at": 0,
+            "length": 1.0,
+            "depth": 0.55,
+            "default": "kitchen",
+            "empty": true
+        },
+        {
+            "wall": "front",
+            "at": 0.26,
+            "length": 0.52,
+            "depth": 0.52,
+            "default": "fridge",
+            "empty": true
+        }
+    ]
+}

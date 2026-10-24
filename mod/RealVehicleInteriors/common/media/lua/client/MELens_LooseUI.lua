@@ -29,7 +29,7 @@ local I = M.Interact
 local V = M.LooseView
 
 local function java()
-    return MELensRV
+    return M.java()
 end
 
 local function say(player, key, ...)

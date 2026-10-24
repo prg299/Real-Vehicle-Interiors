@@ -34,7 +34,7 @@ $mods = Join-Path $cache 'mods'
 $screens = Join-Path $cache 'Screenshots'
 $zbConfig = Join-Path $homeDir 'zombie_buddy'
 $rviOn = $Phase -in @('Enabled', 'Clean', 'Reenabled')
-$python = $(if ($env:RVI_PYTHON) { $env:RVI_PYTHON } else { (Get-Command python -ErrorAction Stop).Source })
+$python = Get-LensPython
 $java = Join-Path $Lens.GameRoot 'jre64\bin\java.exe'
 $keeper = $null; $gameId = 0; $gameStartTicks = 0; $stdout = $null; $stderr = $null
 $session = [ordered]@{ phase = $Phase; rviEnabled = $rviOn; status = 'preparing'; startedUtc = [DateTime]::UtcNow.ToString('o'); inactiveDesktop = $true; stockClasses = $true; profile = $homeDir }
@@ -116,7 +116,6 @@ try {
         Copy-Item -LiteralPath (Join-Path $Lens.Root 'dev\RealVehicleInteriors_Dev') -Destination $mods -Recurse
         $classes = Join-Path $runPath 'dev-classes'; New-Item -ItemType Directory -Path $classes | Out-Null
         $sources = @(Get-ChildItem -LiteralPath (Join-Path $Lens.Root 'dev\java') -Filter *.java -Recurse | ForEach-Object FullName)
-        $sources += [IO.Path]::GetFullPath((Join-Path $Lens.Root '..\me-motorclub\tools\java\ClientLab.java'))
         & (Join-Path $Lens.Jdk 'javac.exe') --release 25 -d $classes -cp "$(Join-Path $Lens.GameRoot 'projectzomboid.jar');$(Join-Path $Lens.GameRoot 'ZombieBuddy.jar')" @sources
         if ($LASTEXITCODE) { throw 'Lifecycle adapter compile failed' }
         $jarDir = Join-Path $mods 'RealVehicleInteriors_Dev\42.21\media\java'; New-Item -ItemType Directory -Path $jarDir -Force | Out-Null
@@ -155,7 +154,7 @@ try {
         '-cp', 'projectzomboid.jar;.', 'zombie.gameStates.MainScreenState', '-nosteam', "-cachedir=$cache")
     $config = Join-Path $phasePath 'native-session.json'; Write-Json $config @{ command = $command; cwd = $Lens.GameRoot }
     $psi = [Diagnostics.ProcessStartInfo]::new(); $psi.FileName = $python
-    $psi.ArgumentList.Add([IO.Path]::GetFullPath((Join-Path $Lens.Root '..\..\tools\windows-test-session.py'))); $psi.ArgumentList.Add($config)
+    $psi.ArgumentList.Add([IO.Path]::GetFullPath((Join-Path $Lens.Root 'dev\windows-test-session.py'))); $psi.ArgumentList.Add($config)
     $psi.UseShellExecute = $false; $psi.CreateNoWindow = $true; $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $true
     $psi.Environment['PATH'] = "$($Lens.GameRoot)\win64;$($Lens.GameRoot);$env:PATH"
     foreach ($key in @('JAVA_TOOL_OPTIONS', '_JAVA_OPTIONS', 'JDK_JAVA_OPTIONS')) { [void]$psi.Environment.Remove($key) }

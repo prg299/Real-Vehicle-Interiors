@@ -19,14 +19,16 @@ require "MELens_Parts"
 MELens = MELens or {}
 local M = MELens
 local P = M.Parts
+require "MELens_Bed"
+local B = M.Bed
 
-M.VERSION = "2.0.8"
+M.VERSION = "2.0.14"
 
 local CABIN_VAR = "MELensCabin"      -- "Idle" / "Walk": the standing poses
 local SEAT_VAR = "MELensCabinSeat"   -- "true" while entering, standing in or leaving
 local POSITION_KEY = "MELensCabin"   -- vehicle modData: where you were standing
 local IDLE_DELAY = 0.15             -- seconds without movement before the idle pose
-local RUN_SPEED_MULTIPLIER = 1.65   -- Shift/Run moves faster within the same walkable floor
+local RUN_SPEED_MULTIPLIER = 2.8    -- ~3.78 tiles/s at the default walk speed, matching steady vanilla Run
 local MAX_MOVE_STEP = 0.05          -- small collision steps also when running or after a slow frame
 
 local TURN_SPEED = 18.0              -- radians per second
@@ -36,11 +38,12 @@ local ARRIVE_DISTANCE = 0.04
 
 local session = nil
 local armedVehicle = nil
+local armedProfile = nil
 local lastMs = nil
 local placeVec, localA, localB
 
 local function java()
-    return MELensRV
+    return M.java()
 end
 
 local function say(player, key, ...)
@@ -541,6 +544,8 @@ local nearCutTimer = 0
 local WELL_CUT_ABOVE_FLOOR = 0.03     -- wheel-well boxes on the camera's side are cut down to this
 local WELL_FLOOR_SLACK = 0.002          -- ... and are not drawn below the floor less this
 local ROOM_MIN_ABOVE, ROOM_MAX_ABOVE = 0.012, 0.30   -- KI5 body details inside the lining, between these heights, are not drawn
+local NATIVE_CUT_FAR, NATIVE_CUT_NEAR, NATIVE_CUT_DOOR = 0.10, 0, 0.16
+local NATIVE_CUT_FLOOR_MARGIN = 0.015
 
 -- Walls facing the camera are cut lower. The direction towards the camera (screen down,
 -- world +x +y) depends on how the camper is parked, so it is refreshed while inside.
@@ -601,8 +606,9 @@ end
 local function armCutaway(vehicle, profile, dt)
     local rv = java()
     if not rv then return end
+    if not vehicle then M.applyBodyKeepPlanes(nil) end
     local lamps = vehicle ~= nil and M.lightsOn(vehicle)
-    if vehicle == armedVehicle then
+    if vehicle == armedVehicle and profile == armedProfile then
         if vehicle and lamps ~= armedLamps then
             applyLamps(rv, profile, lamps)
             armedLamps = lamps
@@ -618,10 +624,33 @@ local function armCutaway(vehicle, profile, dt)
         end
         return
     end
+    M.applyBodyKeepPlanes(vehicle and profile or nil)
     nearCutDir = nil
+    -- Re-arming after a wall option change must clear the previous Java state;
+    -- the Lua direction cache was just reset, so applyNearCut cannot detect it.
+    rv.clearNearCut()
     if vehicle then
         local p = cutPlaneFor(profile)
         rv.setCutaway(vehicle, p[1], p[2], p[3], p[4])
+        local lining = profile.nativeBodyLining
+        if rv.setBodyLining and lining then
+            rv.setBodyLining(lining[1], lining[2], lining[3])
+        end
+        if rv.setNativeCutInsets and profile.mesh and profile.kind == "cargo" then
+            local meshFloor = profile.mesh.lift - (profile.floorY + NATIVE_CUT_FLOOR_MARGIN) / profile.mesh.scale
+            rv.setNativeCutInsets(NATIVE_CUT_FAR / profile.mesh.scale, NATIVE_CUT_NEAR / profile.mesh.scale,
+                NATIVE_CUT_DOOR / profile.mesh.scale, -p[3] * meshFloor)
+        end
+        if rv.setWeatherRoom then
+            local ring = M.RoomRings and M.RoomRings[profile.walkGrid]
+            local points = {}
+            for _, corner in ipairs(ring or {}) do
+                points[#points + 1] = string.format("%.5f,%.5f", corner[1], corner[2])
+            end
+            local top = profile.mesh and math.abs(p[3]) > 0.0001
+                and (profile.mesh.lift + p[4] / p[3]) * profile.mesh.scale or profile.floorY + 1
+            rv.setWeatherRoom(table.concat(points, ";"), profile.floorY, top)
+        end
         -- nothing ahead of the compartment is cut (a bus's hood)
         if rv.setCutFront then
             if profile.cutFront then
@@ -711,6 +740,7 @@ local function armCutaway(vehicle, profile, dt)
         rv.clearCutaway()
     end
     armedVehicle = vehicle
+    armedProfile = profile
     armedLamps = lamps
 end
 
@@ -816,7 +846,7 @@ local function beginSession(player, vehicle, profile, seat)
     local saved = vehicle:getModData()[positionKey(vehicle, profile, seat)]
     if stand and stand.vehicle == vehicle then
         s.x, s.z = nearestWalkable(profile, stand.x, stand.z)
-        s.facing = facingFor(1, 0)
+        s.facing = stand.facing or facingFor(1, 0)
     elseif type(saved) == "table" and tonumber(saved.x) and tonumber(saved.z) then
         -- Where you stood, or the nearest free floor if furniture stands there now.
         s.x, s.z = nearestWalkable(profile, saved.x, saved.z)
@@ -1112,7 +1142,13 @@ local function update()
     if profile and M.inVanillaSeat(player, vehicle, profile) then
         profile = nil        -- driving (or in the cab): the vehicle as the game draws it
     end
+    -- Use Viewpoint's own camera transition before arming the isometric cutaway.
+    -- Also covers seated furniture and loading a save inside; the cab keeps its camera.
+    if profile and java() and java().useInteriorCamera then
+        java().useInteriorCamera(player)
+    end
     armCutaway(profile and vehicle or nil, profile, dt)
+    if profile then M.Parts.syncShellDoors(vehicle, profile) end
     if not profile then
         if session then endSession() end
         -- left a camper from a turned seat: no turn in the next vehicle
@@ -1136,7 +1172,7 @@ local function update()
             standUpOnMove(player, now)
             -- keep a seated character on our furniture (also after loading a save)
             placeTimer = placeTimer + dt
-            if placeTimer > 0.5 then
+            if placeTimer > 0.5 or B.states[player] then
                 placeTimer = 0
                 M.placeSeated(player, vehicle, profile)
             end
@@ -1221,6 +1257,7 @@ function M.placeSeated(player, vehicle, profile)
     local id = script:getPassenger(seat):getId()
     local place = P.seatPose(vehicle, profile, id)
     if not place then return end
+    if place.kind == "bed" then place = B.placement(player, vehicle, seat, place) end
     -- our pose, over the one KI5 registered for its own furniture
     if place.pose and player:getVariableString("damnPosition") ~= place.pose then
         player:setVariable("damnPosition", place.pose)
@@ -1273,9 +1310,9 @@ Events.OnTick.Add(function()
     end
 end)
 
-local function switchSeat(vehicle, player, seatTo)
+local function switchSeat(vehicle, player, seatTo, animated)
     local seatFrom = vehicle:getSeat(player)
-    if seatFrom ~= seatTo then
+    if seatFrom ~= seatTo and not animated then
         hideForPoseChange(player)
     end
     vehicle:switchSeat(player, seatTo)
@@ -1286,7 +1323,36 @@ end
 
 -- Sit or lie down on one of KI5's seats (a piece of furniture's): walk to (standX,
 -- standZ) in front of it first, then take the seat; `sleep` then goes to sleep.
-function M.useSeat(player, seatId, standX, standZ, sleep)
+local vanillaSleepMenu = ISVehicleMenu.onSleep
+
+function M.confirmBedSleep(player, seatId, standX, standZ)
+    local vehicle = player:getVehicle()
+    if not vehicle or M.sleepBlocker(player, vehicle) then return end
+    local state = B.states[player]
+    if state and state.phase ~= "Awake" then return end
+    local data = getPlayerData(player:getPlayerNum())
+    if data and data.vehicleSleepModal then return end
+    vanillaSleepMenu(player, vehicle)
+    local dialog = data and data.vehicleSleepModal
+    if not dialog then return end
+    dialog.onclick = function(target, button, playerNum)
+        if data.vehicleSleepModal ~= dialog then return end
+        data.vehicleSleepModal = nil
+        if button.internal ~= "YES" or player:getVehicle() ~= vehicle or M.sleepBlocker(player, vehicle) then return end
+        local function sleepAfterAnimation()
+            if player:getVehicle() == vehicle and not M.sleepBlocker(player, vehicle) then
+                ISVehicleMenu.onConfirmSleep(target, button, playerNum, nil)
+            end
+        end
+        if vehicle:getSeat(player) == M.seatIndex(vehicle, seatId) and B.sleep(player, sleepAfterAnimation) then return end
+        M.useSeat(player, seatId, standX, standZ, false, sleepAfterAnimation)
+    end
+end
+
+function M.useSeat(player, seatId, standX, standZ, sleep, onSleep)
+    if sleep then
+        return M.confirmBedSleep(player, seatId, standX, standZ)
+    end
     M.standingThen(player, function()
         walkTo(standX, standZ, function(arrived)
             local vehicle = arrived.vehicle
@@ -1301,7 +1367,11 @@ function M.useSeat(player, seatId, standX, standZ, sleep)
             end
             M.lastStand = { vehicle = vehicle, x = arrived.x, z = arrived.z }
             savePosition(arrived)
-            switchSeat(vehicle, player, index)
+            local place = P.seatPose(vehicle, arrived.profile, seatId)
+            if place and place.kind == "bed" then
+                B.begin(player, vehicle, index, place, onSleep, arrived.x, arrived.z, arrived.profile.floorY)
+            end
+            switchSeat(vehicle, player, index, place and place.kind == "bed")
             endSession()
             local vanilla = M.isVanillaSeat(vehicle, arrived.profile, index)
             if vanilla then
@@ -1317,14 +1387,11 @@ function M.useSeat(player, seatId, standX, standZ, sleep)
                     pdata.lootInventory:refreshBackpacks()
                 end
             end
-            if sleep then
-                ISVehicleMenu.onSleep(player, vehicle)
-            end
         end)
     end)
 end
 
-function M.standUp(player)
+function M.standUp(player, bedFinished, facing)
     local vehicle = player:getVehicle()
     local profile = M.profileFor(vehicle)
     if not profile then return end
@@ -1334,6 +1401,7 @@ function M.standUp(player)
         say(player, "IGUI_MELens_Full")
         return
     end
+    if not bedFinished and B.getUp(player, function(turn) M.standUp(player, true, turn) end) then return end
     -- Stand in front of the furniture you were using.
     local seat = vehicle:getSeat(player)
     local x, z = M.seatStandPoint(vehicle, profile, seat)
@@ -1343,8 +1411,8 @@ function M.standUp(player)
     if not x then
         x, z = profile.door.x, profile.door.z
     end
-    M.pendingStand = { vehicle = vehicle, x = x, z = z }
-    switchSeat(vehicle, player, cabin)
+    M.pendingStand = { vehicle = vehicle, x = x, z = z, facing = facing }
+    switchSeat(vehicle, player, cabin, bedFinished)
     triggerEvent("OnSwitchVehicleSeat", player)
 end
 
@@ -1378,9 +1446,20 @@ MELensEnterCabin = ISEnterVehicle:derive("MELensEnterCabin")
 
 function MELensEnterCabin:isValid()
     if self.started then
-        return self.vehicle:getCharacter(self.seat) == self.character
+        return self.vehicle:getCharacter(self.seat) == self.character and self.character:getVehicle() == self.vehicle
     end
     return self.character:getVehicle() == nil and self.vehicle:getCharacter(self.seat) == nil
+end
+
+function MELensEnterCabin:update()
+    -- Walk-in passengers have no seated get-in animation. Waiting for vanilla's
+    -- EnterAnimationFinished can hang forever when another animation node wins.
+    -- It also blocks the standing-position packet that seats us on a Lua-only
+    -- server. Complete after native entry succeeds; keep vanilla perform/stop.
+    if self.vehicle:getCharacter(self.seat) ~= self.character or self.character:getVehicle() ~= self.vehicle then return end
+    self.character:ClearVariable("EnterAnimationFinished")
+    self.character:ClearVariable("bEnteringVehicle")
+    self:forceComplete()
 end
 
 function MELensEnterCabin:start()
@@ -1400,13 +1479,14 @@ function MELensEnterCabin:start()
     end
 
     self.action:setBlockMovementEtc(true)
+    self.character:ClearVariable("EnterAnimationFinished")
+    local inside = self.vehicle:getPassengerPosition(self.seat, "inside")
+    if not self.vehicle:enter(self.seat, self.character, inside:getOffset()) then return end
     self.character:setVariable(SEAT_VAR, "true")
     self.character:setVariable(CABIN_VAR, "Idle")
     -- A fresh entry starts just inside the door; the saved spot is only for loading a save.
     local door = M.profileFor(self.vehicle).door
     M.pendingStand = { vehicle = self.vehicle, x = door.x, z = door.z }
-    local inside = self.vehicle:getPassengerPosition(self.seat, "inside")
-    self.vehicle:enter(self.seat, self.character, inside:getOffset())
     self.vehicle:playPassengerSound(self.seat, "enter")
     self.character:SetVariable("bEnteringVehicle", "true")
     self.character:triggerMusicIntensityEvent("VehicleEnter")
@@ -1708,6 +1788,15 @@ end
 -- "Sleep" from the vehicle radial menu while standing: the nearest free bed.
 local vanillaOnSleep = ISVehicleMenu.onSleep
 function ISVehicleMenu.onSleep(playerObj, vehicle, ...)
+    local profile = M.profileFor(vehicle)
+    local seat = vehicle and vehicle:getSeat(playerObj)
+    if profile and seat and seat >= 0 then
+        local id = vehicle:getScript():getPassenger(seat):getId()
+        if P.seatKindAt(vehicle, profile, id) == "bed" then
+            local x, z = M.seatStandPoint(vehicle, profile, seat)
+            return M.confirmBedSleep(playerObj, id, x, z)
+        end
+    end
     local s = session
     if s and s.player == playerObj and s.vehicle == vehicle and M.Interact then
         return M.Interact.sleepInCamper(playerObj, vehicle)
@@ -1855,7 +1944,9 @@ local function hookUseVehicle()
 end
 
 local function onGameStart()
+    M.applyBodyKeepPlanes(nil)
     armedVehicle = nil
+    armedProfile = nil
     armedLamps = nil
     session = nil
     lastMs = nil
@@ -1872,6 +1963,7 @@ local function onGameStart()
 end
 
 local function onMainMenuEnter()
+    M.applyBodyKeepPlanes(nil)
     if java() then
         java().clearCutaway()
         java().clearFacing()
@@ -1879,6 +1971,7 @@ local function onMainMenuEnter()
         java().clearStanding()
     end
     armedVehicle = nil
+    armedProfile = nil
     armedLamps = nil
     session = nil
     lightVehicle = nil
@@ -1908,7 +2001,14 @@ function M.debugState()
     }
 end
 
+local function onExitVehicle(player)
+    if player == getSpecificPlayer(0) then
+        armCutaway(nil)
+    end
+end
+
 Events.OnGameStart.Add(onGameStart)
 Events.OnMainMenuEnter.Add(onMainMenuEnter)
+Events.OnExitVehicle.Add(onExitVehicle)
 Events.OnTick.Add(update)
 Events.OnFillWorldObjectContextMenu.Add(onFillWorldObjectContextMenu)

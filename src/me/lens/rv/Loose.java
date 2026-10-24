@@ -153,14 +153,21 @@ public final class Loose {
 
     private static ModelScript modelScript(InventoryItem item) {
         String name = item.getWorldStaticItem();
+        ModelScript script = null;
         if (name != null && !name.isEmpty()) {
-            return ScriptManager.instance.getModelScript(name);
-        }
-        if (item instanceof HandWeapon) {
+            script = ScriptManager.instance.getModelScript(name);
+        } else if (item instanceof HandWeapon) {
             String weapon = item.getStaticModel();
-            return weapon == null || weapon.isEmpty() ? null : ScriptManager.instance.getModelScript(weapon);
+            script = weapon == null || weapon.isEmpty() ? null : ScriptManager.instance.getModelScript(weapon);
         }
-        return null;
+        // HamRadio1 has a placed-world sprite, but no native item model in 42.21.
+        // Adapt its appearance only: resolve/size share the model's measured bounds,
+        // while the original InventoryItem remains the storage and transfer authority.
+        // A native model supplied by the game or another mod always takes precedence.
+        if (script == null && "Base.HamRadio1".equals(item.getFullType())) {
+            script = ScriptManager.instance.getModelScript("Base.MELensRV_hamradio_ground");
+        }
+        return script;
     }
 
     private static boolean modelReady(Model model) {
@@ -390,6 +397,9 @@ public final class Loose {
      * Public because the patch's advice is inlined into the game's own class.
      */
     public static void afterModel(ModelInstanceRenderData inst, ModelSlotRenderData slot) {
+        if (ViewpointCompat.active()) {
+            return;
+        }
         if (slot == null || slot.object == null || slot.object != RV.cutVehicle || slot.renderToTexture) {
             return;
         }

@@ -19,6 +19,64 @@ import zombie.vehicles.BaseVehicle;
 public final class Hooks {
     private Hooks() {}
 
+    @Patch(className = "zombie.characters.IsoZombie", methodName = "spottedNew", strictMatch = true)
+    public static final class InteriorSightNew {
+        @Patch.OnEnter(skipOn = true)
+        public static boolean enter(@Patch.This zombie.characters.IsoZombie zombie,
+                @Patch.Argument(0) zombie.iso.IsoMovingObject target) {
+            return Vision.blocksSight(zombie, target);
+        }
+    }
+
+    @Patch(className = "zombie.characters.IsoZombie", methodName = "spottedOld", strictMatch = true)
+    public static final class InteriorSightOld {
+        @Patch.OnEnter(skipOn = true)
+        public static boolean enter(@Patch.This zombie.characters.IsoZombie zombie,
+                @Patch.Argument(0) zombie.iso.IsoMovingObject target) {
+            return Vision.blocksSight(zombie, target);
+        }
+    }
+
+    @Patch(className = "zombie.characters.IsoZombie", methodName = "isTargetVisible", strictMatch = true)
+    public static final class InteriorTargetSight {
+        @Patch.OnExit
+        public static void exit(@Patch.This zombie.characters.IsoZombie zombie,
+                @Patch.Return(readOnly = false) boolean visible) {
+            if (visible && Vision.blocksSight(zombie, zombie.getTarget())) visible = false;
+        }
+    }
+
+    @Patch(className = "zombie.iso.weather.fx.ParticleRectangle", methodName = "render", strictMatch = true)
+    public static final class CabinWeatherParticles {
+        // Keep the typed receiver: ZB must resolve this class before transforming
+        // WeatherParticle, whose parent field otherwise loads it during advice installation.
+        @Patch.OnEnter
+        public static void enter(@Patch.This zombie.iso.weather.fx.ParticleRectangle rectangle) {
+            Weather.beginParticles(rectangle);
+        }
+        @Patch.OnExit(onThrowable = Throwable.class)
+        public static void exit() { Weather.endParticles(); }
+    }
+
+    @Patch(className = "zombie.iso.weather.fx.WeatherParticle", methodName = "render", strictMatch = true)
+    public static final class CabinSnow {
+        @Patch.OnEnter(skipOn = true)
+        public static boolean enter(@Patch.This zombie.iso.weather.fx.WeatherParticle particle,
+                @Patch.Argument(0) float x, @Patch.Argument(1) float y) {
+            return particle instanceof zombie.iso.weather.fx.SnowParticle
+                    && Weather.skipParticle(particle, x, y);
+        }
+    }
+
+    @Patch(className = "zombie.iso.weather.fx.RainParticle", methodName = "render", strictMatch = true)
+    public static final class CabinRain {
+        @Patch.OnEnter(skipOn = true)
+        public static boolean enter(@Patch.This zombie.iso.weather.fx.RainParticle particle,
+                @Patch.Argument(0) float x, @Patch.Argument(1) float y) {
+            return Weather.skipParticle(particle, x, y);
+        }
+    }
+
     @Patch(className = "zombie.core.skinnedmodel.model.Model", methodName = "DrawVehicle", strictMatch = true)
     public static final class VehicleDraw {
         /** Returning true skips the draw (ME: LENS' inside on a camper you are not in). */

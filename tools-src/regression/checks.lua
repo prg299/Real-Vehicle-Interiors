@@ -21,7 +21,7 @@ end
 local serverScript, clientScript = newScript(), newScript()
 MELensRV = nil
 P.extendScript(serverScript, profile)
-MELensRV = {}
+MELensRV = completeJava()
 P.extendScript(clientScript, profile)
 check(#serverScript.ids == #clientScript.ids, "part counts differ with/without Java")
 for i, id in ipairs(serverScript.ids) do check(id == clientScript.ids[i], "network part index differs: " .. id) end
@@ -39,7 +39,8 @@ for i, spot in ipairs(profile.spots) do
     if not spot.cargo then
         -- furniture places along the walls (2.0.8): bare, after every box place, so a saved truck keeps its boxes
         check(spot.empty == true and spot.default == nil, "F700 furniture spot " .. i .. " does not start bare")
-        check(string.find(declaration, "itemType", 1, true) == nil, "F700 furniture spot " .. i .. " advertises a repair item")
+        check(string.find(declaration, "itemType = Base.MELensRV_Seat", 1, true) ~= nil,
+            "F700 furniture spot " .. i .. " has no serializable empty-slot placeholder")
         check(string.find(declaration, "model cabinet {", 1, true) ~= nil and string.find(declaration, "model box {", 1, true) == nil,
             "F700 furniture spot " .. i .. " declares the wrong models")
         check(i > 63, "F700 furniture spot " .. i .. " moved a box place's number")
@@ -50,7 +51,7 @@ for i, spot in ipairs(profile.spots) do
     if i <= 63 then check(spot.cargo == true, "F700 box place " .. i .. " is no longer a box place") end
     if not spot.cargo then furnitureSpots = furnitureSpots + 1 end
 end
-check(furnitureSpots == 18, "F700 furniture spots: " .. furnitureSpots)
+check(furnitureSpots == 20, "F700 furniture spots: " .. furnitureSpots)
 
 local function truck(id)
     local v = { id = id, xx = 100, yy = 100, parts = {}, passengers = {}, offsets = {}, script = newScript(), resyncs = 0 }
@@ -312,6 +313,15 @@ local occupied = character(9)
 emit("OnServerCommand", "MELens", "pos", { p = 9, v = 99, s = 3, x = 0, z = 0 })
 emit("OnTick")
 check(not occupied.vehicle and lateVehicle:getCharacter(3) == ghost, "remote snapshot overwrote another passenger")
+-- A partial loader table must not turn a valid server snapshot or release into a Lua crash.
+MELensRV={}
+local partial=character(10);local partialVehicle=truck(100)
+emit("OnServerCommand", "MELens", "pos", {p=10,v=100,s=2,x=0,z=0})
+check(pcall(function() emit("OnTick") end) and partial.vehicle==partialVehicle,
+    "partial Java bridge breaks remote membership presentation")
+partialVehicle.passengers[2]=nil;partial.vehicle=nil
+check(pcall(function() emit("OnTick") end) and M.Sync.remote[10]==nil,
+    "partial Java bridge breaks remote release")
 MELensRV = savedLensJava
 
 local session = { player = localPlayer, vehicle = v, seat = 4, x = 0, z = 0, facing = 0, moving = false }

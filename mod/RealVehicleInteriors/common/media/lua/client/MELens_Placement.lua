@@ -21,7 +21,7 @@ local STRENGTH = 0.55
 local HOVER_STRENGTH = 1.0
 
 local function java()
-    return MELensRV
+    return M.java()
 end
 
 local function say(player, key, ...)
@@ -105,20 +105,23 @@ function L.Mode:placeUnderMouse()
     -- Each place at the height of its own floor (the top of the box below, for a stacked
     -- one), highest first as what stands higher is drawn in front, and a little above it
     -- (a piece's preview stands in front of its floor).
-    local order = {}
+    local best, bestDistance, bestLift
     for _, place in ipairs(self.places) do
-        table.insert(order, place)
-    end
-    table.sort(order, function(a, b) return a.rise > b.rise end)
-    for _, place in ipairs(order) do
         for _, lift in ipairs({ 0, 0.3 }) do
             local x, z = M.Interact.screenToCamper(self.vehicle, sx, sy, floor + place.rise + lift)
             if x >= place.x0 and x <= place.x1 and z >= place.z0 and z <= place.z1 then
-                return place
+                local distance = (x - (place.x0 + place.x1) / 2)^2 + (z - (place.z0 + place.z1) / 2)^2
+                -- Alternative layouts can overlap. Choose the marker nearest
+                -- the pointer, deterministically, keeping stacked floors first.
+                if not best or place.rise > best.rise or (place.rise == best.rise
+                        and (lift < bestLift or (lift == bestLift and (distance < bestDistance
+                        or (distance == bestDistance and place.index < best.index))))) then
+                    best, bestDistance, bestLift = place, distance, lift
+                end
             end
         end
     end
-    return nil
+    return best
 end
 
 function L.Mode:setHover(place)
@@ -165,7 +168,7 @@ function L.Mode:onMouseDown(x, y)
         self:stop()
         ISInventoryPaneContextMenu.transferIfNeeded(player, item)
         local a = 0
-        local sx, sz = M.Interact.standPoint(place.spot, piece, a)
+        local sx, sz = M.Interact.openStandPoint(vehicle, place.spot, piece, a, player)
         M.standingThen(player, function()
             M.walkTo(player, sx, sz, function()
                 ISTimedActionQueue.add(MELensPlaceFurniture:new(player, vehicle, place.part, item))

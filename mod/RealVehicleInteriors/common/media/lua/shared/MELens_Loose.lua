@@ -47,6 +47,18 @@ L.SURFACES = {
         { a0 = -0.23, a1 = 0.23, d0 = 0.03, d1 = 0.29, h = 0.470, head = 0.405, name = "shelf2" },
         { a0 = -0.25, a1 = 0.25, d0 = 0.03, d1 = 0.30, h = 0.900, name = "top" },
     },
+    workbench = {
+        { a0 = -.425, a1 = .425, d0 = .025, d1 = .375, h = .765, name = "worktop" },
+    },
+    medlocker = {
+        { a0 = -.22, a1 = .22, d0 = .045, d1 = .285, h = .383, head = .267, name = "shelf1" },
+        { a0 = -.22, a1 = .22, d0 = .045, d1 = .285, h = .673, head = .284, name = "shelf2" },
+    },
+    equipmentrack = {
+        { a0 = -.27, a1 = .27, d0 = .035, d1 = .285, h = .052, head = .288, name = "shelf1" },
+        { a0 = -.27, a1 = .27, d0 = .035, d1 = .285, h = .362, head = .288, name = "shelf2" },
+        { a0 = -.27, a1 = .27, d0 = .035, d1 = .285, h = .672, head = .283, name = "shelf3" },
+    },
 }
 
 ------------------------------------------------------------------------------------
@@ -408,6 +420,47 @@ function L.floorPoints(vehicle, profile)
     return points
 end
 
+-- Factory floor bays describe safe envelopes for real inventory, not extra items.
+-- Reuse them after vanilla transfers prune the original positions. This calculation
+-- stays shared and pure: no renderer sizes, item creation or saved-placement writes.
+local function cargoEnvelope(profile, itemType, yaw)
+    local hx, hz
+    for _, bay in ipairs(profile.factoryFloor or {}) do
+        if bay.t == itemType and finite(bay.hx) and finite(bay.hz) and bay.hx > 0 and bay.hz > 0 then
+            local x, z = L.half(2 * bay.hx, 2 * bay.hz, (yaw or 0) - (bay.r or 0))
+            hx, hz = math.max(hx or 0, x), math.max(hz or 0, z)
+        end
+    end
+    return hx, hz
+end
+
+local function cargoFree(vehicle, profile, out, x, z, hx, hz)
+    local ring = profile.walkGrid and M.RoomRings and M.RoomRings[profile.walkGrid]
+    if not ring or #ring < 3 then return false end
+    local x0, x1, z0, z1 = x - hx, x + hx, z - hz, z + hz
+    -- Unlike ordinary small-item placement, declared freight envelopes get no wall
+    -- or furniture slack. A concave lining vertex inside the box also rejects it.
+    for _, c in ipairs({ {x0,z0}, {x0,z1}, {x1,z0}, {x1,z1} }) do
+        if not L.inRoom(profile, c[1], c[2]) then return false end
+    end
+    for _, c in ipairs(ring) do
+        if c[1] > x0 and c[1] < x1 and c[2] > z0 and c[2] < z1 then return false end
+    end
+    for _, solid in ipairs(L.solids(vehicle, profile)) do
+        if x0 < solid.x1 and solid.x0 < x1 and z0 < solid.z1 and solid.z0 < z1 then return false end
+    end
+    for _, e in ipairs(out) do
+        if e.s == 0 then
+            local ex, ez = cargoEnvelope(profile, e.t, e.r)
+            -- An arbitrary item has no authoritative size in shared Lua. Do not
+            -- guess a native-model footprint or depend on client model loading.
+            if not ex then return false end
+            if math.abs(e.x - x) < ex + hx and math.abs(e.z - z) < ez + hz then return false end
+        end
+    end
+    return true
+end
+
 -- Everything that lies in the vehicle, with where: the recorded positions, and for the Floor's items that have
 -- none (dropped by an older version, or put there some other way) a place on the floor worked out from the item's
 -- number, so it is the same on every client. Sorted by item number. { id, t, x, y, z, r, s, orphan }.
@@ -440,17 +493,51 @@ function L.list(vehicle, profile)
             local points = L.floorPoints(vehicle, profile)
             local count = #points
             local used = {}
+            local unknown = false
+            if #(profile.factoryFloor or {}) > 0 then
+                -- Reserve unknown orphan footprints conservatively before any
+                -- preferred bay is assigned, regardless of their inventory order.
+                for _, item in ipairs(orphans) do
+                    if not cargoEnvelope(profile, item:getFullType(), 0) then unknown = true end
+                end
+                for _, e in ipairs(out) do
+                    if e.s == 0 and not cargoEnvelope(profile, e.t, e.r) then unknown = true end
+                end
+            end
             for k, item in ipairs(orphans) do
-                if count > 0 and k <= count then
-                    local id = item:getID()
+                local id, itemType = item:getID(), item:getFullType()
+                local px, pz, yaw
+                local hx, hz = cargoEnvelope(profile, itemType, 0)
+                if hx and not unknown then
+                    for _, bay in ipairs(profile.factoryFloor) do
+                        if bay.t == itemType and finite(bay.x) and finite(bay.z) then
+                            local bx, bz = cargoEnvelope(profile, itemType, bay.r)
+                            if cargoFree(vehicle, profile, out, bay.x, bay.z, bx, bz) then
+                                px, pz, yaw = bay.x, bay.z, bay.r or 0
+                                break
+                            end
+                        end
+                    end
+                end
+                if px == nil and count > 0 and k <= count then
                     local index = id % count + 1
-                    while used[index] do
+                    for _ = 1, count do
+                        local point = points[index]
+                        -- Known freight that cannot use a bay still needs its full
+                        -- envelope at the fallback grid point. Unknown mixed cargo
+                        -- retains the existing generic behaviour; no size is guessed.
+                        if not used[index] and (not hx or unknown or cargoFree(vehicle, profile, out, point[1], point[2], hx, hz)) then
+                            used[index] = true
+                            px, pz, yaw = point[1], point[2], 0
+                            break
+                        end
                         index = index % count + 1
                     end
-                    used[index] = true
+                end
+                if px ~= nil then
                     local look = L.lookOf(item) or {}
-                    out[#out + 1] = { id = id, t = item:getFullType(), x = points[index][1], y = profile.floorY,
-                                      z = points[index][2], r = 0, s = 0, orphan = true,
+                    out[#out + 1] = { id = id, t = itemType, x = px, y = profile.floorY,
+                                      z = pz, r = yaw, s = 0, orphan = true,
                                       tx = look.tx, tr = look.tr, tg = look.tg, tb = look.tb }
                 end
             end

@@ -23,3 +23,10 @@ jobs:
       - name: Parse PowerShell scripts
         shell: pwsh
         run: ./scripts/check-powershell.ps1
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Check optional Viewpoint camera contract
+        shell: pwsh
+        run: ./scripts/check-viewpoint.ps1

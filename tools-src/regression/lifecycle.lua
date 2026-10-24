@@ -124,5 +124,96 @@ U.createWaterTank(vehicle, clientWater)
 check(empty(clientGenerator.data) and clientGenerator.conditionSets == 0 and empty(clientWater.data),
     "client initializes authoritative utilities")
 
+-- Appended cargo layouts furnish a fresh vehicle once; a saved cleared conversion
+-- gains no new items, even when repair supplies the serialization placeholder.
+client=false
+local stockProfile={factoryLayout="fixture-cargo",legacySpotCount=1,spots={
+    {empty=true,length=1.5,depth=.55,wall="left"},
+    {factory=true,default="parcels",pieces={"parcels"},length=.6,depth=.5,wall="left"}}}
+M.Profiles["Base.FactoryLifecycleFixture"]=stockProfile
+local function conversion()
+    local v={data={}}
+    function v:getScript() return {getFullName=function() return "Base.FactoryLifecycleFixture" end} end
+    function v:getModData() return self.data end
+    return v
+end
+local freshVan=conversion()
+P.createSpot(freshVan,part())
+check(freshVan.data.MELensFactoryLayout==stockProfile.factoryLayout,"fresh cargo vehicle not identified")
+local factoryIndex=stockProfile.legacySpotCount+1
+local full=part({getFullType=function() return P.EMPTY_ITEM end})
+function full:getId() return P.SPOT..factoryIndex end
+local beforeMade,beforeFills=made,fills
+P.createSpot(freshVan,full)
+check(full.item and P.pieceOfItem(full.item)==stockProfile.spots[factoryIndex].default,"fresh factory freight missing")
+check(made==beforeMade+1 and fills==beforeFills+1,"factory freight did not fill once")
+P.createSpot(freshVan,full)
+check(made==beforeMade+1 and fills==beforeFills+1,"factory freight create refills cargo")
+full.item=nil
+P.createSpot(freshVan,full)
+check(not full.item,"looted cargo refurnished on repair")
+local savedVan=conversion()
+P.createSpot(savedVan,part(nil,{[P.INITIALIZED_KEY]=true}))
+local added=part();function added:getId() return P.SPOT..factoryIndex end
+P.createSpot(savedVan,added)
+check(not added.item and added.data[P.INITIALIZED_KEY],"appended layout overwrote a saved/cleared conversion")
+
+-- Floor freight uses the same one-time authority as fittings. Keeping exact item
+-- references here catches duplication/refill without pretending to test native saves.
+local oldLoose=M.Loose
+local placed={}
+M.Loose={fitsSurface=function(_,_,_,x) return x<1 end,
+    set=function(_,item,x,y,z,r,s) placed[#placed+1]={item=item,x=x,y=y,z=z,r=r,s=s} end}
+stockProfile.floorY=-.4
+stockProfile.factoryFloor={{t="Base.PropaneTank",x=.4,z=-.5,hx=.17,hz=.17},
+    {t="Base.PropaneTank",x=-.4,z=-.5,hx=.17,hz=.17},
+    {t="Base.PropaneTank",x=2,z=-.5,hx=.17,hz=.17}}
+local function floorPart(contents,capacity)
+    local p=part(nil,{},contents)
+    local c=p.container
+    function c:AddItem(t) local i={type=t};self.items[#self.items+1]=i;return i end
+    function c:Remove(item) for i,v in ipairs(self.items) do if v==item then table.remove(self.items,i);return end end end
+    function c:getCapacityWeight() return #self.items*10 end
+    function c:getCapacity() return capacity or 100 end
+    function c:setExplored(value) self.explored=value end
+    return p
+end
+local floor=floorPart()
+P.createFloor(freshVan,floor)
+check(#floor.container.items==2 and #placed==2,"floor cargo failed to populate valid positions only")
+check(placed[1].item==floor.container.items[1] and placed[2].item==floor.container.items[2]
+    and placed[1].y==stockProfile.floorY and placed[1].s==0,"floor cargo is a copied prop or wrong surface")
+local firstTank=floor.container.items[1]
+P.createFloor(freshVan,floor)
+check(#floor.container.items==2 and floor.container.items[1]==firstTank and #placed==2,"floor cargo duplicated on create")
+floor.container.items={}
+P.createFloor(freshVan,floor)
+check(#floor.container.items==0,"looted floor cargo refilled")
+local priorFloor=floorPart({savedCargo})
+P.createFloor(freshVan,priorFloor)
+check(#priorFloor.container.items==1 and priorFloor.container.items[1]==savedCargo,"existing floor items replaced")
+local loadedFloor=floorPart()
+P.initFloor(freshVan,loadedFloor);P.createFloor(freshVan,loadedFloor)
+check(#loadedFloor.container.items==0,"saved empty floor refilled")
+local oldVehicleFloor=floorPart()
+P.createFloor(savedVan,oldVehicleFloor)
+check(#oldVehicleFloor.container.items==0,"appended floor cargo added to old vehicle")
+local capped=floorPart(nil,10)
+P.createFloor(freshVan,capped)
+check(#capped.container.items==1,"floor cargo exceeds container capacity")
+for _,option in ipairs({"StartFurnished","FurnitureLoot"}) do
+    SandboxVars.MELens[option]=false
+    local disabled=floorPart();P.createFloor(freshVan,disabled)
+    check(#disabled.container.items==0,"floor cargo ignores sandbox option "..option)
+    SandboxVars.MELens[option]=true;P.createFloor(freshVan,disabled)
+    check(#disabled.container.items==0,"sandbox toggle refills floor "..option)
+end
+client=true
+local replicatedFloor=floorPart()
+P.createFloor(freshVan,replicatedFloor);P.initFloor(freshVan,replicatedFloor)
+check(#replicatedFloor.container.items==0 and not replicatedFloor.data[P.INITIALIZED_KEY],"client creates authoritative floor cargo")
+client=false
+M.Loose=oldLoose
+M.Profiles["Base.FactoryLifecycleFixture"]=nil
 isClient, instanceItem, SandboxVars = old.isClient, old.instanceItem, old.SandboxVars
 P.applyPiece, P.fillFurniture, P.canReach = old.applyPiece, old.fillFurniture, old.canReach

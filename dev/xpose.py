@@ -1,6 +1,7 @@
 """Developer helper: the model-space bone positions of the first frame of a .X animation
 (the game's character animations, text or binary), to place seat and bed poses.
     python dev/xpose.py <anim.X> [bone ...]
+Import pose(path, key_frame=-1) to inspect the last key of a transition clip.
 DirectX conventions: row vectors, a bone's model transform = local x parent's."""
 import re
 import struct
@@ -68,9 +69,10 @@ def tokens(path):
 
 
 class Parser:
-    def __init__(self, toks):
+    def __init__(self, toks, key_frame=0):
         self.t = toks
         self.i = 0
+        self.key_frame = key_frame
 
     def peek(self):
         return self.t[self.i] if self.i < len(self.t) else None
@@ -144,7 +146,7 @@ class Parser:
                 for k in range(count):
                     time, n = self.numbers(2)
                     values = self.numbers(int(n))
-                    if first is None:
+                    if k == self.key_frame or self.key_frame == -1:
                         first = values
                 while self.next() != "}":
                     pass
@@ -154,8 +156,8 @@ class Parser:
         self.next()
 
 
-def load(path):
-    p = Parser(tokens(path))
+def load(path, key_frame=0):
+    p = Parser(tokens(path), key_frame)
     frames, keys = {}, {}
     while p.peek() is not None:
         tok = p.peek()
@@ -184,8 +186,8 @@ def quat_matrix(w, x, y, z):
         [0, 0, 0, 1]])
 
 
-def pose(path):
-    frames, keys = load(path)
+def pose(path, key_frame=0):
+    frames, keys = load(path, key_frame)
     local = {}
     for name, (parent, m) in frames.items():
         k = keys.get(name, {})

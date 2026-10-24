@@ -108,18 +108,22 @@ local profile = {
     wheelWells = {
         {
             x = { 0.56, 0.867 },
-            y = { -0.63, -0.08 },
+            y = { -0.63, -0.015 },
             z = { -0.16, 0.52 },
         },
         {
             x = { -0.867, -0.56 },
-            y = { -0.63, -0.08 },
+            y = { -0.63, -0.015 },
             z = { -0.16, 0.52 },
         },
     },
     panel = { x = -0.74, y = -0.025, z = 1.655, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
     waterTank = 60,
     fuelTank = 20,
+    bodyKeepPlanes = {
+        KI5trailersSpare = { 0, 1, 0, 16.3 },
+        ["87scampCamperRear0"] = { 0, 0, -1, 4.310444 },
+    },
     clipBody = true,
     windowBoxes = {
         {

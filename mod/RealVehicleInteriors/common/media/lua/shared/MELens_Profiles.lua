@@ -13,6 +13,7 @@
 -- mesh origin (about 0.8 tiles above the Flying Cloud's floor).
 --
 
+require "MELens_Java"
 MELens = MELens or {}
 MELens.Profiles = MELens.Profiles or {}
 
@@ -174,8 +175,10 @@ end
 -- (px, py, pz). Checked in game with a calibration box: a part offset moves a model by
 -- 0.9 x offset, and KI5's campers carry a 0.06 tile shift in height and length.
 --
-function MELens.modelOffset(px, py, pz)
-    return { px / 0.9, (py - 0.06) / 0.9, (pz + 0.06) / 0.9 }
+function MELens.modelOffset(px, py, pz, profile)
+    local scale = profile and profile.vehicleScale or 0.9
+    local shift = profile and profile.modelShift or { 0, -0.06, 0.06 }
+    return { (px + shift[1]) / scale, (py + shift[2]) / scale, (pz + shift[3]) / scale }
 end
 
 --
@@ -205,6 +208,13 @@ function MELens.standingIds(profile)
     return ids
 end
 
+-- Furniture passengers follow the released standing passengers; saved indices stay stable.
+function MELens.interiorSeatIds(profile)
+    local ids = MELens.standingIds(profile)
+    for _, id in ipairs(profile.extraSeats or {}) do ids[#ids + 1] = id end
+    return ids
+end
+
 -- How many places to stand fit in a profile's vehicles: the fewest over its scripts (they share the ids), the
 -- script's own seats counted without ours (an earlier call may have merged them already).
 local function standingCounts(manager)
@@ -217,7 +227,10 @@ local function standingCounts(manager)
                 local id = i == 1 and profile.seatId or (profile.seatId .. i)
                 if script:getPassengerIndex(id) >= 0 then own = own - 1 end
             end
-            local fit = math.max(0, math.min(MELens.STANDING_SEATS, MELens.MAX_SEATS - own))
+            for _, id in ipairs(profile.extraSeats or {}) do
+                if script:getPassengerIndex(id) >= 0 then own = own - 1 end
+            end
+            local fit = math.max(0, math.min(MELens.STANDING_SEATS, MELens.MAX_SEATS - own - #(profile.extraSeats or {})))
             counts[profile] = math.min(counts[profile] or fit, fit)
         end
     end
@@ -233,18 +246,20 @@ end
 
 -- Standing passengers still need a seat-container part: BaseVehicle.getAllSeatParts()
 -- indexes those parts by passenger, and other vehicle mods use that lookup on entry
--- and when changing seats. This is metadata only, not another place to store items.
+-- and when changing seats. CombatManager also reads its ItemContainer when aiming
+-- from a vehicle, even for a standing passenger. It must stay present and empty.
 function MELens.standingContainerTest(vehicle, part, chr)
     return false
 end
 
 function MELens.initStandingPart(vehicle, part)
-    -- The seat lookup uses the script's container metadata, not an ItemContainer.
-    -- Vanilla always offers the current seat's ItemContainer in the loot window,
-    -- bypassing its access test. Keep these empty metadata parts out of that UI.
+    -- Repair old saves whose init hook removed this container. Never replace an
+    -- existing container or discard its contents; native combat requires it.
     local container = part:getItemContainer()
-    if container and container:isEmpty() then
-        part:setItemContainer(nil)
+    if not container then
+        container = ItemContainer.new()
+        container:setType(part:getId())
+        part:setItemContainer(container)
     end
     -- A server enters a player into a seat with BaseVehicle.enter(seat, character) when the client's enter packet
     -- arrives, and that refuses a seat whose part holds no item: the server never knew a standing player was in the
@@ -256,18 +271,76 @@ function MELens.initStandingPart(vehicle, part)
             part:setInventoryItem(item)
         end
     end
+    container:setCapacity(0)
+    container:setExplored(true)
+    container:setAcceptItemFunction("MELens.standingContainerTest")
+end
+
+function MELens.initFurnitureSeat(vehicle, part)
+    local container = part:getItemContainer()
+    if container == nil then
+        container = ItemContainer.new()
+        part:setItemContainer(container)
+    end
+    container:setType(part:getId())
+    container:setCapacity(0)
+    container:setExplored(true)
+    container:setAcceptItemFunction("MELens.standingContainerTest")
+    if MELens.Parts then MELens.Parts.syncFurnitureSeats(vehicle) end
+end
+
+-- Global hide rules share Java's model-name / mesh: alias map. Remember the
+-- exact last registered body-space plane rather than reconstructing it from a
+-- profile later (several profiles may register the same alias).
+local registeredKeepPlanes = {}
+local activeBodyKeepPlanes = {}
+local noKeepPlane = { 0, 0, 0, -1 }
+
+local function writeKeepPlane(rv, model, p)
+    rv.setKeepPlane(model, p[1], p[2], p[3], p[4])
+end
+
+local function registerKeepPlane(model, a, b, c, d)
+    local p = { a, b, c, d }
+    MELensRV.setKeepPlane(model, a, b, c, d)
+    registeredKeepPlanes[model] = p
+    -- A late script registration updates the restoration baseline without
+    -- replacing the active vehicle's narrower override.
+    if activeBodyKeepPlanes[model] then
+        writeKeepPlane(MELensRV, model, activeBodyKeepPlanes[model])
+    end
+end
+
+-- Per-profile overrides are already in BODY mesh space, including translated
+-- native submodels. Only aliases touched by the previous profile are restored.
+function MELens.applyBodyKeepPlanes(profile)
+    local rv = MELensRV
+    if not rv or not rv.setKeepPlane then return end
+    local restored = false
+    for model in pairs(activeBodyKeepPlanes) do
+        writeKeepPlane(rv, model, registeredKeepPlanes[model] or noKeepPlane)
+        restored = true
+    end
+    if restored then activeBodyKeepPlanes = {} end
+    if not profile or not profile.bodyKeepPlanes then return end
+    for model, p in pairs(profile.bodyKeepPlanes) do
+        local copy = { p[1], p[2], p[3], p[4] }
+        writeKeepPlane(rv, model, copy)
+        activeBodyKeepPlanes[model] = copy
+    end
 end
 
 function MELens.addStandingPositions()
     local manager = getScriptManager()
     if not manager then return end
+    local rv = MELens.java()
     standingCounts(manager)
     for fullName, profile in pairs(MELens.Profiles) do
         local script = manager:getVehicle(fullName)
         local s = profile.standing
         if script and s then
             -- Merging is idempotent: an existing passenger is updated, not duplicated.
-            for _, id in ipairs(MELens.standingIds(profile)) do
+            for _, id in ipairs(MELens.interiorSeatIds(profile)) do
                 script:Load(script:getName(), table.concat({
                     "{ passenger ", id, " {",
                     " door = ", s.door, ",",
@@ -282,33 +355,34 @@ function MELens.addStandingPositions()
             -- Only with the Java part, which hides what the shell replaces (the shell
             -- itself is ME: LENS' own part, see MELens_Parts.lua); without it KI5's own
             -- interior stays as it is.
-            if profile.shell and MELensRV then
+            if profile.shell and rv then
                 local m = profile.mesh
                 for model, keep in pairs(profile.hideKI5 or {}) do
                     if keep == true then
-                        MELensRV.setKeepPlane(model, 0, 0, 0, 1)
+                        registerKeepPlane(model, 0, 0, 0, 1)
                     elseif type(keep) == "table" and keep.plane then
-                        -- any plane in the model's mesh space: a*x + b*y + c*z + d > 0 is hidden
+                        -- any plane in BODY mesh space: a*x + b*y + c*z + d > 0 is hidden
                         local p = keep.plane
-                        MELensRV.setKeepPlane(model, p[1], p[2], p[3], p[4])
+                        registerKeepPlane(model, p[1], p[2], p[3], p[4])
                     else
                         -- remove below passenger height `keep`: mesh z > lift - keep / scale
-                        MELensRV.setKeepPlane(model, 0, 0, 1, keep / m.scale - m.lift)
+                        registerKeepPlane(model, 0, 0, 1, keep / m.scale - m.lift)
                     end
                 end
             end
             if MELens.Parts and MELens.Parts.extendScript then
                 MELens.Parts.extendScript(script, profile)
             end
-            for _, id in ipairs(MELens.standingIds(profile)) do
+            for n, id in ipairs(MELens.interiorSeatIds(profile)) do
                 -- Append after the existing parts so their order and all passenger IDs
                 -- remain stable. Load merges by ID, including on later boot/world events.
+                local init = n <= #MELens.standingIds(profile) and "MELens.initStandingPart" or "MELens.initFurnitureSeat"
                 script:Load(script:getName(), table.concat({
                     "{ part Seat", id, " {",
                     " category = nodisplay, area = ", s.area, ", itemType = Base.MELensRV_Seat,",
                     " container { seat = ", id, ", capacity = 0,",
                     " conditionAffectsCapacity = false, test = MELens.standingContainerTest, }",
-                    " lua { create = MELens.initStandingPart, init = MELens.initStandingPart, }",
+                    " lua { create = ", init, ", init = ", init, ", }",
                     " } }",
                 }))
                 local index = script:getPassengerIndex(id)
@@ -318,8 +392,8 @@ function MELens.addStandingPositions()
                     -- The client bridge resolves just this binding. A server runs without
                     -- it, so the game there finds no part for the seat and turns a walk-in
                     -- down; MELens_Sync.lua seats the player on their first position.
-                    if MELensRV then
-                        MELensRV.bindSeatContainer(script, "Seat" .. id, id)
+                    if rv then
+                        rv.bindSeatContainer(script, "Seat" .. id, id)
                     end
                     local passenger = script:getPassenger(index)
                     passenger:getPositionById("inside"):getOffset():set(s.inside[1], s.inside[2], s.inside[3])

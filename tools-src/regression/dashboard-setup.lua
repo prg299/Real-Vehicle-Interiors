@@ -1,7 +1,7 @@
 -- Minimal load-time UI services. Dashboard checks below are engine-double contracts,
 -- never a replacement for the separate real native mouse/UI evidence.
 MELensDashboardRegressionSaved = {}
-for _, name in ipairs({ "ISPanel", "UIFont", "getTextManager", "isMouseButtonDown",
+for _, name in ipairs({ "ISPanel", "ISCollapsableWindow", "UIFont", "getTextManager", "isMouseButtonDown",
         "getPlayerContextMenu", "ISContextMenu", "JoypadState", "getMouseX", "getMouseY", "getSoundManager" }) do
     MELensDashboardRegressionSaved[name] = _G[name]
 end
@@ -13,3 +13,4 @@ ISPanel = { update = function() end }
 function ISPanel:derive(_)
     local child = {}; setmetatable(child, { __index = self }); return child
 end
+ISCollapsableWindow = ISPanel:derive("ISCollapsableWindow")

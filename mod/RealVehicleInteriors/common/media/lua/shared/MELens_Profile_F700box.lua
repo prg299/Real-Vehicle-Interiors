@@ -9,7 +9,7 @@ local profile = {
     floorY = 0.02,
     mesh = { scale = 0.09, lift = 0.666 },
     shell = {
-        models = { "MELensShell_f700box_floor", "MELensShell_f700box_walls" },
+        models = { "MELensShell_f700box_floor", "MELensShell_f700box_walls", "MELensShell_f700box_bulkhead" },
     },
     hideKI5 = {
         ["87fordF700boxInterior"] = {
@@ -17,7 +17,7 @@ local profile = {
         },
     },
     light = {
-        interiorModels = { "MELensShell_f700box_floor", "MELensShell_f700box_walls" },
+        interiorModels = { "MELensShell_f700box_floor", "MELensShell_f700box_walls", "MELensShell_f700box_bulkhead" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,
@@ -65,8 +65,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = 1.01,
@@ -76,8 +76,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = 1.01,
@@ -87,8 +87,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = 1.01,
@@ -98,8 +98,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = 1.01,
@@ -109,8 +109,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = 1.01,
@@ -120,8 +120,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = 1.01,
@@ -131,8 +131,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = 1.01,
@@ -143,8 +143,8 @@ local profile = {
             default = "box",
             empty = true,
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = 1.01,
@@ -154,8 +154,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = 1.01,
@@ -165,8 +165,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = 1.01,
@@ -176,8 +176,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = 1.01,
@@ -187,8 +187,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = 1.01,
@@ -198,8 +198,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = 1.01,
@@ -209,8 +209,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = 1.01,
@@ -220,8 +220,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = 1.01,
@@ -231,8 +231,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = 1.01,
@@ -242,8 +242,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = 1.01,
@@ -254,8 +254,8 @@ local profile = {
             default = "box",
             empty = true,
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = 1.01,
@@ -265,8 +265,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = 1.01,
@@ -276,8 +276,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = -1.01,
@@ -287,8 +287,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = -1.01,
@@ -298,8 +298,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = -1.01,
@@ -309,8 +309,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = -1.01,
@@ -320,8 +320,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = -1.01,
@@ -331,8 +331,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = -1.01,
@@ -343,8 +343,8 @@ local profile = {
             default = "box",
             empty = true,
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = -1.01,
@@ -354,8 +354,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = -1.01,
@@ -365,8 +365,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = -1.01,
@@ -376,8 +376,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = -1.01,
@@ -387,8 +387,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = -1.01,
@@ -398,8 +398,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = -1.01,
@@ -409,8 +409,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = -1.01,
@@ -420,8 +420,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = -1.01,
@@ -431,8 +431,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = -1.01,
@@ -442,8 +442,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = -1.01,
@@ -454,8 +454,8 @@ local profile = {
             default = "box",
             empty = true,
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = -1.01,
@@ -465,8 +465,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = -1.01,
@@ -476,8 +476,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = -0.25,
@@ -487,8 +487,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = -0.25,
@@ -498,8 +498,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = 0.25,
@@ -509,8 +509,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 1,
             rise = 0,
+            level = 1,
         },
         {
             x = 0.25,
@@ -520,8 +520,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 2,
             rise = 0.4,
+            level = 2,
         },
         {
             x = 1.01,
@@ -531,8 +531,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = 1.01,
@@ -543,8 +543,8 @@ local profile = {
             default = "box",
             empty = true,
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = 1.01,
@@ -554,8 +554,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = 1.01,
@@ -566,8 +566,8 @@ local profile = {
             default = "box",
             empty = true,
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = 1.01,
@@ -578,8 +578,8 @@ local profile = {
             default = "box",
             empty = true,
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = 1.01,
@@ -589,8 +589,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = 1.01,
@@ -601,8 +601,8 @@ local profile = {
             default = "box",
             empty = true,
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = 1.01,
@@ -612,8 +612,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = 1.01,
@@ -624,8 +624,8 @@ local profile = {
             default = "box",
             empty = true,
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = 1.01,
@@ -636,8 +636,8 @@ local profile = {
             default = "box",
             empty = true,
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = -1.01,
@@ -648,8 +648,8 @@ local profile = {
             default = "box",
             empty = true,
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = -1.01,
@@ -659,8 +659,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = -1.01,
@@ -671,8 +671,8 @@ local profile = {
             default = "box",
             empty = true,
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = -1.01,
@@ -682,8 +682,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = -1.01,
@@ -694,8 +694,8 @@ local profile = {
             default = "box",
             empty = true,
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = -1.01,
@@ -706,8 +706,8 @@ local profile = {
             default = "box",
             empty = true,
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = -1.01,
@@ -717,8 +717,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = -1.01,
@@ -729,8 +729,8 @@ local profile = {
             default = "box",
             empty = true,
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = -1.01,
@@ -741,8 +741,8 @@ local profile = {
             default = "box",
             empty = true,
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = -0.25,
@@ -752,8 +752,8 @@ local profile = {
             depth = 0.5,
             default = "box",
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         {
             x = 0.25,
@@ -764,8 +764,8 @@ local profile = {
             default = "box",
             empty = true,
             cargo = true,
-            level = 3,
             rise = 0.8,
+            level = 3,
         },
         { x = 1.01, z = 0.34, wall = "left", length = 1, depth = 0.55, empty = true },
         { x = 1.01, z = -0.16, wall = "left", length = 1, depth = 0.55, empty = true },
@@ -785,6 +785,24 @@ local profile = {
         { x = -1.01, z = -2.66, wall = "right", length = 1, depth = 0.55, empty = true },
         { x = -1.01, z = -3.16, wall = "right", length = 1, depth = 0.55, empty = true },
         { x = 0, z = 1.07, wall = "front", length = 1, depth = 0.55, empty = true },
+        {
+            x = 1.01,
+            z = -1.16,
+            wall = "left",
+            length = 1.5,
+            depth = 0.55,
+            seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
+            empty = true,
+        },
+        {
+            x = -1.01,
+            z = -1.16,
+            wall = "right",
+            length = 1.5,
+            depth = 0.55,
+            seats = { "MELensFurnitureRight1", "MELensFurnitureRight2" },
+            empty = true,
+        },
     },
     wheelWells = {  },
     panel = { x = -1, y = 0.315, z = -4.19, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
@@ -794,7 +812,8 @@ local profile = {
     ki5Storage = { "F700TrunkBX" },
     loot = "cargo",
     cutFront = 1.1,
-    cutFrontTop = 0.55,
+    cutFrontTop = 0.95,
+    extraSeats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2", "MELensFurnitureRight1", "MELensFurnitureRight2" },
 }
 
 MELens.Profiles["Base.87fordF700box"] = profile

@@ -2,6 +2,11 @@
     "name":  "Base.87fordB700school",
     "fbx":  "C:/SteamLibrary/steamapps/workshop/content/108600/3110911330/mods/87fordB700/common/media/models_X/vehicles/Vehicles_87fordB700_Body.fbx",
     "body":  "b700_body",
+    "exportSections": true,
+    "sectionHeights": [0.492, 0.498, 0.50],
+    "sectionHeightsFrom": [
+        {"x": [-1.15, 1.15], "z": [1.90, 2.25]}
+    ],
     "interior":  [
                      "b700_interior_bus",
                      "b700_interior"

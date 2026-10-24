@@ -32,7 +32,7 @@ local retryAt = 0
 local tumbles = {}           -- vehicle id -> how many times things fell by the last look
 
 local function java()
-    return MELensRV
+    return M.java()
 end
 
 local function num(value)
@@ -61,7 +61,7 @@ end
 -- Hands one item to the Java part. True when it is in (or cannot be shown), false while its model still loads.
 local function addOne(rv, s)
     local e = s.e
-    local proto = V.proto(e.t)
+    local proto = s.item or V.proto(e.t)
     if not proto or not rv.canShow(proto) then
         return true
     end
@@ -69,6 +69,86 @@ local function addOne(rv, s)
         return rv.addLooseLook(proto, num(e.x), num(s.y), num(e.z), num(e.r), tostring(e.tx), num(e.tr or 1), num(e.tg or 1), num(e.tb or 1))
     end
     return rv.addLoose(proto, num(e.x), num(s.y), num(e.z), num(e.r))
+end
+
+-- The container remains the authority. These display positions never move items
+-- into Floor, create loot, or persist a second inventory. Pack the real world
+-- models onto empty shelf boards, rotating when needed, without intersecting the
+-- cabinet, neighboring items or the next board. Floor placement uses the same
+-- measured surfaces and native item-size contract.
+V.OPEN_STORAGE = { shelf = true, medlocker = true, equipmentrack = true, workbench = true }
+function V.shelfItems(vehicle, profile, budget)
+    local groups, pending = {}, false
+    local size = M.LooseUI and M.LooseUI.size
+    if not size then return {}, true end
+    for index, spot in ipairs(profile.spots or {}) do
+        local part = P.spotPart(vehicle, index)
+        local piece = P.pieceAt(part)
+        local container = piece and V.OPEN_STORAGE[piece] and part:getItemContainer()
+        if container then
+            local boards = {}
+            for _, def in ipairs(L.SURFACES[piece]) do
+                boards[#boards + 1] = { def = def, used = {} }
+            end
+            local items, group = {}, {}
+            for i = 0, container:getItems():size() - 1 do items[#items + 1] = container:getItems():get(i) end
+            table.sort(items, function(a,b) return a:getID() < b:getID() end)
+            for _, item in ipairs(items) do
+                local w,h,d = size(item)
+                if not w then pending = true
+                elseif java().canShow(item) then
+                    local placed = false
+                    for _, board in ipairs(boards) do
+                        local b = board.def
+                        if not placed and (not b.head or h + .008 <= b.head) then
+                            for _, turn in ipairs({0,90}) do
+                                local along,deep = w,d
+                                if turn == 90 then along,deep = d,w end
+                                if not placed and along <= b.a1-b.a0 and deep <= b.d1-b.d0 then
+                                    local a = b.a0 + along/2
+                                    while a + along/2 <= b.a1 + .0001 and not placed do
+                                        local dd = b.d0 + deep/2
+                                        while dd + deep/2 <= b.d1 + .0001 and not placed do
+                                            local free = true
+                                            for _, q in ipairs(board.used) do
+                                                if math.abs(a-q.a) < (along+q.w)/2+.008
+                                                    and math.abs(dd-q.d) < (deep+q.depth)/2+.008 then free=false;break end
+                                            end
+                                            if free then
+                                                local x,z = P.spotPoint(spot,a,dd)
+                                                local look = L.lookOf(item) or {}
+                                                local y = profile.floorY+(spot.rise or 0)+b.h
+                                                local entry = { id=item:getID(), t=item:getFullType(), x=x,y=y,z=z,
+                                                    r=(P.WALLS[spot.wall].rotate+turn)%360, s=index,
+                                                    tx=look.tx,tr=look.tr,tg=look.tg,tb=look.tb }
+                                                group[#group+1] = { e=entry,y=y,item=item,board=b.name }
+                                                board.used[#board.used+1] = {a=a,d=dd,w=along,depth=deep}
+                                                placed=true
+                                            end
+                                            dd=dd+.025
+                                        end
+                                        a=a+.025
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            groups[#groups+1] = group
+        end
+    end
+    -- Share the existing draw budget across racks, so a full first rack cannot
+    -- make every later rack appear empty. Loose items keep their existing priority.
+    local out, n, more = {}, 1, true
+    while #out < budget and more do
+        more=false
+        for _, group in ipairs(groups) do
+            if group[n] and #out < budget then out[#out+1]=group[n];more=true end
+        end
+        n=n+1
+    end
+    return out,pending
 end
 
 local function publish(vehicle, profile)
@@ -88,6 +168,12 @@ local function publish(vehicle, profile)
             shown[#shown + 1] = { e = e, y = y }
         end
     end
+    local shelves, shelfPending = V.shelfItems(vehicle,profile,math.max(0,limit-#shown))
+    for _, s in ipairs(shelves) do
+        local e=s.e
+        parts[#parts+1]=string.format("s%.0f:%s:%.3f:%.3f:%.3f:%.1f",num(e.id),e.t,e.x,e.y,e.z,e.r)
+        shown[#shown+1]=s
+    end
     local signature = table.concat(parts, ";")
     -- The loot window lists a bag that lies here as a tab of its own; it only learns of one when told.
     -- (Placing, grabbing, dragging into the Floor tab, another player, a server's update: all end here.)
@@ -100,7 +186,7 @@ local function publish(vehicle, profile)
         listed = present
         ISInventoryPage.renderDirty = true
     end
-    if signature == published and publishedVehicle == vehicle and not retry then
+    if signature == published and publishedVehicle == vehicle and not retry and not shelfPending then
         return
     end
     if publishedVehicle ~= vehicle then
@@ -108,7 +194,7 @@ local function publish(vehicle, profile)
     end
     rv.setLooseBasis(profile.mesh.scale, profile.mesh.lift)
     rv.beginLoose(vehicle)
-    local pending = false
+    local pending = shelfPending
     for _, s in ipairs(shown) do
         local ok, drawn = pcall(addOne, rv, s)
         if not ok then

@@ -30,12 +30,12 @@
     "seed": 11,
     "style": {
         "flat": false,
-        "floorArt": "floor_planks",
-        "floorTile": 1.0,
+        "floorArt": "diamondplate",
+        "floorTile": 0.55,
         "floorTint": [
-            0.29,
-            0.23,
-            0.18
+            0.34,
+            0.36,
+            0.38
         ],
         "wallArt": "steel",
         "wallTile": 1.0,
@@ -67,6 +67,10 @@
             -4.26,
             -4.12
         ]
+    },
+    "cabBulkhead": {
+        "top": 1.85,
+        "z": 1.1
     },
     "sharpCorners": true
 }
