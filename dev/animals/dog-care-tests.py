@@ -67,8 +67,24 @@ def main():
 
     def idle():wait(lambda:h.lua('return not MELens.pathing(getPlayer()) and #ISTimedActionQueue.getTimedActionQueue(getPlayer()).queue==0'))
 
+    def resume_overlay():
+        point=h.lua('''local m=MainScreen and MainScreen.instance;local r=m and m.returnOption
+if r and r:isReallyVisible() then return {x=r:getAbsoluteX()+r:getWidth()/2,y=r:getAbsoluteY()+r:getHeight()/2} end''')
+        if point:
+            tap.native_click(h,point['x'],point['y'],'resume after Escape menu');time.sleep(.65)
+
+    def close_menus():
+        resume_overlay()
+        for _ in range(4):
+            if not h._sequence(h.lua(menus)):return
+            h.lua('MEMCNativeLab.holdKey(1,180);return true')
+            h.REPORT['inputs'].append(dict(action='dismiss context menu',api='MEMCNativeLab.holdKey',key=1))
+            time.sleep(.65)
+            resume_overlay()
+        h.check(not h._sequence(h.lua(menus)),'native Escape did not dismiss context menus')
+
     def dog_menu(label):
-        idle();point=h.lua('return MELensDogCare.point()')
+        idle();close_menus();point=h.lua('return MELensDogCare.point()')
         tap.native_click(h,point['x'],point['y'],'dog:world-menu',right=True)
         for name in (point['name'],label):
             rows=wait(lambda:h._sequence(h.lua(menus)),lambda rows:any(r['name']==name for r in rows),'menu '+name,timeout=8)
@@ -136,9 +152,12 @@ return {animalId=a:getAnimalID(),uid=d.uid,token=d.companionToken,owner=d.ownerK
 
     def command_cases():
         h.lua('local w=ISCDStatusWindow.instanceFor(getPlayer());if w then w:close() end;return true')
+        close_menus()
         if not snap()['inside']:enter_native()
         wait(snap,lambda s:len(s['animals'])==1,'recalled dog follows owner back inside',timeout=60)
         uid=snap()['animals'][0]['uid']
+        h.check(h.lua('return CompanionDogs.isOwnedBy(MELens.Animals.list(MELensTest.vehicle)[1],getPlayer())'),
+                'command fixture must start with the players own companion')
         # A foreign ownership fixture must disable pickup and dog commands. A
         # real click on the disabled row cannot take the dog or move the player.
         h.lua('''local a=MELens.Animals.list(MELensTest.vehicle)[1];local d=CompanionDogs.data(a)
@@ -154,7 +173,7 @@ MELensDogCare.owner={key=d.ownerKey,name=d.ownerName};d.ownerKey="rvi_other_owne
         h.check(before['x']==after['x'] and before['z']==after['z'] and not after['path'],'disabled dog menu click moves the underlying scene')
         h.REPORT['foreignOwnerPickupRejected']=True;h.capture('native-foreign-dog-pickup-disabled')
         h.lua('''local d=CompanionDogs.data(MELens.Animals.list(MELensTest.vehicle)[1]);local o=MELensDogCare.owner
-d.ownerKey=o.key;d.ownerName=o.name;CompanionDogs.regInvalidate();MEMCNativeLab.holdKey(1,180);return true''');time.sleep(.6)
+d.ownerKey=o.key;d.ownerName=o.name;CompanionDogs.regInvalidate();return true''');close_menus()
         # Native Follow/Stay commands, followed by real exit, test the complete
         # interaction instead of fixture state changes used by the older MP run.
         dog_state('stay');dog_state('follow')
@@ -247,6 +266,7 @@ local row=k and k.rowPanels and k.rowPanels[1];if row and row:isVisible() then r
     try:
         h.REPORT.update(scope=__doc__,fixtures=['bonded dog at real entrance','two separate stocked bowls','world-clock/time-speed controls','400-tile streaming relocation'])
         h.lua('UIManager.getSpeedControls():ButtonClicked("Play");return true')
+        resume_overlay()
         if args.verify_source:
             expected=json.loads((ROOT/args.verify_source).read_text('utf-8'))
             h.lua('MELensTest={vehicle=assert(getPlayer():getVehicle())};return true');h.lua(FIXTURE)
@@ -297,6 +317,11 @@ CompanionDogs.setNeed(a,"hunger",.6);CompanionDogs.setNeed(a,"thirst",.6);r.u=ni
         h.REPORT['unattendedLoadedFeeding']=dict(before=before,after=s)
         return complete_care(snap())
     except Exception:
+        # Restore setup-only ownership even if a native input assertion fails.
+        try:h.lua('''local T=MELensDogCare;local v=MELensTest and MELensTest.vehicle
+local a=v and MELens.Animals.list(v)[1];if a and T and T.owner then local d=CompanionDogs.data(a)
+d.ownerKey=T.owner.key;d.ownerName=T.owner.name;CompanionDogs.regInvalidate();T.owner=nil end;return true''')
+        except Exception:pass
         error=traceback.format_exc();print(error,flush=True);h.write_report('failed',error);return 1
 
 
