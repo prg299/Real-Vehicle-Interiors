@@ -51,10 +51,15 @@ function A.alive(animal)
     return animal ~= nil and not animal:isDead() and animal:getHealth() > 0
 end
 
-function A.canPickUp(animal)
+function A.canPickUp(animal, player)
     local defs = AnimalDefinitions and AnimalDefinitions.animals
     local def = animal and defs and defs[animal:getAnimalType()]
-    return A.alive(animal) and (not def or def.canBePicked ~= false)
+    local CD = CompanionDogs
+    if CD and CD.isDog and CD.isDog(animal) and CD.isCompanion and CD.isCompanion(animal)
+            and CD.isOwnedBy and (not player or not CD.isOwnedBy(animal, player)) then return false end
+    if not A.alive(animal) then return false end
+    if player and type(animal.canBePicked) == "function" then return animal:canBePicked(player) end
+    return not def or def.canBePicked ~= false
 end
 
 -- The vehicle and profile a player is inside (standing, or on a bed or seat inside), not in its cab or at its wheel.
@@ -92,6 +97,10 @@ local function definition(animal)
 end
 
 function A.trigger(animal)
+    local CD = CompanionDogs
+    if CD and CD.isDog and CD.isDog(animal) and CD.troughFeedTrigger then
+        return CD.troughFeedTrigger(CD.getOwnerPlayer and CD.getOwnerPlayer(animal) or nil)
+    end
     local def = definition(animal)
     return def and tonumber(def.thirstHungerTrigger) or 0.1
 end
@@ -190,6 +199,47 @@ local function companionDogs()
     return CD and CD.isDog and CD or nil
 end
 
+-- Trailer passengers are absent from Companion Dogs' world registry, including
+-- its ordinary upkeep/in-play sweep. Keep continuity only for loaded interiors;
+-- use its own care rules rather than a second hunger/health implementation.
+local dogCare = setmetatable({}, { __mode = "k" })
+
+local function wrapDogCare(CD)
+    if not CD or type(CD.wasInPlay) ~= "function" or CD.meLensCareWrapped then return end
+    local previous = CD.wasInPlay
+    CD.wasInPlay = function(animal)
+        local vehicle = animal and animal:getVehicle()
+        if vehicle and M.profileFor(vehicle) then
+            local cell = getCell()
+            local vehicles = cell and cell:getVehicles()
+            local state = dogCare[animal]
+            return vehicles ~= nil and vehicles:contains(vehicle) and state ~= nil
+                and state.vehicle == vehicle and state.continuing == true
+        end
+        return previous(animal)
+    end
+    CD.meLensCareWrapped = true
+end
+
+local function careDog(vehicle, animal)
+    local CD = companionDogs()
+    if not CD or not CD.isCompanion or not CD.isDog(animal) or not CD.isCompanion(animal)
+            or type(CD.updateUpkeep) ~= "function" or type(CD.data) ~= "function" then return end
+    if CD.upkeepEnabled and not CD.upkeepEnabled() then return end
+    wrapDogCare(CD)
+    local state = dogCare[animal]
+    if not state or state.vehicle ~= vehicle then
+        state = { vehicle = vehicle, continuing = false }
+        dogCare[animal] = state
+    end
+    local owner = CD.getOwnerPlayer and CD.getOwnerPlayer(animal) or nil
+    local data = CD.data(animal)
+    -- The first loaded pass refreshes CD's clock without charging unloaded time.
+    if not state.continuing then data.lastUpkeepMin = CD.worldMinutes() end
+    CD.updateUpkeep(animal, owner, data)
+    state.continuing = true
+end
+
 function A.isDogsBowl(item)
     local CD = companionDogs()
     if not item then return false end
@@ -252,6 +302,12 @@ function A.sources(vehicle, profile, animal, want, fromX, fromZ)
                 local found = false
                 if A.isDogsBowl(item) then
                     -- Companion Dogs' bowls feed its dogs, as outside
+                    -- The player's normal sink/bottle filling stores real
+                    -- fluid. CD normally credits that during world placement;
+                    -- our floor placement needs the same conversion here.
+                    if dog and not isClient() and CD.absorbRealWater and CD.absorbRealWater(item) then
+                        if CD.refreshDishModel then CD.refreshDishModel(item) end
+                    end
                     found = dog and stock(item, want) > 0
                     if found then out[#out + 1] = { item = item, entry = e, kind = want, bowl = true } end
                 elseif want == "water" then
@@ -462,8 +518,19 @@ function A.updateVehicle(vehicle, profile)
             r = A.place(vehicle, animal, x, z, 0, "idle")
             changed = true
         end
-        if A.alive(animal) and look(vehicle, profile, animal, r, hours) then
-            changed = true
+        if A.alive(animal) then
+            careDog(vehicle, animal)
+            if A.alive(animal) and look(vehicle, profile, animal, r, hours) then changed = true end
+            local CD = companionDogs()
+            if CD and CD.isDog(animal) and CD.isCompanion and CD.isCompanion(animal) and CD.kennelSnapshot then
+                local owner = CD.getOwnerPlayer and CD.getOwnerPlayer(animal)
+                local data = CD.data(animal)
+                local minutes = CD.worldMinutes()
+                if owner and (not data.lastKennelMin or minutes-data.lastKennelMin >= (CD.KENNEL_MIRROR_MIN or 30)) then
+                    data.lastKennelMin = minutes
+                    CD.kennelSnapshot(owner, animal)
+                end
+            end
         end
     end
     local gone = {}
@@ -498,8 +565,16 @@ end
 -- An owner standing inside: their following dogs that reached the way in walk in.
 local function dogsIn(CD, player, vehicle, profile)
     if not CD.regCompanionsOf or not vehicle:isStopped() then return false end
-    local ok, dogs = pcall(CD.regCompanionsOf, player)
-    if not ok or type(dogs) ~= "table" then return false end
+    local ok, keyed, named = pcall(CD.regCompanionsOf, player)
+    if not ok then return false end
+    -- CD retains a username registry for companions from older saves. The same
+    -- dog can occur in both registries; never board it twice.
+    local dogs, seen = {}, {}
+    for _, list in ipairs({ keyed or {}, named or {} }) do
+        for _, dog in pairs(list) do
+            if not seen[dog] then dogs[#dogs + 1], seen[dog] = dog, true end
+        end
+    end
     local wx, wy = wayIn(vehicle, profile)
     local changed = false
     for _, dog in pairs(dogs) do
@@ -568,15 +643,15 @@ local function companionDogsPass(vehicles)
         if not ok then
             print("[ME_LENS] animals: taking a dog out failed: " .. tostring(changed))
         elseif changed then
-            -- Also publish when the last dog leaves: withAnimals() below no
-            -- longer includes an empty vehicle, so it cannot prune this record.
+            -- Publish immediately when the last following dog leaves, too.
             vehicle:transmitModData()
         end
     end
 end
 
--- The vehicles ME: LENS knows in the loaded world that have animals inside.
-local function withAnimals()
+-- Include stale records as well: another mod's Bring/extract command can remove
+-- the last animal without going through our pickup or following-dog exit action.
+local function withAnimalState()
     local out = {}
     local cell = getCell()
     local set = cell and cell:getVehicles()
@@ -584,8 +659,13 @@ local function withAnimals()
     local it = set:iterator()
     while it:hasNext() do
         local vehicle = it:next()
-        if vehicle and M.profileFor(vehicle) and vehicle:getAnimals() and vehicle:getAnimals():size() > 0 then
-            out[#out + 1] = vehicle
+        if vehicle and M.profileFor(vehicle) then
+            local records = A.records(vehicle, false)
+            local saved = false
+            for _ in pairs(records or {}) do saved = true; break end
+            if (vehicle:getAnimals() and vehicle:getAnimals():size() > 0) or saved then
+                out[#out + 1] = vehicle
+            end
         end
     end
     return out
@@ -593,10 +673,15 @@ end
 
 function A.onMinute()
     if isClient() then return end
-    local vehicles = withAnimals()
+    local vehicles = withAnimalState()
+    local loaded = {}
+    for _, vehicle in ipairs(vehicles) do loaded[vehicle] = true end
+    for animal, state in pairs(dogCare) do
+        if not loaded[state.vehicle] or animal:getVehicle() ~= state.vehicle then dogCare[animal] = nil end
+    end
     local ok, err = pcall(companionDogsPass, vehicles)
     if not ok then print("[ME_LENS] animals: Companion Dogs pass failed: " .. tostring(err)) end
-    for _, vehicle in ipairs(withAnimals()) do
+    for _, vehicle in ipairs(withAnimalState()) do
         local okV, changed = pcall(A.updateVehicle, vehicle, M.profileFor(vehicle))
         if not okV then
             print("[ME_LENS] animals: " .. tostring(changed))

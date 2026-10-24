@@ -28,6 +28,7 @@ do
         function a:isDead() return false end
         function a:getHealth() return 100 end
         function a:getModData() return self.data end
+        function a:getVehicle() return self.vehicle end
         function a:getStats() return {get=function(_,k) return a.values[k] end,set=function(_,k,v) a.values[k]=v end} end
         function a:getData() return {eatItem=function(_,item) a.values.hunger=0;item.eaten=true end} end
         return a
@@ -128,6 +129,16 @@ do
     AnimalDefinitions.animals.hen.canBePicked=true;placed.x=3
     check(not pickup:complete(),'stale distant pickup mutates the vehicle animal list')
     check(#v.animals==1 and inv.items[99]==nil,'rejected pickup changed committed animal ownership')
+    placed.x=0
+    CompanionDogs={isDog=function() return true end,isCompanion=function() return true end,isOwnedBy=function() return false end}
+    check(not pickup:isValid() and not pickup:complete() and #v.animals==1,
+        'another player can carry a Companion Dogs companion out of the interior')
+    CompanionDogs.isOwnedBy=function(_,player) return player==p end
+    check(pickup:isValid(),'companion owner cannot pick up their own interior dog')
+    function carried:canBePicked() return false end
+    check(not pickup:isValid(),'interior pickup bypasses the games normal animal carry restriction')
+    carried.canBePicked=nil
+    CompanionDogs=nil
 
     -- The last following dog leaving must clear its saved occupancy immediately:
     -- the normal minute pass no longer visits a vehicle with an empty list.
@@ -145,6 +156,51 @@ do
     A.onMinute()
     check(fresh.added and #v.animals==0,'following dog was not returned to the world')
     check(A.record(v,carried)==nil and v.transmits>transmits,'last dog leaves a ghost occupancy record on peers')
+
+    -- Delegate loaded care to Companion Dogs, and preserve its rule that the
+    -- first pass after streaming must not charge the time spent unloaded.
+    local dog=animal(4);dog.vehicle=v;v.animals=list({dog});A.place(v,dog,0,0,0)
+    local loaded=true
+    getCell=function() return {getVehicles=function() return {
+        contains=function(_,candidate) return loaded and candidate==v end,
+        iterator=function() local pending=loaded;return {hasNext=function() return pending end,next=function() pending=false;return v end} end
+    } end} end
+    CompanionDogs={isDog=function() return true end,isCompanion=function() return true end,
+        STATE_FOLLOW='follow',getState=function() return 'stay' end,getOwnerPlayer=function() return owner end,
+        data=function(a) return a.data end,worldMinutes=function() return hour*60 end,
+        wasInPlay=function() return false end,upkeepEnabled=function() return true end}
+    CompanionDogs.updateUpkeep=function(a,_,d)
+        local minutes=hour*60;local elapsed=minutes-(d.lastUpkeepMin or minutes)
+        d.lastUpkeepMin=minutes
+        if CompanionDogs.wasInPlay(a) then a.values.hunger=a.values.hunger+elapsed*.01 end
+    end
+    A.onMinute();check(dog.values.hunger==0,'initial trailer care charges an unknown prior interval')
+    hour=hour+1/60;A.onMinute()
+    check(math.abs(dog.values.hunger-.01)<.00001,'loaded trailer dog never receives Companion Dogs upkeep')
+    loaded=false;A.onMinute();hour=hour+12;loaded=true;A.onMinute()
+    check(math.abs(dog.values.hunger-.01)<.00001,'trailer care charges unloaded hours on return')
+    CompanionDogs.troughFeedTrigger=function(p) return p==owner and .4 or .9 end
+    check(A.trigger(dog)==.4,'interior dog ignores its owners Companion Dogs feeding threshold')
+    local bowl={data={},refreshes=0}
+    function bowl:getFullType() return 'Base.CompanionDogsBowl' end
+    function bowl:getModData() return self.data end
+    CompanionDogs.absorbRealWater=function(b)
+        if b.data.cdWater then return false end
+        b.data.cdWater=80;return true
+    end
+    CompanionDogs.refreshDishModel=function(b) b.refreshes=b.refreshes+1 end
+    items[12]=bowl;entries={{id=12,x=.3,z=0,s=0}}
+    isClient=function() return true end
+    check(#A.sources(v,profile,dog,'water',0,0)==0 and bowl.data.cdWater==nil,
+        'client source preview mutates real-water bowl stock')
+    isClient=function() return false end
+    check(#A.sources(v,profile,dog,'water',0,0)==1 and bowl.data.cdWater==80 and bowl.refreshes==1,
+        'authority does not convert real filled water through Companion Dogs')
+    A.sources(v,profile,dog,'water',0,0)
+    check(bowl.refreshes==1,'repeated source scans credit the same filled bowl again')
+    v.animals=list();A.onMinute()
+    local ghost=false;for _ in pairs(A.records(v,false)) do ghost=true end
+    check(not ghost,'external Bring/extraction leaves a ghost occupancy record')
 
     M.Profiles['Base.AnimalsRegression']=nil
     L.floorPoints,L.floorContainer,L.list,L.prune,P.characterAt,L.fitsSurface=oldPoints,oldFloor,oldList,oldPrune,oldCharacter,oldFits

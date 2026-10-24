@@ -116,7 +116,7 @@ end
 
 function MELensPickUpAnimal:isValid()
     local animal = self:animal()
-    return A().inside(self.character) == self.vehicle and animal ~= nil and A().canPickUp(animal)
+    return A().inside(self.character) == self.vehicle and animal ~= nil and A().canPickUp(animal, self.character)
 end
 
 function MELensPickUpAnimal:start()

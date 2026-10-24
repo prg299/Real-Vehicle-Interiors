@@ -18,6 +18,54 @@ local P = M.Parts
 M.AnimalsUI = M.AnimalsUI or {}
 local UI = M.AnimalsUI
 
+-- Companion Dogs normally closes its status window for a trailer animal because
+-- it is absent from the world. An animal sharing this player's RVI interior is
+-- still present and inspectable; retain every other native close condition.
+function UI.wrapDogWindow()
+    local window = ISCDStatusWindow
+    if not window or UI.dogWindowWrapped then return end
+    local previous = window.checkShouldClose
+    if type(previous) ~= "function" then return end
+    window.checkShouldClose = function(self)
+        local player = self.owner or getSpecificPlayer(self.playerNum or 0)
+        local vehicle = A.inside(player)
+        if vehicle and self.animal and not self.stashed and self.animal:getVehicle() == vehicle
+                and A.alive(self.animal) and A.record(vehicle, self.animal) then return false end
+        return previous(self)
+    end
+    UI.dogWindowWrapped = true
+end
+UI.wrapDogWindow()
+Events.OnGameStart.Add(UI.wrapDogWindow)
+
+-- Companion Dogs' inventory option normally uses a world-square placement
+-- cursor. Inside, route that existing option to the vehicle's placement system.
+function UI.bowlInventoryMenu(playerNum, context, items)
+    local player = getSpecificPlayer(playerNum)
+    if not player or not A.inside(player) then return end
+    local actual = ISInventoryPane.getActualItems(items)
+    local bowl
+    for _, item in ipairs(actual or {}) do if A.isDogsBowl(item) then bowl = item;break end end
+    if not bowl then return end
+    for _, option in ipairs(context.options or {}) do
+        if option.name == getText("IGUI_PD_PlaceDish") then
+            option.target, option.param1 = player, bowl
+            option.onSelect = function(actor, item) M.LooseUI.start(actor, { item }) end
+            if #actual == 1 then context:removeOptionByName(getText("ContextMenu_MELens_PlaceItem")) end
+            break
+        end
+    end
+end
+if not UI.bowlMenuHooked then
+    UI.bowlMenuHooked = true
+    -- All mods have registered their inventory entries by GameStart. Run after
+    -- CD's entry builder regardless of the player's mod load order.
+    Events.OnGameStart.Add(function()
+        Events.OnFillInventoryObjectContextMenu.Remove(UI.bowlInventoryMenu)
+        Events.OnFillInventoryObjectContextMenu.Add(UI.bowlInventoryMenu)
+    end)
+end
+
 UI.SPEED = 0.7        -- tiles a second an animal walks inside
 UI.TURN = 4.0         -- radians a second it turns
 UI.PICK = 0.3         -- tiles round an animal's middle the mouse finds it
@@ -271,11 +319,29 @@ function UI.menu(player, vehicle, profile, hit, context)
             end)
         end)
     end)
-    if not A.canPickUp(animal) then
+    if not A.canPickUp(animal, player) then
         pick.notAvailable = true
     end
     if AnimalContextMenu and AnimalContextMenu.onAnimalInfo then
         sub:addOption(getText("ContextMenu_AnimalInfo"), animal, AnimalContextMenu.onAnimalInfo, player)
+    end
+    -- Trailer animals are absent from the world's square-based dog menu. Use
+    -- Companion Dogs' own requests and status window, including its ownership,
+    -- obedience and health checks, rather than changing the dog's state here.
+    local CD = CompanionDogs
+    if isDog(animal) and CD.isCompanion and CD.isCompanion(animal)
+            and CD.isOwnedBy and CD.isOwnedBy(animal, player) then
+        if CD.request and CD.getState then
+            local following = CD.getState(animal) == CD.STATE_FOLLOW
+            sub:addOption(getText(following and "IGUI_PD_Stay" or "IGUI_PD_Follow"), player, function()
+                CD.request("setstate", animal, { state = following and CD.STATE_STAY or CD.STATE_FOLLOW }, player)
+            end)
+        end
+        if ISCDStatusWindow and ISCDStatusWindow.OpenFor then
+            sub:addOption(getText("IGUI_PD_Inspect"), player, function()
+                ISCDStatusWindow.OpenFor(animal, nil, player)
+            end)
+        end
     end
 end
 
