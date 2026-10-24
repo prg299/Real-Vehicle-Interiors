@@ -32,6 +32,8 @@ def main():
     h.SCREENS=Path(next(x.split('=',1)[1] for x in session['command'] if x.startswith('-cachedir=')))/'Screenshots'
     scenes=[
         ('vanilla-cargo-van','Base.Van','N',.5),
+        ('vanilla-ambulance','Base.VanAmbulance','N',.5),
+        ('bus','Base.87fordB700school','N',.75),
         ('econoline','Base.86fordE150long','N',.5),
         ('chevy-step-van','Base.85chevyStepVanCitrusWave','N',.75),
         ('armored-truck','Base.87fordF700bank','N',.75),

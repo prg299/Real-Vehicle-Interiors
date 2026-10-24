@@ -1,0 +1,455 @@
+{
+  "version": "2.0.13",
+  "workshopId": "3811728541",
+  "supportCounts": {
+    "vanillaVariants": 96,
+    "ki5Variants": 107,
+    "totalVariants": 203
+  },
+  "artwork": {
+    "master": "tools-src/art/workshop-gallery-20261024/header-master.png",
+    "masterSha256": "664cf8e2fe6eb4f3dd89a4177a5eff99a8e72b4369db7450b9c2922a3b980c15",
+    "tool": "built-in ImageGen",
+    "usage": "Title-band background only"
+  },
+  "gameplay": "Native production screenshots/footage only; no generated or retouched gameplay. Crops, resizing and titles only.",
+  "images": [
+    {
+      "file": "01-vanilla-vehicles.jpg",
+      "title": "96 VANILLA VARIANTS SUPPORTED",
+      "info": "Cargo vans, ambulances, radio vans and step vans",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "format": "JPEG",
+      "bytesBeforeCompression": 1487180,
+      "sourceFiles": [
+        {
+          "path": "build/rv/gallery-20261024-vanilla/vehicles/vanilla-cargo-van-interior.png",
+          "sha256": "1d0ca25d45c2e76d6c747f47745a38c3d3a865dbf47acdb649b426e3bcf3c227"
+        },
+        {
+          "path": "build/rv/gallery-20261024-vanilla/vehicles/vanilla-ambulance-interior.png",
+          "sha256": "59aebdd05a6ccfcbf92f64f46410ede41ad12463cfe7089330d585e2ed3f3b74"
+        },
+        {
+          "path": "build/rv/gallery-20261024-vanilla/vehicles/delivery-van-interior.png",
+          "sha256": "0ab71d5d19fb6a7e29dbfb9bd8cdabd7b336165b00cbb5785fcc725c42baff87"
+        },
+        {
+          "path": "build/rv/gallery-20261024-vanilla/vehicles/radio-van-interior.png",
+          "sha256": "ffe00bcd2749bd1c0a071b3aa9804fb62a66fa9410bd9e01e7b09b2d03b8dc31"
+        }
+      ],
+      "sha256BeforeCompression": "51b52c769bd51953ca6901ab9ef047ca2d721774fc70680e53533757032a7962",
+      "panels": [
+        {
+          "file": "vanilla-cargo-van-interior.png",
+          "crop": [
+            425,
+            90,
+            1295,
+            780
+          ],
+          "label": "Cargo van"
+        },
+        {
+          "file": "vanilla-ambulance-interior.png",
+          "crop": [
+            455,
+            65,
+            1325,
+            755
+          ],
+          "label": "Ambulance"
+        },
+        {
+          "file": "delivery-van-interior.png",
+          "crop": [
+            295,
+            65,
+            1165,
+            755
+          ],
+          "label": "Delivery step van"
+        },
+        {
+          "file": "radio-van-interior.png",
+          "crop": [
+            505,
+            45,
+            1375,
+            735
+          ],
+          "label": "Radio van"
+        }
+      ],
+      "bytes": 444736,
+      "sha256": "8db518d17a2aa3a08cb73c9857fc0c097cb4a85a5dcde159366d41ed4adc2973",
+      "compression": "TinyPNG website, JPEG output, 2026-10-24",
+      "sceneCount": 4
+    },
+    {
+      "file": "02-ki5-vehicles.jpg",
+      "title": "107 KI5 VARIANTS SUPPORTED",
+      "info": "Campers, buses, trucks and vans \u2022 Vehicle packs required",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "format": "JPEG",
+      "bytesBeforeCompression": 1592789,
+      "sourceFiles": [
+        {
+          "path": "build/rv/gallery-20261024-vanilla/vehicles/econoline-interior.png",
+          "sha256": "2689e35d433bcacd31ade2a42a5e7e59a9c4861259229c08f32b7173d888a241"
+        },
+        {
+          "path": "build/rv/gallery-20261024-vanilla/vehicles/chevy-step-van-interior.png",
+          "sha256": "5a336253756a1bcb50759c36e3e3addcc667bd073cc3a1f9bc41009fefbf2b96"
+        },
+        {
+          "path": "build/rv/gallery-20261024-vanilla/vehicles/ambulance-interior.png",
+          "sha256": "1da17b5c5c55d767f578140156262fc79c5d9d74285ddfe7c85cbe7280b8a6ac"
+        },
+        {
+          "path": "build/rv/gallery-20261024-vanilla/vehicles/armored-truck-interior.png",
+          "sha256": "08db958a4a7a9bb5daf23690dad32c2638305a61c610180c6685192c2d3d0d4f"
+        }
+      ],
+      "sha256BeforeCompression": "992a78fefc6b201602b80c8daa092f485c8eaf635c3432b9742367f691c13086",
+      "panels": [
+        {
+          "file": "econoline-interior.png",
+          "crop": [
+            435,
+            85,
+            1375,
+            830
+          ],
+          "label": "Ford Econoline E150"
+        },
+        {
+          "file": "chevy-step-van-interior.png",
+          "crop": [
+            570,
+            135,
+            1165,
+            607
+          ],
+          "label": "Chevrolet Step-Van"
+        },
+        {
+          "file": "ambulance-interior.png",
+          "crop": [
+            515,
+            215,
+            1205,
+            762
+          ],
+          "label": "Ford F350 Ambulance"
+        },
+        {
+          "file": "armored-truck-interior.png",
+          "crop": [
+            550,
+            145,
+            1240,
+            692
+          ],
+          "label": "Ford F700 Armored Truck"
+        }
+      ],
+      "bytes": 480149,
+      "sha256": "0e86ffc66d59817b4aeae8e199ab235a6ea515a5883b45ca09a1a8bd38c3b4c2",
+      "compression": "TinyPNG website, JPEG output, 2026-10-24",
+      "sceneCount": 4
+    },
+    {
+      "file": "03-enter-your-camper.gif",
+      "title": "STEP INSIDE",
+      "info": "The interior travels with your vehicle.",
+      "dimensions": [
+        512,
+        512
+      ],
+      "format": "GIF",
+      "frames": 13,
+      "durationMs": 4000,
+      "colors": 192,
+      "bytes": 978754,
+      "sha256": "a84cd703a9b06f1200d3800a07cd263139a1a315b922c1f413f52c228856dfa6",
+      "sourceFiles": [
+        {
+          "path": "tools-src/art/workshop-gallery-20261024/originals/cover-entering-camper.gif",
+          "sha256": "6708cdc58bd967f8813a2908e0d26a8a396fe5e9099b9bcc45453ee5e3aeef9f"
+        }
+      ],
+      "compression": "Shared palette and delta export. TinyPNG does not support GIF.",
+      "sceneCount": 1
+    },
+    {
+      "file": "04-walk-inside.gif",
+      "title": "MOVE FREELY",
+      "info": "Walk around your home on the road.",
+      "dimensions": [
+        512,
+        512
+      ],
+      "format": "GIF",
+      "frames": 11,
+      "durationMs": 2400,
+      "colors": 80,
+      "bytes": 930467,
+      "sha256": "631f22ceac2d2756cdb99a2b0f882bde37a395a4b424c5035727c085646c70f7",
+      "sourceFiles": [
+        {
+          "path": "tools-src/art/workshop-gallery-20261024/originals/walking-inside-camper.gif",
+          "sha256": "366530c872b3ee4c49d87472663b4bfd729da0b5273848d9e2325f7a49a9ace6"
+        }
+      ],
+      "compression": "Shared palette and delta export. TinyPNG does not support GIF.",
+      "sceneCount": 1
+    },
+    {
+      "file": "05-bus-interior.jpg",
+      "title": "WALK AROUND YOUR BUS",
+      "info": "Passenger seating and a clear centre aisle",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "format": "JPEG",
+      "bytesBeforeCompression": 1297489,
+      "sourceFiles": [
+        {
+          "path": "build/rv/gallery-20261024-vanilla/vehicles/bus-interior.png",
+          "sha256": "19552d93d762e0bc2b85bc5b5f89ec1b8b67a62d0e9ff9975e726d955b7abe13"
+        }
+      ],
+      "sha256BeforeCompression": "d9292d14e628e33baee0bea078e5c3facdb39f429f229ee212229577c714bf55",
+      "crop": [
+        450,
+        65,
+        1310,
+        748
+      ],
+      "bytes": 401064,
+      "sha256": "7f553941a9f1d61414679a5398ab34d0733a4b59a324bbfd9d7f4eba958547ec",
+      "compression": "TinyPNG website, JPEG output, 2026-10-24",
+      "sceneCount": 1
+    },
+    {
+      "file": "06-cargo-storage.jpg",
+      "title": "TAKE YOUR SUPPLIES WITH YOU",
+      "info": "Vehicle-specific fittings and usable cargo storage",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "format": "JPEG",
+      "bytesBeforeCompression": 1283999,
+      "sourceFiles": [
+        {
+          "path": "build/rv/gallery-20261024-vanilla/vehicles/cargo-truck-interior.png",
+          "sha256": "36752711ce019adbbaef318dd6303f75fe00fa8f6ba972d838e846b095333a8a"
+        }
+      ],
+      "sha256BeforeCompression": "d331648944359a9c3d54d9412f5f315c5028580b45b51b37b625d0ee5dea97eb",
+      "crop": [
+        470,
+        35,
+        1330,
+        718
+      ],
+      "bytes": 390566,
+      "sha256": "b04c07debad06f0389b99b123c499a2ddec8f1392496ea4349cdeaa9085fd210",
+      "compression": "TinyPNG website, JPEG output, 2026-10-24",
+      "sceneCount": 1
+    },
+    {
+      "file": "07-custom-furniture.jpg",
+      "title": "CUSTOM RV FURNITURE",
+      "info": "Pick up, place and rearrange your interior",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "format": "JPEG",
+      "bytesBeforeCompression": 328150,
+      "sourceFiles": [
+        {
+          "path": "tools-src/art/workshop-gallery-20261024/originals/furniture-ground.jpg",
+          "sha256": "bc9149058ab319696f3b22fb639a41969f1463433469bf69e8b7cc6dbcbd2bfc"
+        }
+      ],
+      "sha256BeforeCompression": "2ad9ba1ff4cedff4d9dd2dad163f8e2b2495d40213139f349b638de0e288d7cc",
+      "bytes": 123624,
+      "sha256": "6606901451a00daf495cc7afb2d7d18e429ca93c313ec9d4cf0b83a2641bca60",
+      "compression": "TinyPNG website, JPEG output, 2026-10-24",
+      "sceneCount": 1
+    },
+    {
+      "file": "08-vanilla-dashboard.jpg",
+      "title": "VANILLA DASHBOARD",
+      "info": "Vanilla-style window and controls by default",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "format": "JPEG",
+      "bytesBeforeCompression": 248313,
+      "sourceFiles": [
+        {
+          "path": "build/rv/gallery-20261024-vanilla/dashboard/dashboard-vanilla.png",
+          "sha256": "12a8879f2fe425a433516ba2e8d8a952c1d39ae353f9bce97ef32436fd513f1b"
+        }
+      ],
+      "sha256BeforeCompression": "e5699591d5c7f1d931d2186307b81095693b23c0bd9803f0e7ea268bb30f7322",
+      "crop": [
+        352,
+        140,
+        928,
+        575
+      ],
+      "nativeWindow": {
+        "x": 352,
+        "y": 140,
+        "width": 576,
+        "height": 435,
+        "type": "MELensVanillaDashboard"
+      },
+      "actualNeatActive": false,
+      "bytes": 118694,
+      "sha256": "32bd125e7c7c4f2f41167aa795f75202309f5c5bfbbd8ad765e53f321ffd7d3a",
+      "compression": "TinyPNG website, JPEG output, 2026-10-24",
+      "sceneCount": 1
+    },
+    {
+      "file": "09-neat-dashboard.jpg",
+      "title": "NEAT UI DASHBOARD",
+      "info": "Automatically matches enabled NEAT UI mods",
+      "dimensions": [
+        1024,
+        1024
+      ],
+      "format": "JPEG",
+      "bytesBeforeCompression": 159161,
+      "sourceFiles": [
+        {
+          "path": "build/rv/gallery-20261024-neat-clean/dashboard/dashboard-neat.png",
+          "sha256": "bdd18011d06fa97dd4cc506dd343ef471b5c4318961c54824c5a3a86cd0916ef"
+        }
+      ],
+      "sha256BeforeCompression": "b99cda21aea63d2e45384da06ad251469253e667e2fe91005511521c1d9dad79",
+      "crop": [
+        352,
+        140,
+        930,
+        577
+      ],
+      "nativeWindow": {
+        "x": 352,
+        "y": 140,
+        "width": 578,
+        "height": 437,
+        "type": "MELensDashboard"
+      },
+      "actualNeatActive": true,
+      "bytes": 57689,
+      "sha256": "709467bda17d50a83c08294a4d8156fa47893baf64544663a40f5346257d76f5",
+      "compression": "TinyPNG website, JPEG output, 2026-10-24",
+      "sceneCount": 1
+    },
+    {
+      "file": "10-zombies-outside.gif",
+      "title": "THE WORLD KEEPS MOVING",
+      "info": "Zombies can still hear you and attack.",
+      "dimensions": [
+        512,
+        512
+      ],
+      "format": "GIF",
+      "frames": 20,
+      "durationMs": 1000,
+      "colors": 192,
+      "bytes": 974363,
+      "sha256": "8587a566e5a10a2b43b0265798b85da5450a4cc12c924b2f34df595d5456f36f",
+      "sourceFiles": [
+        {
+          "path": "tools-src/art/workshop-gallery-20261024/originals/zombies-attacking-rv.gif",
+          "sha256": "4ec9bed1f01a29b50ac8a90de24302991645960f90cc20c027ec6f85114df71f"
+        }
+      ],
+      "compression": "Shared palette and delta export. TinyPNG does not support GIF.",
+      "sceneCount": 1
+    }
+  ],
+  "order": [
+    "01-vanilla-vehicles.jpg",
+    "02-ki5-vehicles.jpg",
+    "03-enter-your-camper.gif",
+    "04-walk-inside.gif",
+    "05-bus-interior.jpg",
+    "06-cargo-storage.jpg",
+    "07-custom-furniture.jpg",
+    "08-vanilla-dashboard.jpg",
+    "09-neat-dashboard.jpg",
+    "10-zombies-outside.gif"
+  ],
+  "publication": {
+    "workshopUrl": "https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541",
+    "date": "2026-10-24",
+    "verification": "All ten published CDN files match local SHA256 hashes. Title, description, cover, visibility and dependency set preserved.",
+    "previews": [
+      {
+        "file": "01-vanilla-vehicles.jpg",
+        "url": "https://images.steamusercontent.com/ugc/11339378842772086865/5CB9C87CA339AFA440EF704B9F9C8FB5735BD056/"
+      },
+      {
+        "file": "02-ki5-vehicles.jpg",
+        "url": "https://images.steamusercontent.com/ugc/13114145089401192488/0D94DCB7445849AA6C3404B08F16303F862B676F/"
+      },
+      {
+        "file": "03-enter-your-camper.gif",
+        "url": "https://images.steamusercontent.com/ugc/13031170032390219595/A7F659AACD683BAE7956202DAB2D128054627B00/"
+      },
+      {
+        "file": "04-walk-inside.gif",
+        "url": "https://images.steamusercontent.com/ugc/13800697607637854677/429238FDEF28066B4C90C9BC1005FA3B3FCA37CA/"
+      },
+      {
+        "file": "05-bus-interior.jpg",
+        "url": "https://images.steamusercontent.com/ugc/16288136786264941564/447BD7F8F6A95CF215358358C0DCE8B16AD86210/"
+      },
+      {
+        "file": "06-cargo-storage.jpg",
+        "url": "https://images.steamusercontent.com/ugc/14292101444246057504/36C3B59299C75D6DD3BBC6880DAE29D5B069F238/"
+      },
+      {
+        "file": "07-custom-furniture.jpg",
+        "url": "https://images.steamusercontent.com/ugc/16379402332013246989/A75F823D0C1B35C37F7F46033D174942B7BCCDED/"
+      },
+      {
+        "file": "08-vanilla-dashboard.jpg",
+        "url": "https://images.steamusercontent.com/ugc/12893306946936364784/A05CDB8482CFAB50B79E5071A736EC9A5E57CF2C/"
+      },
+      {
+        "file": "09-neat-dashboard.jpg",
+        "url": "https://images.steamusercontent.com/ugc/13040679628472571649/BA58FD47DC762B63ED8AAD1F12A404CB1968948D/"
+      },
+      {
+        "file": "10-zombies-outside.gif",
+        "url": "https://images.steamusercontent.com/ugc/11393176815843785849/A259E3D3E8B3390A5013C988E0D66B8549C6F494/"
+      }
+    ]
+  },
+  "nativeCaptureEvidence": {
+    "vehicleReport": "build/rv/gallery-20261024-vanilla/vehicles/native-feature-tests.json",
+    "vanillaDashboardReport": "build/rv/gallery-20261024-vanilla/dashboard/native-feature-tests.json",
+    "neatDashboardReport": "build/rv/gallery-20261024-neat-clean/dashboard/native-feature-tests.json",
+    "packageVersion": "2.0.13",
+    "fixtures": "Character and camera positioning; dashboard fixture fuel/water/generator condition and switch states. Native dashboard opened through the production context menu. No gameplay retouching."
+  }
+}
