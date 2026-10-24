@@ -2,6 +2,8 @@
 
 `MELens_Utilities.lua` runs appliance updates only for owners exposing vehicle-level `getModData`. Build 42.21 also invokes part callbacks on an unloaded `VirtualVehicle`, whose API exposes parts but not that state. The shared capability gate leaves generator, stove, fridge and heater state unchanged on that proxy; normal updates resume when a full vehicle is loaded. It introduces no save migration or new part/item IDs.
 
+The native regression in `dev/virtual-streaming-tests.py` targets the Chevrolet painting-services step van, observes actual virtual-owner part scheduling, checks two chunk unload/reload cycles and compares original cargo, interior storage, furniture IDs, capacities and utilities. Its cold-load mode verifies the same saved vehicle in a fresh process. Gameplay errors fail the test; external startup diagnostics remain in the retained logs. The shared state snapshot skips vanilla's invalid seat-capacity query while virtualized and requires those capacities to match again after loading.
+
 The expansion adds 193 vehicle definitions to the 10 already supported: **203 total** on Build 42.21. Variants share a layout only when their resolved body mesh and model scales match.
 
 | Body family | Added variants | Vehicle mod |
