@@ -38,6 +38,12 @@ local function num(value, default)
     return tonumber(value) or default
 end
 
+-- Meta simulation passes VirtualVehicle, which has parts but no vehicle modData.
+-- Keep saved appliance state intact until the full vehicle is loaded again.
+local function hasVehicleState(vehicle)
+    return vehicle ~= nil and vehicle.getModData ~= nil
+end
+
 function U.profile(vehicle)
     return M.profileFor(vehicle)
 end
@@ -57,6 +63,7 @@ end
 -- update" (a running engine sets it). A camper's appliances need it while anything
 -- runs, warms up or cools down.
 function U.busy(vehicle)
+    if not hasVehicleState(vehicle) then return false end
     local gen = U.part(vehicle, P.GENERATOR)
     if gen and gen:getModData().on == true then return true end
     local oven = U.part(vehicle, P.OVEN)
@@ -200,6 +207,7 @@ function U.createGenerator(vehicle, part)
 end
 
 function U.updateGenerator(vehicle, part, elapsedMinutes)
+    if not hasVehicleState(vehicle) then return end
     U.runGenerator(vehicle, part, elapsedMinutes)
     -- Nothing running, warming or cooling any more: let the camper rest.
     -- The stock Engine callback can clear this flag earlier in the same update.
@@ -242,6 +250,7 @@ function U.generatorFuelRate(vehicle)
 end
 
 function U.runGenerator(vehicle, part, elapsedMinutes)
+    if not hasVehicleState(vehicle) then return end
     local data = part:getModData()
     if data.on ~= true or not elapsedMinutes or elapsedMinutes <= 0 then return end
     local fuel = num(data.fuel, 0)
@@ -379,6 +388,7 @@ function U.ovenTest(vehicle, part, chr)
 end
 
 function U.updateOven(vehicle, part, elapsedMinutes)
+    if not hasVehicleState(vehicle) then return end
     local data = part:getModData()
     local container = part:getItemContainer()
     if not container or not elapsedMinutes or elapsedMinutes <= 0 then return end
@@ -412,6 +422,7 @@ function U.powerLost(vehicle)
 end
 
 function U.updateFridge(vehicle, part, elapsedMinutes)
+    if not hasVehicleState(vehicle) then return end
     local container = part:getItemContainer()
     if container then
         container:setCustomTemperature(U.hasPower(vehicle) and U.FRIDGE_COLD or 0)
@@ -432,6 +443,7 @@ end
 -- Like a car's heater: warms the passenger compartment, which the game adds to the
 -- air temperature of everyone inside.
 function U.updateHeater(vehicle, part, elapsedMinutes)
+    if not hasVehicleState(vehicle) then return end
     local pc = vehicle:getPartById("PassengerCompartment")
     if not pc or not elapsedMinutes or elapsedMinutes <= 0 then return end
     local pcData = pc:getModData()

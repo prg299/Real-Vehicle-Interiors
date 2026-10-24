@@ -1,24 +1,5 @@
-2.0.13 - Vehicle support, cameras, dashboard and concealment
+2.0.14 - Unloaded-vehicle utilities hotfix
 
-- Adds interiors for 193 additional vehicle definitions across 12 body families, including optional vehicle mods.
-- Fixes cutaway state leaking between vehicles, wheel rendering and adjacent bed/kitchenette placement.
-- Prevents startup crashes from an incomplete or outdated Java bridge and reports the missing API with update/approval instructions.
-- Restores shell and furniture model bindings after engine resets or streamed part replacements, preserving installed furniture, stored items and utility state.
-- Brings Shift-running inside vehicles up to the normal vanilla running pace.
-- Moves ambulance stretchers to the opposite side, keeps the two F350 side-door shelf bays empty and available, and makes the side-door lining follow the actual door state.
-- Seals cargo cab cutaways with fitted full-height partitions and gives work trucks and vans metal floors.
-- Adds matching medical stretchers and steel equipment cabinets, with vehicle-appropriate factory fittings and medical supplies.
-- Fills new interiors with vehicle-specific loot, cash safes, delivery parcels, medical storage and attendant benches. Keeps the ambulance stretcher near the rear doors.
-- Radio and trade vans have service workbenches; mobile libraries carry books and food deliveries use suitable refrigeration. Passenger vans keep seats and open floor space.
-- Open racks show the actual stored items on empty shelf boards. Looting and restocking change the visible contents.
-- Covers exposed delivery-van wheels, adds a third cargo position along each step-van wall and fixes furniture replacement beside a front cabinet.
-- SWAT vans and trucks have opposing rear crew benches with equipment storage toward the cab.
-- Fitted rear-door linings stop closed vanilla and KI5 cargo doors showing the ground through their inside faces. Open and removed doors retain their openings.
-- Closes the B700 cab gap and windshield-frame remnants, covers its rear tyres, repairs Shasta front corner joins and seals the Scamp16 doorway seam. Scamp13/16 wheel covers contain their tyres; interior-only trims keep spare-wheel edges and the rear bumper brace out of the floor.
-- Matches more signwritten businesses to their supplies. Propane deliveries use real removable cylinders, without extra furniture or luggage. Returned cylinders reuse clear side bays while preserving actual inventory IDs.
-- Entering an interior with Project Viewpoint active switches its camera to isometric.
-- The dashboard uses vanilla window chrome and controls by default. Enabled Neat UI mods retain the rounded dashboard.
-- Solid interior walls block zombie sight. Windows and open, removed or destroyed doors allow normal spotting.
-- Native hearing, pursuit memory and attacks remain active; entering an interior does not clear a zombie's existing target.
-
-Multiplayer remains experimental. Back up existing saves before updating.
+- Fixes the repeated MELens_Utilities.lua busy/updateGenerator error when Project Zomboid updates an unloaded vehicle.
+- Utility callbacks now recognize the game's VirtualVehicle proxy and leave saved appliance state intact until the full vehicle loads again.
+- Furniture, stored items, water, fuel, stable IDs and the Java component are preserved.

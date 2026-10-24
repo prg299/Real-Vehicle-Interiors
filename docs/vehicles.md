@@ -1,5 +1,7 @@
 # Vehicle expansion
 
+`MELens_Utilities.lua` runs appliance updates only for owners exposing vehicle-level `getModData`. Build 42.21 also invokes part callbacks on an unloaded `VirtualVehicle`, whose API exposes parts but not that state. The shared capability gate leaves generator, stove, fridge and heater state unchanged on that proxy; normal updates resume when a full vehicle is loaded. It introduces no save migration or new part/item IDs.
+
 The expansion adds 193 vehicle definitions to the 10 already supported: **203 total** on Build 42.21. Variants share a layout only when their resolved body mesh and model scales match.
 
 | Body family | Added variants | Vehicle mod |

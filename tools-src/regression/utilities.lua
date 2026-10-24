@@ -430,4 +430,36 @@ check(shirt.bloodParts[0] == 0 and shirt.dirtParts[1] == 0 and shirt.blood == 0
     and shirt.wetness == 100 and shirt.dirtiness == 0, "clothing visual wash fields not cleaned")
 near(f.water.data.water, 8, "clothing wash water consumption"); check(soap.uses == 1, "soap not consumed once for bloody area")
 
+-- The engine calls these same callbacks with VirtualVehicle after chunk unload.
+-- That owner retains parts but exposes no vehicle-level getModData. No appliance
+-- or inventory state may be reset while waiting for a loaded BaseVehicle.
+do
+    local f = fixture()
+    f.gen.data.on, f.gen.data.fuel = true, 7.25
+    f.oven.data.on, f.oven.data.heat = true, 1.7
+    f.heater.data.on = true
+    f.compartment.data.temperature = 12
+    f.fridge.container.temperature = U.FRIDGE_COLD
+    f.v.getModData = nil
+    local beforePackets, beforeSounds = packets, sounds
+    check(U.busy(f.v) == false, "virtual owner calls loaded-only busy API")
+    U.initGenerator(f.v, f.gen)
+    U.updateGenerator(f.v, f.gen, 60)
+    U.runGenerator(f.v, f.gen, 60)
+    U.updateOven(f.v, f.oven, 60)
+    U.updateHeater(f.v, f.heater, 60)
+    U.updateFridge(f.v, f.fridge, 60)
+    check(f.gen.data.on and f.gen.data.fuel == 7.25 and f.gen.condition == 100,
+        "virtual owner changes generator fuel/switch/condition")
+    check(f.oven.data.on and f.oven.data.heat == 1.7 and f.heater.data.on
+        and f.compartment.data.temperature == 12, "virtual owner changes saved appliance state")
+    check(f.fridge.container.temperature == U.FRIDGE_COLD and f.water.data.water == 10
+        and f.water.data.tainted == false, "virtual owner resets fridge/water")
+    check(f.v.awake == nil and packets == beforePackets and sounds == beforeSounds,
+        "virtual owner wakes, replicates or emits utility effects")
+    f.v.getModData = function(self) return self.data end
+    U.updateGenerator(f.v, f.gen, 1)
+    check(f.gen.data.fuel < 7.25 and f.v.awake == true, "loaded generator fails to resume")
+    check(U.busy(nil) == false, "missing owner should be idle")
+end
 for _, name in ipairs(names) do _G[name] = saved[name] end
