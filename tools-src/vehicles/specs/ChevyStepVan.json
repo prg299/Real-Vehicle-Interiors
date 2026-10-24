@@ -53,6 +53,64 @@
         ]
     },
     "hide": {
+        "85chevyStepVanwindshielda": {
+            "plane": [
+                0,
+                -1,
+                0,
+                -1.0
+            ]
+        },
+        "85chevyStepVanwindshieldas": {
+            "plane": [
+                0,
+                -1,
+                0,
+                -1.0
+            ]
+        },
+        "85chevyStepVandoorfla": {
+            "plane": [
+                0,
+                -1,
+                0,
+                -1.0
+            ]
+        },
+        "85chevyStepVandoorflas": {
+            "plane": [
+                0,
+                -1,
+                0,
+                -1.0
+            ]
+        },
+        "85chevyStepVandoorfra": {
+            "plane": [
+                0,
+                -1,
+                0,
+                -1.0
+            ]
+        },
+        "85chevyStepVandoorfras": {
+            "plane": [
+                0,
+                -1,
+                0,
+                -1.0
+            ]
+        },
+        "85chevyStepVanwindshieldreara": true,
+        "85chevyStepVanwindshieldrearas": true,
+        "85chevyStepVanRoofrack0": {
+            "plane": [
+                0,
+                -1,
+                0,
+                -1.0
+            ]
+        },
         "85chevyStepVanSpare1": {
             "plane": [
                 0,
@@ -85,6 +143,15 @@
                 -1.0
             ]
         },
+        "85chevyStepVanwindshield": {
+            "plane": [
+                0,
+                -1,
+                0,
+                -1.0
+            ]
+        },
+        "85chevyStepVanwindshieldRear": true,
         "85chevyStepVanInterior": {
             "plane": [
                 0,
@@ -94,6 +161,14 @@
             ]
         },
         "85chevyStepVanInteriorRoof": {
+            "plane": [
+                0,
+                -1,
+                0,
+                -1.0
+            ]
+        },
+        "85chevyStepVanInteriorExtra": {
             "plane": [
                 0,
                 -1,
@@ -117,16 +192,16 @@
     },
     "entryOpening": {
         "x": [
-            -0.5,
-            0.5
+            -0.918,
+            0.918
         ],
         "y": [
             0.292,
-            1.78
+            1.84
         ],
         "z": [
             -2.948,
-            -2.568
+            -2.613
         ]
     },
     "windowBoxes": [
@@ -142,6 +217,20 @@
             "z": [
                 -2.598,
                 -0.12
+            ]
+        },
+        {
+            "x": [
+                -0.838,
+                0.838
+            ],
+            "y": [
+                0.302,
+                0.337
+            ],
+            "z": [
+                -2.608,
+                -0.13
             ]
         }
     ],
@@ -166,6 +255,7 @@
     ],
     "waterTank": 40,
     "fuelTank": 20,
+    "factoryLayout": true,
     "spots": [
         {
             "wall": "left",

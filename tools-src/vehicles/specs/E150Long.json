@@ -34,6 +34,31 @@
         ]
     },
     "hide": {
+        "86fordE150windshielda": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
+        "86fordE150doorfla": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
+        "86fordE150doorfra": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
+        "86fordE150windshieldreara": true,
         "86fordE150seatml": true,
         "86fordE150seatmr": true,
         "86fordE150seatrl": true,
@@ -47,6 +72,22 @@
             ]
         },
         "E150Wheel1L": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
+        "86fordE150Roofrack0": {
+            "plane": [
+                0,
+                -1,
+                0,
+                2.6667
+            ]
+        },
+        "86fordE150windshield": {
             "plane": [
                 0,
                 -1,
@@ -70,6 +111,7 @@
                 2.6667
             ]
         },
+        "86fordE150rearWindshield": true,
         "86fordE150interior": {
             "plane": [
                 0,
@@ -102,16 +144,16 @@
     },
     "entryOpening": {
         "x": [
-            -0.65,
-            0.25
+            -0.767,
+            0.767
         ],
         "y": [
             -0.078,
-            0.93
+            0.99
         ],
         "z": [
             -2.578,
-            -2.198
+            -2.243
         ]
     },
     "windowBoxes": [
@@ -127,6 +169,20 @@
             "z": [
                 -2.228,
                 0.21
+            ]
+        },
+        {
+            "x": [
+                -0.687,
+                0.687
+            ],
+            "y": [
+                -0.068,
+                -0.033
+            ],
+            "z": [
+                -2.238,
+                0.2
             ]
         }
     ],
@@ -153,6 +209,7 @@
     ],
     "waterTank": 40,
     "fuelTank": 20,
+    "factoryLayout": true,
     "spots": [
         {
             "wall": "left",

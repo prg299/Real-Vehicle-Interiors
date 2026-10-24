@@ -11,7 +11,8 @@ from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PIECES = ["bed", "dinette", "kitchen", "fridge", "cabinet", "wardrobe", "washroom", "heater", "shelf",
-          "box", "busseat", "busseat2", "stretcher", "metalcase"]
+          "box", "busseat", "busseat2", "stretcher", "metalcase", "safe",
+          "parcels", "medlocker", "medbench", "equipmentrack", "workbench"]
 SIZE = 64
 
 

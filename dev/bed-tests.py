@@ -33,6 +33,17 @@ local dx,dy=q:x()-p:getX(),q:y()-p:getY();local sx,sy=dx-dy,dx+dy
 return getCore():getKey(math.abs(sx)>math.abs(sy) and (sx>0 and "Right" or "Left") or (sy>0 and "Backward" or "Forward"))''')
     if walk_approach:h.lua(f'MEMCNativeLab.holdKey({int(approach)},150);return true')
     time.sleep(.6)
+    # The approach updates the game's nearby-vehicle cache, but its final point
+    # can fall outside a small trailer's native door-use area. Re-centre this
+    # setup fixture before testing Interact; do not call an entry handler.
+    usable=h.lua('''local p=getPlayer();local v=MELensTest.vehicle;local part=v:getUseablePart(p)
+return part and part:getId()==MELens.profileFor(v).standing.door or false''')
+    if not usable:
+        position=h.lua('''local p=getPlayer();local v=MELensTest.vehicle;local q=Vector3f.new()
+v:getPassengerPositionWorldPos(v:getPassengerPosition(MELens.cabinSeat(v),"outside"),q)
+p:setX(q:x());p:setY(q:y());p:setLastX(q:x());p:setLastY(q:y());return {x=q:x(),y=q:y()}''')
+        h.REPORT.setdefault('entryPositionFixtures',[]).append(dict(vehicle=vehicle,**position))
+        time.sleep(.5)
     key=int(h.lua('return getCore():getKey("Interact")'))
     h.lua(f'MEMCNativeLab.holdKey({key},200);return true')
     deadline=time.monotonic()+40

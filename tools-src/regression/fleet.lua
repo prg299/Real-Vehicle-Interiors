@@ -1,6 +1,32 @@
 -- Shared furniture transforms and optional fleet layout contracts; no native renderer/input claims.
 do
     local M,P=MELens,MELens.Parts
+    local cargoSides={left=0,right=0}
+    for _,s in ipairs(M.Profiles["Base.StepVan"].spots) do
+        if s.factory and s.default=="parcels" then cargoSides[s.wall]=cargoSides[s.wall]+1 end
+    end
+    check(cargoSides.left==3 and cargoSides.right==3,"step van lost a cargo row at a floating-point boundary")
+    for _,name in ipairs({"Base.87fordF700swat","Base.90fordF350SWAT","Base.85chevyStepVanSWAT","Base.StepVan_LouisvilleSWAT"}) do
+        local pr=M.Profiles[name];local benches,seats=0,{}
+        for _,s in ipairs(pr.spots) do if s.factory and s.default=="medbench" then
+            benches=benches+1
+            for _,id in ipairs(s.seats or {}) do check(not seats[id],"SWAT bench duplicates passenger ID");seats[id]=true end
+        end end
+        check(pr.factoryRole=="swat" and benches==2,"SWAT vehicle lacks opposing rear crew benches: "..name)
+        for _,id in ipairs(pr.extraSeats) do check(seats[id],"SWAT bench loses released passenger ID: "..name) end
+    end
+    for _,name in ipairs({"Base.StepVan","Base.85chevyStepVan"}) do
+        local pr=M.Profiles[name];check(pr.shell.entryModel==4,"missing rear door interior skin: "..name)
+        local open,item,shown=false,{},nil
+        local door={isOpen=function() return open end}
+        local leaf={getDoor=function() return door end,getInventoryItem=function() return item end}
+        local part={setModelVisible=function(_,model,value) check(model=="MELensShell4","wrong rear door model");shown=value end}
+        local v={getPartById=function(_,id) return id==P.SHELL and part or leaf end}
+        P.syncShellDoors(v,pr);check(shown==true,"closed rear door is transparent")
+        open=true;P.syncShellDoors(v,pr);check(shown==false,"open rear door retains closed lining")
+        open=false;P.syncShellDoors(v,pr);check(shown==true,"closing rear door does not restore lining")
+        item=nil;P.syncShellDoors(v,pr);check(shown==false,"missing rear door retains lining")
+    end
     local old=M.modelOffset(.45,.51,.84)
     check(math.abs(old[1]-.5)<1e-8 and math.abs(old[2]-.5)<1e-8 and math.abs(old[3]-1)<1e-8,
         "released KI5 furniture transform changed")
@@ -10,23 +36,25 @@ do
     local seen={}
     for _,name in ipairs(representatives) do
         local pr=assert(M.Profiles[name])
-        check(not seen[pr],"duplicate fleet representative")
-        seen[pr]=true
+        check(not seen[pr.walkGrid],"duplicate fleet representative")
+        seen[pr.walkGrid]=true
         check(M.WalkGrids[pr.walkGrid]~=nil,"missing generated walk grid: "..name)
         check(M.RoomRings[pr.walkGrid]~=nil,"missing shell outline: "..name)
         check(pr.ki5Storage==nil and pr.loot==nil,"fleet conversion replaces factory cargo: "..name)
         check(P.fits(pr.spots[1],"bed") and P.fits(pr.spots[1],"dinette"),"large furniture rejected: "..name)
         check(P.roomFor(pr,{},1,"bed"),"bed cannot be installed in empty compartment: "..name)
-        if #pr.spots==3 then
+        if (pr.legacySpotCount or #pr.spots)==3 then
             check(P.roomFor(pr,{[1]="bed"},2,"kitchen"),"small van rejects adjacent bed and kitchen: "..name)
             check(P.roomFor(pr,{[2]="kitchen"},1,"bed"),"bed/kitchen placement order matters: "..name)
             check(not P.roomFor(pr,{[2]="kitchen"},3,"fridge"),"front kitchen accepts overlapping fridge: "..name)
             check(P.roomFor(pr,{[1]="bed"},3,"fridge"),"small van rejects bed and fridge: "..name)
-            check(pr.aisleX==-.25 and pr.standing.inside[1]==-.25,"narrow van entry misses clear aisle: "..name)
+            check(pr.standing.inside[1]==-.25,"narrow van entry misses clear aisle: "..name)
         else
             check(P.roomFor(pr,{[1]="bed"},2,"dinette"),"wide vehicle blocks opposite furnishing wall: "..name)
         end
-        for _,spot in ipairs(pr.spots) do check(spot.empty,"new optional fleet invents furnished loot: "..name) end
+        for index,spot in ipairs(pr.spots) do
+            if index<=pr.legacySpotCount then check(spot.empty,"released placement slot changed: "..name) end
+        end
         local scale=pr.vehicleScale or .9
         local offset=M.modelOffset(.45,.51,.84,pr)
         local shift=pr.modelShift or {0,-.06,.06}
@@ -44,21 +72,28 @@ do
         check(text:find("model ghost_bed",1,true)~=nil,"bed preview missing: "..name)
     end
     local count=0
-    for _,pr in pairs(M.Profiles) do if seen[pr] then count=count+1 end end
+    for _,pr in pairs(M.Profiles) do if seen[pr.walkGrid] then count=count+1 end end
     check(count==193,"fleet identifier coverage changed unexpectedly")
     check(#M.Profiles["Base.87fordF700box"].spots==83,"released cargo slots changed")
-    for name,use in pairs(P.VEHICLE_USE) do
-        local pr=assert(M.Profiles[name])
+    for name,pr in pairs(M.Profiles) do
+      if pr.factoryLayout then
         local v={getScript=function() return {getFullName=function() return name end} end}
         local fitted={}
-        for index,piece in pairs(use.fittings) do
+        for index,spot in ipairs(pr.spots) do
+          if spot.factory then
+            local piece=spot.default
             check(P.factoryPiece(v,index,pr.spots[index])==piece,"wrong service fitting: "..name)
             check(P.fits(pr.spots[index],piece),"service fitting does not fit: "..name..":"..piece)
             check(P.roomFor(pr,fitted,index,piece),"service fittings overlap: "..name)
             fitted[index]=piece
-            check(piece~="bed" and piece~="kitchen","service vehicle receives residential furniture")
+            check(piece~="bed" and (piece~="kitchen" or pr.factoryRole=="catering"),"service vehicle receives inappropriate residential furniture")
+          end
         end
         check(pr.loot==nil and pr.ki5Storage==nil,"service fittings overwrite native vehicle loot")
+        local fittedCount=0;for _ in pairs(fitted) do fittedCount=fittedCount+1 end
+        check(fittedCount>0,"empty factory cargo layout: "..name)
+        check(#pr.extraSeats<=4,"factory layout changes released passenger budget: "..name)
+      end
     end
     for name,pr in pairs(M.Profiles) do
         if pr.shell.models[1]:find("fleet_",1,true) or name=="Base.87fordF700box" then

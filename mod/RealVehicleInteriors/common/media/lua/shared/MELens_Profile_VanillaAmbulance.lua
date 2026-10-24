@@ -9,11 +9,13 @@ local profile = {
     floorY = -0.568,
     mesh = { scale = 0.01456, lift = 0 },
     shell = {
-        models = { "MELensShell_fleet_vanillaambulance_floor", "MELensShell_fleet_vanillaambulance_walls", "MELensShell_fleet_vanillaambulance_bulkhead" },
+        models = { "MELensShell_fleet_vanillaambulance_floor", "MELensShell_fleet_vanillaambulance_walls", "MELensShell_fleet_vanillaambulance_bulkhead", "MELensShell_fleet_vanillaambulance_entry" },
+        entryModel = 4,
+        entryDoor = "DoorRear",
     },
     hideKI5 = {  },
     light = {
-        interiorModels = { "MELensShell_fleet_vanillaambulance_floor", "MELensShell_fleet_vanillaambulance_walls", "MELensShell_fleet_vanillaambulance_bulkhead" },
+        interiorModels = { "MELensShell_fleet_vanillaambulance_floor", "MELensShell_fleet_vanillaambulance_walls", "MELensShell_fleet_vanillaambulance_bulkhead", "MELensShell_fleet_vanillaambulance_entry" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,
@@ -67,14 +69,14 @@ local profile = {
     },
     wheelWells = {
         {
-            x = { 0.443, 0.704 },
-            y = { -0.878, -0.452 },
-            z = { -1.298, -0.662 },
+            x = { 0.43, 0.704 },
+            y = { -0.878, -0.348 },
+            z = { -1.44, -0.64 },
         },
         {
-            x = { -0.704, -0.443 },
-            y = { -0.878, -0.452 },
-            z = { -1.298, -0.662 },
+            x = { -0.704, -0.43 },
+            y = { -0.878, -0.348 },
+            z = { -1.44, -0.64 },
         },
     },
     panel = { x = -0.644, y = -0.273, z = -1.765, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
@@ -86,6 +88,7 @@ local profile = {
     modelShift = { 0, 0, 0 },
     extraSeats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
     clipBody = true,
+    nativeBodyLining = { 0.55, 0.57, 0.59 },
     windowBoxes = {
         {
             x = { -0.669, 0.669 },
@@ -93,11 +96,108 @@ local profile = {
             z = { -1.925, 0.29 },
         },
         {
-            x = { -0.65, 0.25 },
-            y = { -0.588, 0.55 },
-            z = { -2.275, -1.895 },
+            x = { -0.644, 0.644 },
+            y = { -0.578, -0.543 },
+            z = { -1.935, 0.28 },
+        },
+        {
+            x = { -0.724, 0.724 },
+            y = { -0.588, 0.61 },
+            z = { -2.275, -1.94 },
         },
     },
 }
 
 MELens.Profiles["Base.VanAmbulance"] = profile
+
+do
+    local fitted = {}
+    for k,v in pairs(profile) do fitted[k]=v end
+    fitted.legacySpotCount = #profile.spots
+    fitted.spots = {}
+    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+    fitted.extraSeats = {}
+    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+    fitted.factoryLayout = "cargo-service-1"
+    fitted.factoryRole = "medical"
+    fitted.factoryUse = {
+    loot = { parcels = "MedicalStorageTools", equipmentrack = "MedicalStorageTools", metalcase = "MedicalStorageTools", medlocker = "MedicalStorageTools", workbench = "MedicalStorageTools" },
+    stock = {
+        parcels = {
+            { "Base.Bandage", 6 },
+            { "Base.Disinfectant", 1 },
+            { "Base.AlcoholWipes", 3 },
+        },
+        equipmentrack = {
+            { "Base.Bandage", 6 },
+            { "Base.Disinfectant", 1 },
+            { "Base.AlcoholWipes", 3 },
+        },
+        metalcase = {
+            { "Base.Bandage", 6 },
+            { "Base.Disinfectant", 1 },
+            { "Base.AlcoholWipes", 3 },
+        },
+        medlocker = {
+            { "Base.Bandage", 6 },
+            { "Base.Disinfectant", 1 },
+            { "Base.AlcoholWipes", 3 },
+        },
+        workbench = {
+            { "Base.Bandage", 6 },
+            { "Base.Disinfectant", 1 },
+            { "Base.AlcoholWipes", 3 },
+        },
+        medbench = {
+            { "Base.Sheet", 1 },
+            { "Base.Bandage", 2 },
+        },
+    },
+}
+    fitted.aisleX = -0.075
+    for _,s in ipairs({
+    {
+        wall = "left",
+        x = 0.654,
+        z = -1.075,
+        length = 1.5,
+        depth = 0.55,
+        default = "stretcher",
+        factory = true,
+        pieces = { "stretcher" },
+        seats = { "MELensFurnitureLeft1" },
+    },
+    {
+        wall = "right",
+        x = -0.654,
+        z = -1.045,
+        length = 1.1,
+        depth = 0.4,
+        default = "medbench",
+        factory = true,
+        pieces = { "medbench" },
+        seats = { "MELensFurnitureLeft2" },
+    },
+    {
+        wall = "front",
+        x = -0.27,
+        z = 0.29,
+        length = 0.5,
+        depth = 0.32,
+        default = "medlocker",
+        factory = true,
+        pieces = { "medlocker" },
+    },
+    {
+        wall = "front",
+        x = 0.27,
+        z = 0.29,
+        length = 0.5,
+        depth = 0.32,
+        default = "medlocker",
+        factory = true,
+        pieces = { "medlocker" },
+    },
+}) do fitted.spots[#fitted.spots+1]=s end
+    MELens.Profiles["Base.VanAmbulance"] = fitted
+end

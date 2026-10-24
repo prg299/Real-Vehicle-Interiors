@@ -150,7 +150,14 @@ I.standPoint = standPoint
 
 -- Where to stand to use a piece at `a` along it: in front of that place, or, when furniture
 -- beside it leaves no room there, the nearest open place along its front.
-local function openStandPoint(vehicle, spot, piece, a)
+local function openStandPoint(vehicle, spot, piece, a, player)
+    player = player or getSpecificPlayer(0)
+    if player and player:getVehicle() == vehicle and M.isStanding(player) then
+        local px, pz = P.characterAt(vehicle, player)
+        if px and P.distanceTo(spot, piece, px, pz) <= P.REACH then
+            return px, pz
+        end
+    end
     local x, z = standPoint(spot, piece, a)
     local profile = M.profileFor(vehicle)
     if not profile or M.walkableAt(profile, x, z) then
@@ -172,7 +179,7 @@ I.openStandPoint = openStandPoint
 
 -- Walk to a piece, then do something. Seated or lying, you get up first.
 local function atPiece(player, hit, fn)
-    local x, z = openStandPoint(player:getVehicle(), hit.spot, hit.piece, hit.a)
+    local x, z = openStandPoint(player:getVehicle(), hit.spot, hit.piece, hit.a, player)
     M.standingThen(player, function()
         M.walkTo(player, x, z, function()
             fn()
@@ -738,7 +745,7 @@ for key, vanilla in pairs(ICONS) do
     ContainerButtonIcons[key] = ContainerButtonIcons[key] or ContainerButtonIcons[vanilla]
 end
 if getTexture then
-    for _, piece in ipairs({ "metalcase", "stretcher" }) do
+    for _, piece in ipairs({ "metalcase", "stretcher", "safe", "parcels", "medlocker", "medbench", "equipmentrack", "workbench" }) do
         local icon = getTexture("media/textures/Item_MELensRV_" .. piece .. ".png")
         if icon then ContainerButtonIcons["MELensRV_" .. piece] = icon end
     end

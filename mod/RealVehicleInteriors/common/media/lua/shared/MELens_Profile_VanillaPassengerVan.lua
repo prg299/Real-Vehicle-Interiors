@@ -9,11 +9,13 @@ local profile = {
     floorY = -0.518,
     mesh = { scale = 0.01456, lift = 0 },
     shell = {
-        models = { "MELensShell_fleet_vanillapassengervan_floor", "MELensShell_fleet_vanillapassengervan_walls", "MELensShell_fleet_vanillapassengervan_bulkhead" },
+        models = { "MELensShell_fleet_vanillapassengervan_floor", "MELensShell_fleet_vanillapassengervan_walls", "MELensShell_fleet_vanillapassengervan_bulkhead", "MELensShell_fleet_vanillapassengervan_entry" },
+        entryModel = 4,
+        entryDoor = "DoorRear",
     },
     hideKI5 = {  },
     light = {
-        interiorModels = { "MELensShell_fleet_vanillapassengervan_floor", "MELensShell_fleet_vanillapassengervan_walls", "MELensShell_fleet_vanillapassengervan_bulkhead" },
+        interiorModels = { "MELensShell_fleet_vanillapassengervan_floor", "MELensShell_fleet_vanillapassengervan_walls", "MELensShell_fleet_vanillapassengervan_bulkhead", "MELensShell_fleet_vanillapassengervan_entry" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,
@@ -67,14 +69,14 @@ local profile = {
     },
     wheelWells = {
         {
-            x = { 0.473, 0.689 },
-            y = { -0.828, -0.412 },
-            z = { -1.298, -0.662 },
+            x = { 0.43, 0.689 },
+            y = { -0.828, -0.298 },
+            z = { -1.44, -0.64 },
         },
         {
-            x = { -0.689, -0.473 },
-            y = { -0.828, -0.412 },
-            z = { -1.298, -0.662 },
+            x = { -0.689, -0.43 },
+            y = { -0.828, -0.298 },
+            z = { -1.44, -0.64 },
         },
     },
     panel = { x = -0.629, y = -0.223, z = -1.765, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
@@ -93,9 +95,14 @@ local profile = {
             z = { -1.925, 0.27 },
         },
         {
-            x = { -0.65, 0.25 },
-            y = { -0.538, 0.59 },
-            z = { -2.275, -1.895 },
+            x = { -0.629, 0.629 },
+            y = { -0.528, -0.493 },
+            z = { -1.935, 0.26 },
+        },
+        {
+            x = { -0.709, 0.709 },
+            y = { -0.538, 0.65 },
+            z = { -2.275, -1.94 },
         },
     },
 }
@@ -109,3 +116,126 @@ MELens.Profiles["Base.VanSeats_Prison"] = profile
 MELens.Profiles["Base.VanSeats_Space"] = profile
 MELens.Profiles["Base.VanSeats_Trippy"] = profile
 MELens.Profiles["Base.VanSeats_Valkyrie"] = profile
+
+do
+    local fitted = {}
+    for k,v in pairs(profile) do fitted[k]=v end
+    fitted.legacySpotCount = #profile.spots
+    fitted.spots = {}
+    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+    fitted.extraSeats = {}
+    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+    fitted.factoryLayout = "cargo-service-1"
+    fitted.factoryRole = "passenger"
+    fitted.factoryUse = {
+    loot = {  },
+    stock = {
+        parcels = {
+            { "Base.WaterBottle", 1 },
+            { "Base.BathTowel", 1 },
+        },
+        equipmentrack = {
+            { "Base.WaterBottle", 1 },
+            { "Base.BathTowel", 1 },
+        },
+        metalcase = {
+            { "Base.WaterBottle", 1 },
+            { "Base.BathTowel", 1 },
+        },
+        medlocker = {
+            { "Base.WaterBottle", 1 },
+            { "Base.BathTowel", 1 },
+        },
+        workbench = {
+            { "Base.WaterBottle", 1 },
+            { "Base.BathTowel", 1 },
+        },
+        medbench = {
+            { "Base.WaterBottle", 1 },
+            { "Base.BathTowel", 1 },
+        },
+    },
+}
+    fitted.aisleX = 0.0
+    for _,s in ipairs({
+    {
+        wall = "left",
+        x = 0.639,
+        z = -0.38,
+        length = 1.1,
+        depth = 0.4,
+        default = "medbench",
+        factory = true,
+        pieces = { "medbench" },
+        seats = { "MELensFurnitureLeft1" },
+    },
+    {
+        wall = "right",
+        x = -0.639,
+        z = -0.38,
+        length = 1.1,
+        depth = 0.4,
+        default = "medbench",
+        factory = true,
+        pieces = { "medbench" },
+        seats = { "MELensFurnitureLeft2" },
+    },
+}) do fitted.spots[#fitted.spots+1]=s end
+    MELens.Profiles["Base.VanSeats"] = fitted
+    MELens.Profiles["Base.VanSeatsAirportShuttle"] = fitted
+    MELens.Profiles["Base.VanSeats_Creature"] = fitted
+    MELens.Profiles["Base.VanSeats_LadyDelighter"] = fitted
+    MELens.Profiles["Base.VanSeats_Mural"] = fitted
+    MELens.Profiles["Base.VanSeats_Space"] = fitted
+    MELens.Profiles["Base.VanSeats_Trippy"] = fitted
+    MELens.Profiles["Base.VanSeats_Valkyrie"] = fitted
+end
+
+do
+    local fitted = {}
+    for k,v in pairs(profile) do fitted[k]=v end
+    fitted.legacySpotCount = #profile.spots
+    fitted.spots = {}
+    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+    fitted.extraSeats = {}
+    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+    fitted.factoryLayout = "cargo-service-1"
+    fitted.factoryRole = "prisoner"
+    fitted.factoryUse = {
+    loot = {  },
+    stock = {
+        parcels = {  },
+        equipmentrack = {  },
+        metalcase = {  },
+        medlocker = {  },
+        workbench = {  },
+        medbench = {  },
+    },
+}
+    fitted.aisleX = 0.0
+    for _,s in ipairs({
+    {
+        wall = "left",
+        x = 0.639,
+        z = -0.38,
+        length = 1.1,
+        depth = 0.4,
+        default = "medbench",
+        factory = true,
+        pieces = { "medbench" },
+        seats = { "MELensFurnitureLeft1" },
+    },
+    {
+        wall = "right",
+        x = -0.639,
+        z = -0.38,
+        length = 1.1,
+        depth = 0.4,
+        default = "medbench",
+        factory = true,
+        pieces = { "medbench" },
+        seats = { "MELensFurnitureLeft2" },
+    },
+}) do fitted.spots[#fitted.spots+1]=s end
+    MELens.Profiles["Base.VanSeats_Prison"] = fitted
+end

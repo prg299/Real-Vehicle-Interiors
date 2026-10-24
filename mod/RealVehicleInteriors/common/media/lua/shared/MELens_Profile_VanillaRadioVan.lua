@@ -9,11 +9,13 @@ local profile = {
     floorY = -0.568,
     mesh = { scale = 0.01456, lift = 0 },
     shell = {
-        models = { "MELensShell_fleet_vanillaradiovan_floor", "MELensShell_fleet_vanillaradiovan_walls", "MELensShell_fleet_vanillaradiovan_bulkhead" },
+        models = { "MELensShell_fleet_vanillaradiovan_floor", "MELensShell_fleet_vanillaradiovan_walls", "MELensShell_fleet_vanillaradiovan_bulkhead", "MELensShell_fleet_vanillaradiovan_entry" },
+        entryModel = 4,
+        entryDoor = "DoorRear",
     },
     hideKI5 = {  },
     light = {
-        interiorModels = { "MELensShell_fleet_vanillaradiovan_floor", "MELensShell_fleet_vanillaradiovan_walls", "MELensShell_fleet_vanillaradiovan_bulkhead" },
+        interiorModels = { "MELensShell_fleet_vanillaradiovan_floor", "MELensShell_fleet_vanillaradiovan_walls", "MELensShell_fleet_vanillaradiovan_bulkhead", "MELensShell_fleet_vanillaradiovan_entry" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,
@@ -67,14 +69,14 @@ local profile = {
     },
     wheelWells = {
         {
-            x = { 0.443, 0.704 },
-            y = { -0.878, -0.422 },
-            z = { -1.298, -0.662 },
+            x = { 0.43, 0.704 },
+            y = { -0.878, -0.348 },
+            z = { -1.44, -0.64 },
         },
         {
-            x = { -0.704, -0.443 },
-            y = { -0.878, -0.422 },
-            z = { -1.298, -0.662 },
+            x = { -0.704, -0.43 },
+            y = { -0.878, -0.348 },
+            z = { -1.44, -0.64 },
         },
     },
     panel = { x = -0.644, y = -0.273, z = -1.765, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
@@ -93,12 +95,105 @@ local profile = {
             z = { -1.925, 0.29 },
         },
         {
-            x = { -0.65, 0.25 },
-            y = { -0.588, 0.55 },
-            z = { -2.275, -1.895 },
+            x = { -0.644, 0.644 },
+            y = { -0.578, -0.543 },
+            z = { -1.935, 0.28 },
+        },
+        {
+            x = { -0.724, 0.724 },
+            y = { -0.588, 0.61 },
+            z = { -2.275, -1.94 },
         },
     },
 }
 
 MELens.Profiles["Base.VanRadio"] = profile
 MELens.Profiles["Base.VanRadio_3N"] = profile
+
+do
+    local fitted = {}
+    for k,v in pairs(profile) do fitted[k]=v end
+    fitted.legacySpotCount = #profile.spots
+    fitted.spots = {}
+    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+    fitted.extraSeats = {}
+    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+    fitted.factoryLayout = "cargo-service-1"
+    fitted.factoryRole = "radio"
+    fitted.factoryUse = {
+    loot = { parcels = "CrateElectronics", equipmentrack = "CrateElectronics", metalcase = "CrateElectronics", medlocker = "CrateElectronics" },
+    stock = {
+        parcels = {
+            { "Base.ElectricWire", 1 },
+            { "Base.Battery", 2 },
+        },
+        equipmentrack = {
+            { "Base.ElectricWire", 1 },
+            { "Base.Battery", 2 },
+        },
+        metalcase = {
+            { "Base.ElectricWire", 1 },
+            { "Base.Battery", 2 },
+        },
+        medlocker = {
+            { "Base.ElectricWire", 1 },
+            { "Base.Battery", 2 },
+        },
+        workbench = {
+            { "Base.HamRadio1", 1 },
+            { "Base.Headphones", 1 },
+            { "Base.Battery", 2 },
+        },
+        medbench = {
+            { "Base.Notebook", 1 },
+            { "Base.Pen", 1 },
+        },
+    },
+}
+    fitted.aisleX = 0.0
+    for _,s in ipairs({
+    {
+        wall = "left",
+        x = 0.654,
+        z = -0.21,
+        length = 0.9,
+        depth = 0.4,
+        default = "workbench",
+        factory = true,
+        pieces = { "workbench" },
+    },
+    {
+        wall = "left",
+        x = 0.654,
+        z = -1.525,
+        length = 0.6,
+        depth = 0.32,
+        default = "equipmentrack",
+        factory = true,
+        pieces = { "equipmentrack" },
+    },
+    {
+        wall = "right",
+        x = -0.654,
+        z = -0.07,
+        length = 0.6,
+        depth = 0.32,
+        default = "equipmentrack",
+        factory = true,
+        pieces = { "equipmentrack" },
+    },
+    {
+        wall = "right",
+        x = -0.654,
+        z = -1.215,
+        length = 1.1,
+        depth = 0.4,
+        default = "medbench",
+        factory = true,
+        pieces = { "medbench" },
+        seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
+    },
+}) do fitted.spots[#fitted.spots+1]=s end
+    MELens.Profiles["Base.VanRadio"] = fitted
+    MELens.Profiles["Base.VanRadio_3N"] = fitted
+end

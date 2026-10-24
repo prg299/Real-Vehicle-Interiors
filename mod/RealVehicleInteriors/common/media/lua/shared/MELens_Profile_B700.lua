@@ -162,14 +162,14 @@ local profile = {
     },
     wheelWells = {
         {
-            x = { 0.64, 1.1 },
+            x = { 0.47, 1.1 },
             y = { -0.55, 0 },
-            z = { -2.81, -2.13 },
+            z = { -2.98, -1.96 },
         },
         {
-            x = { -1.1, -0.64 },
+            x = { -1.1, -0.47 },
             y = { -0.55, 0 },
-            z = { -2.81, -2.13 },
+            z = { -2.98, -1.96 },
         },
     },
     panel = { x = -1.04, y = 0.055, z = 1.146, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
@@ -177,8 +177,8 @@ local profile = {
     fuelTank = 30,
     vanillaSeats = { "FrontLeft" },
     driver = { seat = "FrontLeft", x1 = 0.27, x2 = 0.86, z1 = 1.17, z2 = 1.68 },
-    cutFront = 2.24,
-    cutFrontTop = 0.55,
+    cutFront = 1.99,
+    cutFrontTop = 0.5,
     windowBoxes = {
         {
             x = { 0.55, 1.3 },
@@ -199,6 +199,11 @@ local profile = {
             x = { 1.12, 1.41 },
             y = { 0.45, 1.22 },
             z = { 2, 2.18 },
+        },
+        {
+            x = { -1.14, 1.14 },
+            y = { 0.505, 1.13 },
+            z = { 1.95, 2.24 },
         },
     },
     jambBoxes = {

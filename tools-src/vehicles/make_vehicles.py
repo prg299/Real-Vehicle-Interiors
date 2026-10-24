@@ -366,6 +366,128 @@ def remove_generated(spec):
             print("  removed", os.path.relpath(path, ROOT))
 
 
+def measured_corner_returns(measure, regions, shell_cfg):
+    """Native corner spines omitted by nearest-angle outline sampling.
+
+    Regions identify actual body corners, not dimensions of a replacement slab.
+    Each section must contain both incident skins at its extremal corner. Keep
+    the existing lining untouched; rv_kit joins that lining to these spines.
+    """
+    sections = measure.get("sections")
+    assert sections, "corner returns need exact native body sections"
+    result = []
+    for region in regions:
+        side, end = region["side"], region["end"]
+        assert side in (-1, 1) and end in (-1, 1)
+        rows = []
+        for height, segments in sorted(sections.items(), key=lambda pair: float(pair[0])):
+            height = float(height)
+            if not shell_cfg["lowestOutline"] <= height <= shell_cfg["top"]:
+                continue
+            if rows and height - rows[-1][0] < 1e-6:
+                continue
+            points = [p for segment in segments for p in segment
+                      if region["x"][0] <= p[0] <= region["x"][1]
+                      and region["z"][0] <= p[1] <= region["z"][1]]
+            if not points:
+                continue
+            candidates = []
+            for point in points:
+                incident = []
+                for a, b in segments:
+                    if math.dist(a, point) < 1e-5 and math.dist(a, b) > 1e-5:
+                        incident.append((b[0] - a[0], b[1] - a[1]))
+                    elif math.dist(b, point) < 1e-5 and math.dist(a, b) > 1e-5:
+                        incident.append((a[0] - b[0], a[1] - b[1]))
+                # Reject a lone trim spike or a disconnected extremum. Both
+                # actual native skins must meet, and head into this corner.
+                if (any(side * dx < -1e-5 and abs(dz) < 1e-5 for dx, dz in incident)
+                        and any(end * dz < -1e-5 and abs(dx) < 1e-5 for dx, dz in incident)):
+                    candidates.append(point)
+            assert candidates, (height, region, "no connected corner skins")
+            corner = max(candidates, key=lambda p: (end * p[1], side * p[0]))
+            row = [height, corner[0], corner[1]]
+            if rows and height - rows[-1][0] < 1e-6:
+                assert math.dist(row[1:], rows[-1][1:]) < 1e-5
+                continue
+            # Preserve native bends while dropping collinear triangulation
+            # and window-detail heights; the lining supplies its own rows.
+            while len(rows) > 1:
+                a, b = rows[-2:]
+                t = (b[0] - a[0]) / (height - a[0])
+                if math.dist(b[1:], [a[i] + (row[i] - a[i]) * t for i in (1, 2)]) >= 1e-5:
+                    break
+                rows.pop()
+            rows.append(row)
+        assert len(rows) >= 2, (region, "no connected native corner")
+        assert rows[0][0] < shell_cfg["floorY"] + NEAR_CUT
+        assert rows[-1][0] > shell_cfg["floorY"] + max(CUT_HEIGHTS)
+        result.append({"side": side, "end": end, "skin": .003,
+                       "section": [[r(v, 9) for v in row] for row in rows]})
+    return result
+
+
+def measured_cowl_return(measure, request, lining, skin=.002):
+    """Trace the one connected native cowl skin ahead of the existing room."""
+    height, rear = request["height"], request["rear"]
+    sections = measure.get("sections", {})
+    key = min(sections, key=lambda k: abs(float(k) - height))
+    assert abs(float(key) - height) < 1e-9, "cowl needs its exact native section plane"
+    lo, hi = request["x"]
+    nodes, graph = {}, {}
+    for a, b in sections[key]:
+        if not all(lo <= p[0] <= hi and p[1] >= rear for p in (a, b)):
+            continue
+        ka, kb = tuple(round(v, 6) for v in a), tuple(round(v, 6) for v in b)
+        if ka == kb:
+            continue
+        nodes.setdefault(ka, a); nodes.setdefault(kb, b)
+        graph.setdefault(ka, set()).add(kb); graph.setdefault(kb, set()).add(ka)
+    components, unseen = [], set(graph)
+    while unseen:
+        component, todo = set(), [next(iter(unseen))]
+        while todo:
+            point = todo.pop()
+            if point in component:
+                continue
+            component.add(point); unseen.discard(point)
+            todo.extend(graph[point] - component)
+        if min(p[0] for p in component) < 0 < max(p[0] for p in component):
+            components.append(component)
+    assert len(components) == 1, "cowl region must contain one connected skin across the cab"
+    component = components[0]
+    ends = [p for p in component if len(graph[p]) == 1]
+    assert len(ends) == 2 and all(len(graph[p]) <= 2 for p in component), "cowl skin must be an unbranched contour"
+    current, finish = sorted(ends)
+    chain, previous = [], None
+    while True:
+        point = nodes[current]
+        while len(chain) > 1:
+            a, b = chain[-2:]
+            area = abs((b[0] - a[0]) * (point[1] - a[1]) - (b[1] - a[1]) * (point[0] - a[0]))
+            if area / max(math.dist(a, point), 1e-8) >= 1e-5:
+                break
+            chain.pop()
+        chain.append(point)
+        if current == finish:
+            break
+        following = next(p for p in graph[current] if p != previous)
+        previous, current = current, following
+    front = [p for p in lining if abs(p[1] - rear) < 1e-6]
+    assert len(front) >= 2, "cowl must join the unchanged room front"
+    left, right = min(p[0] for p in front), max(p[0] for p in front)
+    assert chain[0][0] < left + .01 and chain[-1][0] > right - .01
+    # A 3mm underlap behind the lining closes the shared edge without a
+    # coincident face. Every other boundary comes from the native section.
+    polygon = [[left, rear - .003]] + chain + [[right, rear - .003]]
+    # Move the thin perimeter skin off the native vertical faces. The rear
+    # edge retains a 1mm underlap; neither surface is coplanar with the hull.
+    import shell_rings
+    polygon = shell_rings.inset_ring(polygon, skin)
+    return {"height": height, "thickness": request.get("thickness", .006),
+            "polygon": [[r(v, 9) for v in point] for point in polygon]}
+
+
 def build(spec_path):
     spec = load(spec_path)
     key = spec["key"]
@@ -375,6 +497,7 @@ def build(spec_path):
         return None
     kit = load_kit()
     measure = load(os.path.join(FLOORPLANS, spec["measure"]))
+    hull_measure = measure
     scripts = load(os.path.join(FLOORPLANS, spec["scripts"][0]))
     info = scripts[spec["scripts"][1]]
     scale = info["model"]["scale"]
@@ -416,6 +539,8 @@ def build(spec_path):
             spot["empty"] = True             # sized for its default piece, but starts bare
         if s.get("cargo"):
             spot["cargo"] = True             # boxes only, and boxes only here
+        if s.get("rise") is not None:
+            spot["rise"] = s["rise"]
         if s.get("level"):
             spot["level"], spot["rise"] = s["level"], s["rise"]
         # tall furniture (any piece can be swapped in: up to FURNITURE_TOP) must not reach through the
@@ -534,7 +659,7 @@ def build(spec_path):
             side = 1 if blo[0] > 0 else -1
             # (`openingPad`: the door leaf stands a few cm outside the lining, so at the opening's edge the camera
             # sees past the wall's end into the ground behind it; the wall overlaps the leaf by this much)
-            pad = spec.get("openingPad", 0.04)
+            pad = spec.get("openingPads", {}).get(name, spec.get("openingPad", 0.04))
             box = {"x": sorted([side * 0.55, side * 1.2]), "y": [r(blo[1] - 0.03), r(bhi[1] + 0.03)],
                    "z": [r(blo[2] + pad), r(bhi[2] - pad)]}
         else:                                           # front or rear
@@ -595,12 +720,153 @@ def build(spec_path):
     }
     if spec.get("reuseTexture"):
         shell_cfg["reuseTexture"] = spec["reuseTexture"]
+    if spec.get("entryOpening"):
+        shell_cfg["entryOpening"] = spec["entryOpening"]
+        # A conservative rectangular room is narrower than a rounded rear body.
+        # Close the entire measured rear cross-section, including the skirt below
+        # the floor and the band between the room's corners and the exterior posts.
+        plane=spec['box']['z'][0]+INSET-.004
+        samples=[]
+        for height,segments in hull_measure['sections'].items():
+            crossing=[]
+            for a,b in segments:
+                if (a[1]-plane)*(b[1]-plane)<=0 and abs(a[1]-b[1])>1e-8:
+                    crossing.append(a[0]+(b[0]-a[0])*(plane-a[1])/(b[1]-a[1]))
+            if crossing and min(crossing)<-.2 and max(crossing)>.2:
+                samples.append((float(height),min(crossing)+.008,max(crossing)-.008))
+        samples.sort()
+        assert samples,(key,'rear cross-section missing')
+        bottom=max(hull_measure['body']['min'][1]+.008,floor-.32)
+        high=shell_cfg['top']
+        def section_at(y):
+            lo=max((s for s in samples if s[0]<=y),default=samples[0])
+            hi=min((s for s in samples if s[0]>=y),default=samples[-1])
+            t=(y-lo[0])/(hi[0]-lo[0]) if hi[0]>lo[0] else 0
+            return [r(y),r(lo[1]+(hi[1]-lo[1])*t),r(lo[2]+(hi[2]-lo[2])*t)]
+        section=[section_at(bottom)]+[list(s) for s in samples if bottom<s[0]<high]+[section_at(high)]
+        shell_cfg['rearClosure']={'z':r(plane,4),'section':section}
+        # Follow the connected rear body contour, rather than extruding the
+        # flat lining to body.min.z (the roof and lower skirt taper forward).
+        # Only components reached from the two outer plane crossings count;
+        # detached bumper/hitch details cannot set the closure's rear depth.
+        def aft_component(segments,seed_x):
+            clipped=[];neighbours={}
+            def point_key(point):return (round(point[0],4),round(point[1],4))
+            for a,b in segments:
+                a,b=list(a),list(b)
+                if min(a[1],b[1])>plane:continue
+                if max(a[1],b[1])>plane:
+                    t=(plane-a[1])/(b[1]-a[1])
+                    cross=[a[0]+(b[0]-a[0])*t,plane]
+                    if a[1]>plane:a=cross
+                    else:b=cross
+                ka,kb=point_key(a),point_key(b)
+                if ka==kb:continue
+                index=len(clipped);clipped.append((a,b))
+                neighbours.setdefault(ka,[]).append((kb,index))
+                neighbours.setdefault(kb,[]).append((ka,index))
+            if not neighbours:return []
+            seed=min(neighbours,key=lambda point:(point[0]-seed_x)**2+(point[1]-plane)**2)
+            pending=[seed];seen=set();edges=set()
+            while pending:
+                node=pending.pop()
+                if node in seen:continue
+                seen.add(node)
+                for other,index in neighbours[node]:
+                    edges.add(index)
+                    if other not in seen:pending.append(other)
+            return [clipped[index] for index in sorted(edges)]
+
+        def outer_crossing(side,z,is_left):
+            crossing=[]
+            for a,b in side:
+                if min(a[1],b[1])-1e-8<=z<=max(a[1],b[1])+1e-8:
+                    if abs(a[1]-b[1])<1e-8:crossing.extend((a[0],b[0]))
+                    else:crossing.append(a[0]+(b[0]-a[0])*(z-a[1])/(b[1]-a[1]))
+            if not crossing:return None
+            return min(crossing) if is_left else max(crossing)
+
+        def pillar_end(side,is_left):
+            # A connected rear skin can continue across the transom into a
+            # central apex: that is not the end of the side pillar. Follow its
+            # outer envelope to the side-to-transom tangent turn instead. A
+            # transverse run is within 30 degrees of the rear-facing plane.
+            # Square-ended bodies simply end at their measured aft side corner.
+            curve=[]
+            for z in sorted({plane}|{p[1] for edge in side for p in edge},reverse=True):
+                x=outer_crossing(side,z,is_left)
+                if x is None:continue
+                if curve and math.hypot(x-curve[-1][0],z-curve[-1][1])<.0001:continue
+                # Triangle slicing introduces vertices on straight native
+                # facets. Remove only sub-0.1mm deviations before sharing the
+                # stations across heights; keep the actual silhouette bends.
+                while len(curve)>1:
+                    a,b=curve[-2],curve[-1]
+                    length=math.hypot(x-a[0],z-a[1])
+                    area=abs((b[0]-a[0])*(z-a[1])-(b[1]-a[1])*(x-a[0]))
+                    if length<1e-8 or area/length>=.0001:break
+                    curve.pop()
+                curve.append((x,z))
+            previous=None
+            for i,(a,b) in enumerate(zip(curve,curve[1:])):
+                angle=math.atan2(abs(b[0]-a[0]),abs(b[1]-a[1]))
+                if angle>=math.pi/3 and (previous is None or previous<math.pi/3 or angle-previous>=math.pi/12):
+                    return a[1],curve
+                previous=angle
+            return (curve[-1][1] if curve else plane),curve
+
+        depth_sources={};fractions={0.0,1.0};skin=.003
+        for height,left,right in samples:
+            if not bottom<=height<=high:continue
+            segments=hull_measure['sections']['%.2f'%height]
+            sides=[aft_component(segments,left-.008),aft_component(segments,right+.008)]
+            if not all(sides):continue
+            ends=[pillar_end(side,index==0) for index,side in enumerate(sides)]
+            aft=max(end for end,curve in ends)+skin
+            if aft>=plane-1e-6:continue
+            depth_sources[height]=(aft,sides)
+            # All contour bends become common stations, so interpolation in
+            # height does not replace a rounded pillar with an arbitrary slab.
+            for end,curve in ends:
+                for x,z in curve:
+                    if aft<z<plane:
+                        fraction=round((z-plane)/(aft-plane),6)
+                        if 0<fraction<1:fractions.add(fraction)
+        fractions=sorted(fractions)
+        depth_sections=[]
+        # Depth must end at actual measured rows. Extending it down to the
+        # unmeasured skirt endpoint produces an exposed triangular wedge;
+        # dropping measured below-floor rows instead leaves the lower hinge
+        # interval open. The mesh caps these measured endpoints, while the
+        # original flat closure/leaf continues through the skirt and roof.
+        depth_rows=[list(s) for s in samples if bottom<=s[0]<=high]
+        for height,left,right in depth_rows:
+            source=depth_sources.get(height)
+            stations=[]
+            for t in fractions:
+                if source is None or t==0:
+                    stations.append([r(plane,6),left,right]);continue
+                aft,sides=source;z=plane+(aft-plane)*t
+                bounds=[]
+                for side_index,side in enumerate(sides):
+                    x=outer_crossing(side,z,side_index==0)
+                    assert x is not None,(key,height,z,'rear contour disconnected')
+                    bounds.append(x+skin if side_index==0 else x-skin)
+                assert bounds[1]-bounds[0]>.07,(key,height,z,'rear contour too narrow')
+                stations.append([r(z,6),r(bounds[0],6),r(bounds[1],6)])
+            depth_sections.append([height,stations])
+        # No depth is extrapolated into the unmeasured skirt or roof bands.
+        shell_cfg['rearClosure']['depthSections']=depth_sections
     # A cut-away cargo shell needs an opaque, full-height partition behind the
     # cab. The native cab mesh is often single-sided at this artificial cut.
     if spec.get("kind") == "cargo" and spec.get("cutFront") is not None:
         shell_cfg["cabBulkhead"] = {"top": max(ceiling, spec.get("cutFrontTop", ceiling))}
         if measure.get("cabSection"):
             shell_cfg["cabBulkhead"] = {"top": ceiling, "section": measure["cabSection"]}
+        # The section was measured at the native cut plane. Placing it at the
+        # inset room outline instead leaves a 33mm slit behind the intact roof.
+        shell_cfg["cabBulkhead"]["z"] = spec["cutFront"]
+        shell_cfg["cabBulkhead"].update(spec.get("cabBulkhead", {}))
     if spec.get("box"):
         # a rectangular room (a box truck's cargo space, a bus): the shell keeps its corners
         shell_cfg["sharpCorners"] = True
@@ -614,6 +880,12 @@ def build(spec_path):
             shell_cfg["floorOutline"]["measure"] = os.path.join(FLOORPLANS, shell_cfg["floorOutline"]["measure"]).replace("\\", "/")
         # the wall slopes up from the floor's edge: the walk grid counts the first part of the slope as floor
         shell_cfg["grid"]["floorTolerance"] = 0.2
+    if spec.get("cornerReturns"):
+        shell_cfg["cornerReturns"] = measured_corner_returns(hull_measure, spec["cornerReturns"], shell_cfg)
+    if spec.get("cowlReturn"):
+        import shell_rings
+        lining = shell_rings.build(measure, shell_cfg)
+        shell_cfg["cowlReturn"] = measured_cowl_return(hull_measure, spec["cowlReturn"], lining["room_ring"])
     with open(os.path.join(CFG, "shell_%s.json" % key), "w", encoding="utf-8", newline="\n") as handle:
         json.dump(shell_cfg, handle, indent=4)
 
@@ -621,6 +893,8 @@ def build(spec_path):
     shell_models = ["MELensShell_%s_floor" % spec["texture"], "MELensShell_%s_walls" % spec["texture"]]
     if shell_cfg.get("cabBulkhead"):
         shell_models.append("MELensShell_%s_bulkhead" % spec["texture"])
+    if shell_cfg.get("entryOpening"):
+        shell_models.append("MELensShell_%s_entry" % spec["texture"])
     hide = {}
     for model, keep in spec.get("hide", {}).items():
         if keep is True or isinstance(keep, dict):
@@ -679,11 +953,19 @@ def build(spec_path):
         "waterTank": spec.get("waterTank", 60),
         "fuelTank": spec.get("fuelTank", 20),
     }
+    if shell_cfg.get("entryOpening"):
+        profile["shell"]["entryModel"] = len(shell_models)
+        profile["shell"]["entryDoor"] = entry["part"]
     if "mesh" in spec:
-        profile["cutPlanes"] = [[0, 0, -1, r(mesh["lift"] - (h + floor) / mesh["scale"], 2)] for h in CUT_HEIGHTS]
+        # A short cargo body can have its ceiling below the nominal High cut.
+        # Keep the cut under that measured ceiling: otherwise its roof flange
+        # survives above the lining as an unsupported strip (E150).
+        cut_tops = [min(h + floor, ceiling - .02) if spec.get("kind") == "cargo" else h + floor
+                    for h in CUT_HEIGHTS]
+        profile["cutPlanes"] = [[0, 0, -1, r(mesh["lift"] - h / mesh["scale"], 2)] for h in cut_tops]
     if abs(scale - 0.9) > 0.00001:
         profile["vehicleScale"] = scale
-    for extra in ("vanillaSeats", "ki5Storage", "loot", "driver", "cutFront", "cutFrontTop", "modelShift"):
+    for extra in ("vanillaSeats", "ki5Storage", "loot", "driver", "cutFront", "cutFrontTop", "modelShift", "bodyKeepPlanes"):
         if extra in spec:
             profile[extra] = spec[extra]
     # KI5's body carries details inside its hull (a trailer tongue's arm tips at the front corners)
@@ -694,6 +976,8 @@ def build(spec_path):
         profile["extraSeats"] = spec["extraSeats"]
     if spec.get("clipBody", spec.get("kind", "camper") == "camper"):
         profile["clipBody"] = True
+    if spec.get("nativeBodyLining"):
+        profile["nativeBodyLining"] = spec["nativeBodyLining"]
     if window_boxes:
         profile["windowBoxes"] = window_boxes
     if jamb_boxes:
@@ -746,6 +1030,9 @@ def build(spec_path):
              ""]
     for full in spec["vehicles"]:
         lines.append('MELens.Profiles["%s"] = profile' % full)
+    if spec.get("factoryLayout"):
+        import factory_layouts
+        factory_layouts.append_profiles(spec, profile, lines)
     out = os.path.join(LUA, "MELens_Profile_%s.lua" % key)
     with open(out, "w", encoding="utf-8", newline="\n") as handle:
         handle.write("\n".join(lines) + "\n")

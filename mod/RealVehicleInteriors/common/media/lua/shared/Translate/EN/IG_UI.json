@@ -1,4 +1,5 @@
 {
+    "IGUI_VehiclePartMELensRV_workbench": "Service Workbench",
     "IGUI_VehiclePartMELensRV_stretcher": "Medical Stretcher",
     "IGUI_VehiclePartMELensRV_metalcase": "Equipment Cabinet",
     "IGUI_MELens_OptionsTitle": "Real Vehicle Interiors",
@@ -114,5 +115,10 @@
     "IGUI_MELens_PropaneFull": "The tanks are full.",
     "IGUI_MELens_ItemsFell": "Things slid off and fell to the floor.",
     "IGUI_VehiclePartMELensRV_shelf": "Shelf Unit",
-    "IGUI_MELens_ReasonTall": "It is too tall for that shelf."
+    "IGUI_MELens_ReasonTall": "It is too tall for that shelf.",
+    "IGUI_VehiclePartMELensRV_safe": "Armored Cash Safe",
+    "IGUI_VehiclePartMELensRV_parcels": "Stacked Delivery Parcels",
+    "IGUI_VehiclePartMELensRV_medlocker": "Medical Supply Cabinet",
+    "IGUI_VehiclePartMELensRV_medbench": "Utility Bench Seat",
+    "IGUI_VehiclePartMELensRV_equipmentrack": "Equipment Rack"
 }

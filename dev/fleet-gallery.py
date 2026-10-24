@@ -22,6 +22,7 @@ def load(name):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output-name',default='gallery')
+    parser.add_argument('--only',action='append',help='Capture only these scene labels into a separate output folder')
     parser.add_argument('--zoom',type=float,choices=[.5,.75],help='Override each scene\'s fitted framing')
     args=parser.parse_args()
     assert args.output_name and all(c.isalnum() or c=='-' for c in args.output_name)
@@ -30,19 +31,31 @@ def main():
     session=json.loads((run/'native-session.json').read_text('utf-8-sig'))
     h.SCREENS=Path(next(x.split('=',1)[1] for x in session['command'] if x.startswith('-cachedir=')))/'Screenshots'
     scenes=[
+        ('vanilla-cargo-van','Base.Van','N',.5),
         ('econoline','Base.86fordE150long','N',.5),
         ('chevy-step-van','Base.85chevyStepVanCitrusWave','N',.75),
         ('armored-truck','Base.87fordF700bank','N',.75),
         ('ambulance','Base.90fordF350ambulance','N',.75),
         ('delivery-van','Base.StepVan_Zippee','W',.5),
         ('mystery-van','Base.86fordE150mm','W',.5),
+        ('service-truck','Base.90fordF350SWAT','N',.75),
+        ('cargo-truck','Base.87fordF700box','N',.75),
+        ('radio-van','Base.VanRadio','N',.5),
+        ('mobile-library','Base.StepVan_MobileLibrary','N',.75),
+        ('catering-van','Base.StepVanAirportCatering','N',.5),
     ]
+    if args.only:
+        unknown=set(args.only)-{scene[0] for scene in scenes}
+        if unknown:parser.error('unknown gallery scenes: '+', '.join(sorted(unknown)))
+        scenes=[scene for scene in scenes if scene[0] in args.only]
     try:
         # Render-only captures may use a larger window. Native mouse tests keep
         # the input harness's established 1280x720 coordinate contract.
         h.lua('getCore():setResolutionAndFullScreen(1600,900,false);return true');time.sleep(2)
         h.lua('''MELensMedia.cameraOff();local p=getPlayer();if p:getVehicle() then p:getVehicle():exit(p) end
 getGameTime():setTimeOfDay(12);return true''')
+        h.lua('''local rain=getClimateManager():getClimateFloat(ClimateManager.FLOAT_PRECIPITATION_INTENSITY)
+rain:setEnableAdmin(true);rain:setAdminValue(0);return true''')
         h.REPORT['scenes']=[]
         for label,name,heading,preferred_zoom in scenes:
             target_zoom=args.zoom if args.zoom is not None else preferred_zoom
@@ -60,9 +73,13 @@ assert(v:enter(MELens.cabinSeat(v),p));return true''')
                 time.sleep(.1)
             # The entry highlight is useful in play, but should not cover the
             # furniture in the promotional frame. Put the character in the aisle.
-            h.lua('''local v=MELensTest.vehicle;local pr=MELens.profileFor(v);local g=MELens.WalkGrids[pr.walkGrid]
-MELens.walkTo(getPlayer(),pr.aisleX or 0,g.z0+#g.rows*g.cell*.45);return true''')
-            time.sleep(2)
+            fraction=.25 if label=='radio-van' else .45
+            h.lua(f'''local v=MELensTest.vehicle;local pr=MELens.profileFor(v);local g=MELens.WalkGrids[pr.walkGrid]
+MELens.walkTo(getPlayer(),pr.aisleX or 0,g.z0+#g.rows*g.cell*{fraction});return true''')
+            deadline=time.monotonic()+20
+            while h.lua('return MELens.pathing(getPlayer())'):
+                assert time.monotonic()<deadline,'gallery capture position timed out'
+                time.sleep(.1)
             for _ in range(12):
                 zoom=h.lua('return getCore():getZoom(0)')
                 if abs(zoom-target_zoom)<.02:break
@@ -90,6 +107,7 @@ MELensMedia.cameraOff();return true''')
         h.lua('''if MELensGalleryClear then Events.OnTick.Remove(MELensGalleryClear);MELensGalleryClear=nil end
 MELensMedia.cameraOff();ISUIHandler.setVisibleAllUI(true)
 getCore():setResolutionAndFullScreen(1280,720,false);return true''')
+        h.lua('getClimateManager():getClimateFloat(ClimateManager.FLOAT_PRECIPITATION_INTENSITY):setEnableAdmin(false);return true')
 
 
 if __name__=='__main__':raise SystemExit(main())

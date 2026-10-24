@@ -2,6 +2,11 @@
     "name":  "Base.Trailer61Airflyte",
     "fbx":  "C:/SteamLibrary/steamapps/workshop/content/108600/3670064951/mods/KI5campers/common/media/models_X/vehicles/Trailers_KI5campers_Body.fbx",
     "body":  "61airflyte_body",
+    "exportSections": true,
+    "sectionHeightsFrom": [
+        {"x": [0.90, 1.01], "z": [1.8, 2.4]},
+        {"x": [-1.01, -0.90], "z": [1.8, 2.4]}
+    ],
     "interior":  [
                      "61airflyte_interior"
                  ],

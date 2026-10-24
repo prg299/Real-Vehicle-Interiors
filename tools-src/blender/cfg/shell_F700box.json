@@ -69,7 +69,8 @@
         ]
     },
     "cabBulkhead": {
-        "top": 1.85
+        "top": 1.85,
+        "z": 1.1
     },
     "sharpCorners": true
 }

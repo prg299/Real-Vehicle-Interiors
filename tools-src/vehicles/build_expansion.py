@@ -13,6 +13,9 @@ OUT = ROOT / 'build/rv/floorplans'
 # physics radius omits. Clearances measured with the native body-space survey,
 # then reviewed in the game (inner side, half length, height above the floor).
 REAR_ARCH = {
+    'VanillaVan': (.43, .40, .22), 'VanillaPassengerVan': (.43, .40, .22),
+    'VanillaAmbulance': (.43, .40, .22), 'VanillaRadioVan': (.43, .40, .22),
+    'VanillaStepVan': (.43, .42, .19),
     'E150Short': (.60, .37, .16), 'E150Long': (.60, .37, .16), 'E150Windows': (.60, .37, .16),
     'ChevyStepVan': (.47, .42, .14), 'F700Bank': (.46, .52, .15),
     'F700Swat': (.46, .52, .15), 'F350Ambulance': (.53, .42, .15),
@@ -78,8 +81,9 @@ def main():
         # A narrow body cannot fit two opposing .55m furniture rows and a
         # .30m player. Put its kitchen across the front, with a rear-left
         # bed and an offset aisle instead of overlapping alternative slots.
-        opening = dict(x=[-.65, .25] if narrow else [-.50, .50], y=[round(floor - .02, 3), round(ceiling - .04, 3)],
-                       z=[round(rear - .30, 3), round(rear + .08, 3)])
+        opening = dict(x=[round(-half-.04,3),round(half+.04,3)],
+                       y=[round(floor-.02,3),round(ceiling+.02,3)],
+                       z=[round(rear-.30,3),round(rear+.035,3)])
         hidden = {}
         # Matching bodies can have different factory interiors (the Payday van,
         # police equipment, extra benches). Inventory every variant's model keys.
@@ -87,8 +91,21 @@ def main():
         for part in variant_parts:
             for model in part['models']:
                 mesh_name = model.get('mesh') or ''
-                if 'interior' in mesh_name.lower() or ('window' in part['id'].lower() and mesh_name):
+                model_name = (model['file'] + ' ' + mesh_name).lower()
+                part_name = part['id'].lower()
+                glazing = 'window' in part_name or 'windshield' in part_name
+                armor = 'armor' in part_name
+                # Some variants name the model script InteriorExtra while the
+                # FBX object is only swat_extra. Both names describe the model.
+                # Cargo roof racks and window armor leave detached slivers when
+                # cut at wall height; keep only their supported cab portion.
+                if ('interior' in model_name or ((glazing or armor) and mesh_name)
+                        or 'roofrack' in model_name):
                     hidden[model['file']] = {'plane': [0, -1, 0, round(front / measure['mesh']['scale'], 4)]}
+                if (glazing or armor) and ('rear' in part_name or 'back' in part_name):
+                    # Rear glass can lose its door transform when the door is
+                    # missing. Hide the whole cargo-only pane, not its old pose.
+                    hidden[model['file']] = True
                 if part['id'].startswith('Seat') and part['id'] not in ('SeatFrontLeft', 'SeatFrontRight'):
                     hidden[model['file']] = True
                 elif ('seat' in mesh_name.lower() or 'bench' in mesh_name.lower()) and part['id'] not in ('SeatFrontLeft', 'SeatFrontRight'):
@@ -104,6 +121,12 @@ def main():
         interior_box = dict(x=[round(-half + .015, 3), round(half - .015, 3)],
                             y=[round(floor + .018, 3), round(ceiling + .02, 3)],
                             z=[round(rear + .05, 3), round(front - .03, 3)])
+        # Native seat rails and floor ribs cross the new floor inside the old
+        # 18mm unclipped band. Remove that band only under the authored floor,
+        # inset beyond its 30mm wall margin so the outer sill stays closed.
+        floor_box = dict(x=[round(-half + .04, 3), round(half - .04, 3)],
+                         y=[round(floor - .01, 3), round(floor + .025, 3)],
+                         z=[round(rear + .04, 3), round(front - .04, 3)])
         spec = dict(key=key, vehicles=row['vehicles'], title=row['title'], kind='cargo',
                     measure=f'measure_{key}.json', scripts=row['scripts'], texture=texture,
                     reuseTexture='f700box', mesh=measure['mesh'], floorY=floor, ceiling=ceiling,
@@ -111,9 +134,9 @@ def main():
                     aisleX=-.25 if narrow else 0,
                     entry=dict(span=[-.70, .20] if narrow else [-.50, .50], wall='back',
                                part=row['entryDoor'], area='TruckBed', panelWall='right' if narrow else 'left'),
-                    entryOpening=opening, windowBoxes=[interior_box], openings=[], extraSeats=seats, wheelWells=wells,
+                    entryOpening=opening, windowBoxes=[interior_box, floor_box], openings=[], extraSeats=seats, wheelWells=wells,
                     vanillaSeats=sorted({p['id'] for p in info['passengers'] if '*' not in p['id']}),
-                    waterTank=40, fuelTank=20,
+                    waterTank=40, fuelTank=20, factoryLayout=True,
                     spots=[
                         dict(wall='left', at=round(rear + .84 if narrow else front - .87, 3), length=1.50, depth=.55,
                              default='bed', empty=True, seats=seats[:2]),
@@ -125,17 +148,25 @@ def main():
         if abs(measure['mesh']['lift']) < .00001:
             spec['modelShift'] = [0, 0, 0]
         if key == 'F350Ambulance':
+            # Native transverse body faces reach z=-.4294016 behind cutFront
+            # -.37. Cover them with 3.6mm clearance; the forward skin stays at
+            # cutFront+.002 so its perimeter still seals the native cab.
+            spec['cabBulkhead'] = dict(depth=.063)
             spec['cutFrontTop'] = 1.10  # keep the measured cab roof, cut the taller lightbar
         elif key in ('F700Bank', 'F700Swat'):
             # The distinct armored cabs reach 1.295m and 1.142m respectively.
             spec['cutFrontTop'] = 1.33 if key == 'F700Bank' else 1.18
+        if key == 'VanillaAmbulance':
+            # Native material probes identify a dark white-mask inner return,
+            # separate from the yellow-mask exterior livery and lamp parts.
+            spec['nativeBodyLining'] = [.55, .57, .59]
         if not narrow:
             spec['spots'].insert(1, dict(wall='right', at=round(front - .87, 3), length=1.50, depth=.55,
                                          default='dinette', empty=True, seats=seats[2:]))
         path = ROOT / f'tools-src/vehicles/specs/{key}.json'
         path.write_text(json.dumps(spec, indent=4) + '\n', encoding='utf-8', newline='\n')
         mv.build(str(path))
-        for suffix in ('floor', 'walls', 'bulkhead'):
+        for suffix in ('floor', 'walls', 'bulkhead', 'entry'):
             material = 'floor' if suffix == 'floor' else 'walls'
             declarations.append(f'    model MELensShell_{texture}_{suffix} {{ mesh = vehicles/MELens_Fleet|shell_{texture}_{suffix}, texture = Vehicles/MELensShell_f700box_{material}, shader = vehiclewheel, scale = 0.0111111, }}')
         coverage.append(dict(family=key, title=row['title'], vehicles=row['vehicles'], dependencies=row['dependencies'],

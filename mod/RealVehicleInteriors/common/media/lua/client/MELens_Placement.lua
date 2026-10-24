@@ -168,7 +168,7 @@ function L.Mode:onMouseDown(x, y)
         self:stop()
         ISInventoryPaneContextMenu.transferIfNeeded(player, item)
         local a = 0
-        local sx, sz = M.Interact.standPoint(place.spot, piece, a)
+        local sx, sz = M.Interact.openStandPoint(vehicle, place.spot, piece, a, player)
         M.standingThen(player, function()
             M.walkTo(player, sx, sz, function()
                 ISTimedActionQueue.add(MELensPlaceFurniture:new(player, vehicle, place.part, item))

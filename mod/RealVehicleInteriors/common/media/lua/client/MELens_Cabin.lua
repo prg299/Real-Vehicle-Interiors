@@ -38,6 +38,7 @@ local ARRIVE_DISTANCE = 0.04
 
 local session = nil
 local armedVehicle = nil
+local armedProfile = nil
 local lastMs = nil
 local placeVec, localA, localB
 
@@ -543,6 +544,8 @@ local nearCutTimer = 0
 local WELL_CUT_ABOVE_FLOOR = 0.03     -- wheel-well boxes on the camera's side are cut down to this
 local WELL_FLOOR_SLACK = 0.002          -- ... and are not drawn below the floor less this
 local ROOM_MIN_ABOVE, ROOM_MAX_ABOVE = 0.012, 0.30   -- KI5 body details inside the lining, between these heights, are not drawn
+local NATIVE_CUT_FAR, NATIVE_CUT_NEAR, NATIVE_CUT_DOOR = 0.10, 0, 0.16
+local NATIVE_CUT_FLOOR_MARGIN = 0.015
 
 -- Walls facing the camera are cut lower. The direction towards the camera (screen down,
 -- world +x +y) depends on how the camper is parked, so it is refreshed while inside.
@@ -603,8 +606,9 @@ end
 local function armCutaway(vehicle, profile, dt)
     local rv = java()
     if not rv then return end
+    if not vehicle then M.applyBodyKeepPlanes(nil) end
     local lamps = vehicle ~= nil and M.lightsOn(vehicle)
-    if vehicle == armedVehicle then
+    if vehicle == armedVehicle and profile == armedProfile then
         if vehicle and lamps ~= armedLamps then
             applyLamps(rv, profile, lamps)
             armedLamps = lamps
@@ -620,10 +624,23 @@ local function armCutaway(vehicle, profile, dt)
         end
         return
     end
+    M.applyBodyKeepPlanes(vehicle and profile or nil)
     nearCutDir = nil
+    -- Re-arming after a wall option change must clear the previous Java state;
+    -- the Lua direction cache was just reset, so applyNearCut cannot detect it.
+    rv.clearNearCut()
     if vehicle then
         local p = cutPlaneFor(profile)
         rv.setCutaway(vehicle, p[1], p[2], p[3], p[4])
+        local lining = profile.nativeBodyLining
+        if rv.setBodyLining and lining then
+            rv.setBodyLining(lining[1], lining[2], lining[3])
+        end
+        if rv.setNativeCutInsets and profile.mesh and profile.kind == "cargo" then
+            local meshFloor = profile.mesh.lift - (profile.floorY + NATIVE_CUT_FLOOR_MARGIN) / profile.mesh.scale
+            rv.setNativeCutInsets(NATIVE_CUT_FAR / profile.mesh.scale, NATIVE_CUT_NEAR / profile.mesh.scale,
+                NATIVE_CUT_DOOR / profile.mesh.scale, -p[3] * meshFloor)
+        end
         if rv.setWeatherRoom then
             local ring = M.RoomRings and M.RoomRings[profile.walkGrid]
             local points = {}
@@ -723,6 +740,7 @@ local function armCutaway(vehicle, profile, dt)
         rv.clearCutaway()
     end
     armedVehicle = vehicle
+    armedProfile = profile
     armedLamps = lamps
 end
 
@@ -1130,6 +1148,7 @@ local function update()
         java().useInteriorCamera(player)
     end
     armCutaway(profile and vehicle or nil, profile, dt)
+    if profile then M.Parts.syncShellDoors(vehicle, profile) end
     if not profile then
         if session then endSession() end
         -- left a camper from a turned seat: no turn in the next vehicle
@@ -1925,7 +1944,9 @@ local function hookUseVehicle()
 end
 
 local function onGameStart()
+    M.applyBodyKeepPlanes(nil)
     armedVehicle = nil
+    armedProfile = nil
     armedLamps = nil
     session = nil
     lastMs = nil
@@ -1942,6 +1963,7 @@ local function onGameStart()
 end
 
 local function onMainMenuEnter()
+    M.applyBodyKeepPlanes(nil)
     if java() then
         java().clearCutaway()
         java().clearFacing()
@@ -1949,6 +1971,7 @@ local function onMainMenuEnter()
         java().clearStanding()
     end
     armedVehicle = nil
+    armedProfile = nil
     armedLamps = nil
     session = nil
     lightVehicle = nil
@@ -1978,7 +2001,14 @@ function M.debugState()
     }
 end
 
+local function onExitVehicle(player)
+    if player == getSpecificPlayer(0) then
+        armCutaway(nil)
+    end
+end
+
 Events.OnGameStart.Add(onGameStart)
 Events.OnMainMenuEnter.Add(onMainMenuEnter)
+Events.OnExitVehicle.Add(onExitVehicle)
 Events.OnTick.Add(update)
 Events.OnFillWorldObjectContextMenu.Add(onFillWorldObjectContextMenu)

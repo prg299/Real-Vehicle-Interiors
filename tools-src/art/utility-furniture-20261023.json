@@ -85,7 +85,8 @@
       "compressedBytes": 280671,
       "uncompressedSha256": "ecff63428e1c4544803dbce8321e385480686ac91b051591f4c259ae07e3414d",
       "sha256": "aedfc14b64b698d6a99ce7244f4c0319a505b7359f022429d395513a74fa94c0",
-      "compression": "TinyPNG website, 2026-10-23"
+      "compression": "TinyPNG website, 2026-10-23",
+      "supersededBy": "cargo-furniture-20261023.json: 2026-10-24 cargo-shell atlas export; this row retains its original revision receipt"
     }
   ],
   "visualReview": "Native vehicle and inventory review recorded under build/rv/factory-review-20261023-c"

@@ -98,10 +98,19 @@ public final class Cutaway {
         // the walls are. It still gets the interior light.
         boolean furniture = isCut && isFurniture(inst);
         float lightMode = !isCut ? 0f : furniture ? 1f : lightMode(inst, original, light);
+        RV.NativeCutInset nativeInset = own ? RV.NativeCutInset.NONE : RV.nativeCutInset;
+        // Use the actual part contract, including trunk doors whose mesh name does
+        // not pass the narrower door-paint classifier below.
+        boolean nativeDoor = !own
+                && inst.modelInstance instanceof zombie.core.skinnedmodel.model.VehicleSubModelInstance nativePart
+                && nativePart.modelInfo != null && nativePart.modelInfo.part != null
+                && nativePart.modelInfo.part.getDoor() != null;
+        float drawPlaneD = nativeInset.apply(RV.planeD, false, nativeDoor);
+        float drawNearPlaneD = nativeInset.apply(RV.nearPlaneD, true, nativeDoor);
         // Skip sub-models that nothing touches: entirely below the lowest cut (the camera
         // side's, when that is on), not lit as interior, and nothing to remove.
         if (keep == null && model.isStatic && lightMode != 1f) {
-            float lowestD = RV.nearCutEnabled ? Math.max(RV.planeD, RV.nearPlaneD) : RV.planeD;
+            float lowestD = RV.nearCutEnabled ? Math.max(drawPlaneD, drawNearPlaneD) : drawPlaneD;
             plane.set(RV.planeA, RV.planeB, RV.planeC, lowestD);
             scratch.transformTranspose(plane);
             if (entirelyBelow(model.mesh, plane)) {
@@ -125,8 +134,8 @@ public final class Cutaway {
             program.setVector4("MELensNearCut", 0f, 0f, 0f, 0f);
             program.setVector4("MELensCutFront", 0f, 0f, 0f, 0f);
         } else {
-            program.setVector4("MELensBodyPlane", RV.planeA, RV.planeB, RV.planeC, RV.planeD);
-            program.setVector4("MELensNearCut", RV.nearDirX, RV.nearDirY, RV.nearPlaneD, RV.nearCutEnabled ? 1f : 0f);
+            program.setVector4("MELensBodyPlane", RV.planeA, RV.planeB, RV.planeC, drawPlaneD);
+            program.setVector4("MELensNearCut", RV.nearDirX, RV.nearDirY, drawNearPlaneD, RV.nearCutEnabled ? 1f : 0f);
             program.setVector4("MELensCutFront", RV.cutFrontY, RV.cutFrontTopZ, 0f, RV.cutFrontEnabled ? 1f : 0f);
         }
         if (keep != null) {
@@ -172,10 +181,14 @@ public final class Cutaway {
             boolean painted = isCut && RV.wallPainted && isShellWalls(inst);
             program.setVector4("MELensWallTint", RV.wallRed, RV.wallGreen, RV.wallBlue, painted ? 0.9f : 0f);
             program.setVector4("MELensUv", 0f, 0f, 1f, 1f);
-            // the wheel-well boxes on the camera's side are cut to the floor (the shell only)
+            // Keep wheel-well lids intact; the shader clips only the liner below the floor.
             program.setVector4("MELensWellCut", RV.wellPlaneD, RV.wellFloorD, RV.wellFloorSet ? 1f : 0f,
                     isCut && RV.nearCutEnabled ? 1f : 0f);
         } else {
+            RV.BodyLining lining = RV.bodyLining;
+            boolean lineBody = isCut && RV.roomEnabled && isBody(slot, inst) && lining != RV.BodyLining.NONE;
+            program.setVector4("MELensBodyLining", lining.red(), lining.green(), lining.blue(),
+                    lineBody ? 1f + lining.debug() : 0f);
             // a door leaf's bare black inside is painted like the room
             boolean doorLeaf = isCut && isDoor(inst);
             boolean door = doorLeaf && RV.doorPaintEnabled;
@@ -519,7 +532,7 @@ public final class Cutaway {
     /** The shell's walls: ME: LENS' inside lining (MELensShell_*_walls). */
     private static boolean isShellWalls(ModelInstanceRenderData inst) {
         String name = modelName(inst);
-        return name.startsWith("MELensShell_") && (name.endsWith("_walls") || name.endsWith("_bulkhead"));
+        return name.startsWith("MELensShell_") && (name.endsWith("_walls") || name.endsWith("_bulkhead") || name.endsWith("_entry"));
     }
 
     private static boolean isCabBulkhead(ModelInstanceRenderData inst) {

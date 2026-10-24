@@ -29,6 +29,41 @@
     "hide": {
         "90fordF350ambulanceseatstr0": true,
         "90fordF350ambulanceseatstr1": true,
+        "90fordF350ambulancewindshielda": {
+            "plane": [
+                0,
+                -1,
+                0,
+                -4.1111
+            ]
+        },
+        "90fordF350ambulancewindowfla": {
+            "plane": [
+                0,
+                -1,
+                0,
+                -4.1111
+            ]
+        },
+        "90fordF350ambulancewindowfra": {
+            "plane": [
+                0,
+                -1,
+                0,
+                -4.1111
+            ]
+        },
+        "90fordF350ambulancewindowrra": true,
+        "90fordF350ambulancewindowra": true,
+        "90fordF350ambulancewindshield": {
+            "plane": [
+                0,
+                -1,
+                0,
+                -4.1111
+            ]
+        },
+        "90fordF350ambulancewindshieldRear": true,
         "90fordF350ambulancewindowfl": {
             "plane": [
                 0,
@@ -45,14 +80,7 @@
                 -4.1111
             ]
         },
-        "90fordF350ambulancewindowrr": {
-            "plane": [
-                0,
-                -1,
-                0,
-                -4.1111
-            ]
-        },
+        "90fordF350ambulancewindowrr": true,
         "90fordF350ambulanceInterior": {
             "plane": [
                 0,
@@ -77,16 +105,16 @@
     },
     "entryOpening": {
         "x": [
-            -0.5,
-            0.5
+            -1.02,
+            1.02
         ],
         "y": [
             -0.108,
-            1.25
+            1.31
         ],
         "z": [
             -4.156,
-            -3.776
+            -3.821
         ]
     },
     "windowBoxes": [
@@ -102,6 +130,20 @@
             "z": [
                 -3.806,
                 -0.4
+            ]
+        },
+        {
+            "x": [
+                -0.94,
+                0.94
+            ],
+            "y": [
+                -0.098,
+                -0.063
+            ],
+            "z": [
+                -3.816,
+                -0.41
             ]
         }
     ],
@@ -129,6 +171,7 @@
     ],
     "waterTank": 40,
     "fuelTank": 20,
+    "factoryLayout": true,
     "spots": [
         {
             "wall": "left",
@@ -171,5 +214,8 @@
             "empty": true
         }
     ],
+    "cabBulkhead": {
+        "depth": 0.063
+    },
     "cutFrontTop": 1.1
 }

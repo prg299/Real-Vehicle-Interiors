@@ -9,7 +9,9 @@ local profile = {
     floorY = -0.228,
     mesh = { scale = 0.09, lift = 0.6660000337604417 },
     shell = {
-        models = { "MELensShell_fleet_f700bank_floor", "MELensShell_fleet_f700bank_walls", "MELensShell_fleet_f700bank_bulkhead" },
+        models = { "MELensShell_fleet_f700bank_floor", "MELensShell_fleet_f700bank_walls", "MELensShell_fleet_f700bank_bulkhead", "MELensShell_fleet_f700bank_entry" },
+        entryModel = 4,
+        entryDoor = "TrunkDoor",
     },
     hideKI5 = {
         ["87fordF700WindowflB"] = {
@@ -24,12 +26,12 @@ local profile = {
         ["87fordF700WindowmrB"] = {
             plane = { 0, -1, 0, 11.1111 },
         },
-        ["87fordF700WindowrlB"] = {
+        ["87fordF700WindowrlB"] = true,
+        ["87fordF700WindowrrB"] = true,
+        ["87fordF700WindshieldB"] = {
             plane = { 0, -1, 0, 11.1111 },
         },
-        ["87fordF700WindowrrB"] = {
-            plane = { 0, -1, 0, 11.1111 },
-        },
+        ["87fordF700WindshieldRear"] = true,
         ["87fordF700bankInterior"] = {
             plane = { 0, -1, 0, 11.1111 },
         },
@@ -38,7 +40,7 @@ local profile = {
         },
     },
     light = {
-        interiorModels = { "MELensShell_fleet_f700bank_floor", "MELensShell_fleet_f700bank_walls", "MELensShell_fleet_f700bank_bulkhead" },
+        interiorModels = { "MELensShell_fleet_f700bank_floor", "MELensShell_fleet_f700bank_walls", "MELensShell_fleet_f700bank_bulkhead", "MELensShell_fleet_f700bank_entry" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,
@@ -127,11 +129,102 @@ local profile = {
             z = { -1.455, 0.97 },
         },
         {
-            x = { -0.5, 0.5 },
-            y = { -0.248, 0.99 },
-            z = { -1.805, -1.425 },
+            x = { -0.815, 0.815 },
+            y = { -0.238, -0.203 },
+            z = { -1.465, 0.96 },
+        },
+        {
+            x = { -0.895, 0.895 },
+            y = { -0.248, 1.05 },
+            z = { -1.805, -1.47 },
         },
     },
 }
 
 MELens.Profiles["Base.87fordF700bank"] = profile
+
+do
+    local fitted = {}
+    for k,v in pairs(profile) do fitted[k]=v end
+    fitted.legacySpotCount = #profile.spots
+    fitted.spots = {}
+    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+    fitted.extraSeats = {}
+    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+    fitted.factoryLayout = "cargo-service-1"
+    fitted.factoryRole = "bank"
+    fitted.factoryUse = {
+    loot = { safe = "BankDeposit" },
+    stock = {
+        safe = {
+            { "Base.MoneyBundle", 6 },
+            { "Base.Money", 10 },
+        },
+        medbench = {  },
+    },
+}
+    fitted.aisleX = 0.0
+    for _,s in ipairs({
+    {
+        wall = "left",
+        x = 0.825,
+        z = 0.61,
+        length = 0.6,
+        depth = 0.52,
+        default = "safe",
+        factory = true,
+        pieces = { "safe" },
+    },
+    {
+        wall = "left",
+        x = 0.825,
+        z = -0.07,
+        length = 0.6,
+        depth = 0.52,
+        default = "safe",
+        factory = true,
+        pieces = { "safe" },
+    },
+    {
+        wall = "left",
+        x = 0.825,
+        z = -0.75,
+        length = 0.6,
+        depth = 0.52,
+        default = "safe",
+        factory = true,
+        pieces = { "safe" },
+    },
+    {
+        wall = "right",
+        x = -0.825,
+        z = 0.61,
+        length = 0.6,
+        depth = 0.52,
+        default = "safe",
+        factory = true,
+        pieces = { "safe" },
+    },
+    {
+        wall = "right",
+        x = -0.825,
+        z = -0.07,
+        length = 0.6,
+        depth = 0.52,
+        default = "safe",
+        factory = true,
+        pieces = { "safe" },
+    },
+    {
+        wall = "right",
+        x = -0.825,
+        z = -0.75,
+        length = 0.6,
+        depth = 0.52,
+        default = "safe",
+        factory = true,
+        pieces = { "safe" },
+    },
+}) do fitted.spots[#fitted.spots+1]=s end
+    MELens.Profiles["Base.87fordF700bank"] = fitted
+end

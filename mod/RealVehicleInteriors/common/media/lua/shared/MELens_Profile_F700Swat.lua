@@ -9,7 +9,9 @@ local profile = {
     floorY = -0.228,
     mesh = { scale = 0.09, lift = 0.6660000337604417 },
     shell = {
-        models = { "MELensShell_fleet_f700swat_floor", "MELensShell_fleet_f700swat_walls", "MELensShell_fleet_f700swat_bulkhead" },
+        models = { "MELensShell_fleet_f700swat_floor", "MELensShell_fleet_f700swat_walls", "MELensShell_fleet_f700swat_bulkhead", "MELensShell_fleet_f700swat_entry" },
+        entryModel = 4,
+        entryDoor = "TrunkDoor",
     },
     hideKI5 = {
         ["87fordF700Windowfl"] = {
@@ -24,12 +26,12 @@ local profile = {
         ["87fordF700Windowmr"] = {
             plane = { 0, -1, 0, 11.1111 },
         },
-        ["87fordF700Windowrl"] = {
+        ["87fordF700Windowrl"] = true,
+        ["87fordF700Windowrr"] = true,
+        ["87fordF700Windshield"] = {
             plane = { 0, -1, 0, 11.1111 },
         },
-        ["87fordF700Windowrr"] = {
-            plane = { 0, -1, 0, 11.1111 },
-        },
+        ["87fordF700WindshieldRear"] = true,
         ["87fordF700swatInterior"] = {
             plane = { 0, -1, 0, 11.1111 },
         },
@@ -38,7 +40,7 @@ local profile = {
         },
     },
     light = {
-        interiorModels = { "MELensShell_fleet_f700swat_floor", "MELensShell_fleet_f700swat_walls", "MELensShell_fleet_f700swat_bulkhead" },
+        interiorModels = { "MELensShell_fleet_f700swat_floor", "MELensShell_fleet_f700swat_walls", "MELensShell_fleet_f700swat_bulkhead", "MELensShell_fleet_f700swat_entry" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,
@@ -127,11 +129,105 @@ local profile = {
             z = { -1.473, 0.97 },
         },
         {
-            x = { -0.5, 0.5 },
-            y = { -0.248, 1 },
-            z = { -1.823, -1.443 },
+            x = { -0.94, 0.94 },
+            y = { -0.238, -0.203 },
+            z = { -1.483, 0.96 },
+        },
+        {
+            x = { -1.02, 1.02 },
+            y = { -0.248, 1.06 },
+            z = { -1.823, -1.488 },
         },
     },
 }
 
 MELens.Profiles["Base.87fordF700swat"] = profile
+
+do
+    local fitted = {}
+    for k,v in pairs(profile) do fitted[k]=v end
+    fitted.legacySpotCount = #profile.spots
+    fitted.spots = {}
+    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+    fitted.extraSeats = {}
+    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+    fitted.factoryLayout = "cargo-service-1"
+    fitted.factoryRole = "swat"
+    fitted.factoryUse = {
+    loot = { parcels = "ArmyStorageElectronics", equipmentrack = "ArmyStorageElectronics", metalcase = "ArmyStorageElectronics", medlocker = "ArmyStorageElectronics", workbench = "ArmyStorageElectronics" },
+    stock = {
+        parcels = {
+            { "Base.WalkieTalkie4", 1 },
+            { "Base.Torch", 1 },
+            { "Base.Battery", 2 },
+        },
+        equipmentrack = {
+            { "Base.WalkieTalkie4", 1 },
+            { "Base.Torch", 1 },
+            { "Base.Battery", 2 },
+        },
+        metalcase = {
+            { "Base.WalkieTalkie4", 1 },
+            { "Base.Torch", 1 },
+            { "Base.Battery", 2 },
+        },
+        medlocker = {
+            { "Base.WalkieTalkie4", 1 },
+            { "Base.Torch", 1 },
+            { "Base.Battery", 2 },
+        },
+        workbench = {
+            { "Base.WalkieTalkie4", 1 },
+            { "Base.Torch", 1 },
+            { "Base.Battery", 2 },
+        },
+        medbench = {  },
+    },
+}
+    fitted.aisleX = -0.06
+    for _,s in ipairs({
+    {
+        wall = "left",
+        x = 0.95,
+        z = -0.763,
+        length = 1.1,
+        depth = 0.4,
+        default = "medbench",
+        factory = true,
+        pieces = { "medbench" },
+        seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
+    },
+    {
+        wall = "right",
+        x = -0.95,
+        z = -0.763,
+        length = 1.1,
+        depth = 0.4,
+        default = "medbench",
+        factory = true,
+        pieces = { "medbench" },
+        seats = { "MELensFurnitureRight1", "MELensFurnitureRight2" },
+    },
+    {
+        wall = "left",
+        x = 0.95,
+        z = 0.61,
+        length = 0.52,
+        depth = 0.52,
+        default = "metalcase",
+        factory = true,
+        pieces = { "metalcase" },
+    },
+    {
+        wall = "right",
+        x = -0.95,
+        z = 0.61,
+        length = 0.6,
+        depth = 0.32,
+        default = "equipmentrack",
+        factory = true,
+        pieces = { "equipmentrack" },
+    },
+}) do fitted.spots[#fitted.spots+1]=s end
+    MELens.Profiles["Base.87fordF700swat"] = fitted
+end

@@ -304,6 +304,26 @@ class Builder:
         bmesh.ops.recalc_face_normals(tb, faces=list(tb.faces))
         self._merge(tb, material)
 
+    def front_cylinder(self, cx, y0, y1, cz, radius, material, segments=16):
+        """Round front-facing furniture hardware, in the same material/UV pipeline."""
+        tb = bmesh.new()
+        bmesh.ops.create_cone(tb, cap_ends=True, cap_tris=False, segments=segments,
+                              radius1=radius, radius2=radius, depth=abs(y1-y0))
+        for v in tb.verts:
+            v.co = Vector((cx+v.co.x, (y0+y1)/2+v.co.z, cz+v.co.y))
+        bmesh.ops.recalc_face_normals(tb, faces=list(tb.faces))
+        self._merge(tb, material)
+
+    def brace(self, a, c, width, depth, material):
+        """A diagonal front batten between two points; useful for shipping crates."""
+        start,end=Vector(a),Vector(c)
+        axis=end-start;rotation=axis.to_track_quat('Z','Y')
+        tb=bmesh.new();bmesh.ops.create_cube(tb,size=1)
+        for v in tb.verts:
+            v.co=(start+end)/2+rotation@Vector((v.co.x*width,v.co.y*depth,v.co.z*axis.length))
+        bmesh.ops.recalc_face_normals(tb,faces=list(tb.faces))
+        self._merge(tb,material)
+
     def quad(self, corners, material, facing):
         """One polygon (3 or 4 corners) whose normal points along `facing`."""
         verts = [self.bm.verts.new(c) for c in corners]
@@ -401,6 +421,126 @@ def build_metalcase(b):
         b.box(-.247, -.248, z0-.003, .247, -.234, z1+.003, "black")
         b.box(-.24, -.258, z0, .24, -.247, z1, "steel", bevel=.005, segments=2)
         handle(b, 0, -.255, (z0+z1)/2, vertical=False)
+
+
+@piece("safe", .60, .52, .90, 45, "storage", "Armored Cash Safe")
+def build_safe(b):
+    b.box(-.30,-.235,.035,.30,.26,.90,"trim",bevel=.012,segments=2)
+    plinth(b,-.285,.285,-.22,.245,.055,"black")
+    b.box(-.275,-.25,.085,.275,-.234,.86,"black",bevel=.006)
+    b.box(-.26,-.259,.10,.26,-.249,.845,"heater_body",bevel=.01,segments=2)
+    for z in (.23,.70): b.box(.246,-.26,z-.055,.283,-.23,z+.055,"chrome",bevel=.01,segments=2)
+    b.front_cylinder(-.045,-.259,-.245,.51,.052,"chrome")
+    b.front_cylinder(-.045,-.26,-.259,.51,.030,"black")
+    b.box(-.10,-.26,.31,.10,-.245,.335,"chrome",bevel=.01,segments=3)
+
+
+@piece("parcels", .60, .50, .85, 45, "storage", "Stacked Delivery Parcels")
+def build_parcels(b):
+    for x0,x1,z0,z1,mat in ((-.298,-.008,0,.43,"cardboard"),(.008,.298,0,.43,"cardboard_dark"),(-.285,.285,.435,.845,"cardboard_light")):
+        b.box(x0,-.244,z0,x1,.244,z1,mat,bevel=.009,segments=2)
+        mid=(x0+x1)/2
+        b.box(mid-.018,-.247,z1-.11,mid+.018,-.241,z1+.002,"tape")
+        b.box(mid-.018,-.246,z1-.002,mid+.018,.246,z1+.003,"tape")
+
+
+@piece("hamradio", .36, .24, .40, 0, "model", "HAM Radio Visual Adapter")
+def build_hamradio(b):
+    # Model-only appearance for the real Base.HamRadio1 item; never factory furniture.
+    # ImageGen concept exec-52c3bdb2-f11c-4bfc-af80-d2e4239d36b3: worn grey
+    # transceiver, black grille and knobs, dull screen, carry handle and rear aerial.
+    for x in (-.145, .145):
+        for y in (-.055, .088):
+            b.cylinder(x, y, 0, .031, .017, "rubber")
+    b.box(-.18, -.086, .025, .18, .12, .245, "steel", bevel=.009, segments=2)
+    b.box(-.172, -.098, .037, .172, -.084, .233, "black", bevel=.005, segments=2)
+    # The grille is recessed behind dark horizontal ribs, with a readable border.
+    b.box(-.160, -.102, .070, -.052, -.097, .216, "rubber", bevel=.003)
+    for z in (.078, .096, .114, .132, .150, .168, .186, .204):
+        b.box(-.155, -.105, z, -.057, -.101, z+.006, "trim", bevel=.001)
+    b.box(-.031, -.104, .156, .083, -.097, .218, "trim", bevel=.003)
+    b.box(-.024, -.106, .163, .076, -.103, .211, "busvinyl", bevel=.002)
+    for x in (-.020, .032, .084):
+        b.front_cylinder(x, -.103, -.097, .104, .016, "steel")
+        b.front_cylinder(x, -.117, -.102, .104, .013, "black")
+        b.box(x-.0015, -.120, .109, x+.0015, -.116, .115, "chrome")
+    b.front_cylinder(.133, -.103, -.097, .128, .034, "steel", segments=20)
+    b.front_cylinder(.133, -.117, -.102, .128, .030, "black", segments=20)
+    b.box(.131, -.120, .145, .135, -.116, .153, "chrome")
+    for x in (-.163, .163):
+        for z in (.048, .222):
+            b.front_cylinder(x, -.103, -.098, z, .004, "chrome", segments=8)
+    for x in (-.098, .098):
+        b.box(x-.013, -.027, .242, x+.013, .012, .279, "steel", bevel=.004)
+    b.box(-.098, -.020, .263, .098, .005, .284, "black", bevel=.006, segments=2)
+    b.cylinder(.150, .088, .244, .266, .012, "steel")
+    b.cylinder(.150, .088, .260, .394, .0055, "black")
+    b.cylinder(.150, .088, .391, .400, .0065, "rubber")
+    # Loose items use the game's ground-model frame, not furniture's wall frame.
+    # The native C workbench view exposed the rear at its chosen packing yaw;
+    # face the controls into the aisle without changing other world-item poses.
+    # Turn around the footprint centre before main() shifts the furniture origin.
+    for spec in b.boxes:
+        for axis in (0, 1):
+            spec["lo"][axis], spec["hi"][axis] = -spec["hi"][axis], -spec["lo"][axis]
+    for v in b.bm.verts:
+        v.co.x = -v.co.x
+        v.co.y = -v.co.y
+
+
+@piece("workbench", .90, .40, .78, 30, "storage", "Service Workbench")
+def build_workbench(b):
+    # Compact mobile workshop furniture; the actual stored tools/radios are
+    # drawn on the empty top by the shared container-content renderer.
+    for x in (-.44,.412):
+        for y in (-.19,.162):
+            b.box(x,y,0,x+.028,y+.028,.74,"steel",bevel=.004)
+            b.box(x-.003,y-.003,0,x+.031,y+.031,.018,"black",bevel=.004)
+    b.box(-.425,-.177,.075,.425,.177,.098,"steel",bevel=.004)
+    b.box(-.438,-.18,.565,.438,.185,.735,"steel",bevel=.005)
+    for x0,x1 in ((-.422,-.008),(.008,.422)):
+        b.box(x0,-.194,.579,x1,-.179,.718,"black",bevel=.004)
+        b.box(x0+.006,-.199,.585,x1-.006,-.191,.712,"steel",bevel=.005)
+        handle(b,(x0+x1)/2,-.192,.65,vertical=False)
+    b.box(-.45,-.20,.735,.45,.20,.765,"wood_birch",bevel=.006,segments=2)
+    b.box(-.447,.184,.765,.447,.20,.78,"steel",bevel=.003)
+
+
+@piece("medlocker", .50, .32, .98, 35, "storage", "Medical Supply Cabinet")
+def build_medlocker(b):
+    b.box(-.25,.125,.025,.25,.16,.98,"paint_white",bevel=.006)
+    for x in (-.25,.228):b.box(x,-.145,.025,x+.022,.15,.98,"paint_white",bevel=.004)
+    for z in (.025,.36,.65,.957):b.box(-.25,-.145,z,.25,.15,z+.023,"paint_white",bevel=.004)
+    front(b,-.228,.228,.05,.33,-.139,"paint_white");handle(b,.17,-.139,.21)
+    # Empty boards: the client renders the container's actual items on them.
+    for z in (.39,.68):
+        b.box(-.23,-.154,z+.04,.23,-.14,z+.058,"chrome",bevel=.004)
+
+
+@piece("medbench", 1.10, .40, .80, 25, "seat", "Utility Bench Seat")
+def build_medbench(b):
+    b.box(-.55,-.21,.025,.55,.225,.215,"paint_white",bevel=.009,segments=2)
+    for x in (-.535,.008):
+        front(b,x,x+.527,.045,.19,-.21,"steel")
+        handle(b,x+.263,-.21,.12,vertical=False)
+        b.box(x,-.217,.215,x+.527,.20,.31,"mattress",bevel=.026,segments=3)
+        b.box(x,.147,.315,x+.527,.223,.79,"mattress",bevel=.022,segments=3)
+        b.box(x+.23,-.218,.311,x+.26,.16,.317,"black")
+        b.box(x+.222,-.11,.317,x+.27,-.075,.325,"chrome",bevel=.004)
+    b.box(-.55,.213,.30,.55,.225,.80,"steel",bevel=.006)
+    # A compact side-facing seat leaves a 0.35m aisle in the narrow ambulances.
+    for box in b.boxes:
+        box['lo'][1] *= .40/.45
+        box['hi'][1] *= .40/.45
+
+
+@piece("equipmentrack", .60, .32, .98, 40, "storage", "Equipment Rack")
+def build_equipmentrack(b):
+    for x in (-.30,.275):
+        for y in (-.15,.135):b.box(x,y,0,x+.025,y+.025,.98,"steel",bevel=.003)
+    for z in (.03,.34,.65,.955):b.box(-.30,-.15,z,.30,.16,z+.022,"steel",bevel=.004)
+    for z in (.055,.365,.675):
+        b.box(-.285,-.156,z+.09,.285,-.14,z+.11,"chrome",bevel=.004)
 
 
 @piece("dinette", 1.12, 0.55, 0.72, 15, "seat", "RV Dinette")
@@ -785,6 +925,13 @@ def swatch_uv(name, s, t):
     return (u0 + (u1 - u0) * s, v0 + (v1 - v0) * t)
 
 
+def wall_uv(u, v):
+    # The atlas also contains wheel-house, liner and control-panel swatches.
+    # Plain walls must never sample those patches, even above a high wall cut
+    # or below the floor on a rear-door skirt.
+    return (.50 + .48 * min(1, max(0, u)), .02 + .88 * min(1, max(0, v)))
+
+
 def wall_texture(path, perimeter, height, rng, style):
     """Plain painted walls with a wooden baseboard; x = along the wall, y = up. Plus the
     swatches above (row 0 is the floor)."""
@@ -886,11 +1033,15 @@ def split_rings_at_openings(rings, boxes):
     count = len(floor_ring)
     inserts = {}
     for box in boxes:
-        for limit in box["z"]:
-            for i in range(count):
-                (xa, za), (xb, zb) = floor_ring[i], floor_ring[(i + 1) % count]
-                if (za - limit) * (zb - limit) < 0 and box["x"][0] <= (xa + xb) / 2 <= box["x"][1]:
-                    inserts.setdefault(i, []).append((limit - za) / (zb - za))
+        for axis,other in ((0,1),(1,0)):
+            for limit in box[("x","z")[axis]]:
+                for i in range(count):
+                    a,b = floor_ring[i], floor_ring[(i + 1) % count]
+                    if (a[axis]-limit)*(b[axis]-limit)>=0:continue
+                    t=(limit-a[axis])/(b[axis]-a[axis])
+                    cross=a[other]+(b[other]-a[other])*t
+                    if box[("x","z")[other]][0]<=cross<=box[("x","z")[other]][1]:
+                        inserts.setdefault(i,set()).add(t)
     if not inserts:
         return rings
     out = []
@@ -929,6 +1080,16 @@ def build_shell(measure, spec, tex_dir):
     rings, (cx, cz), hull_at_floor = lining["rings"], lining["centre"], lining["hull_at_floor"]
     # the lining's outline (the walls stand on it), for the cutaway's clip of KI5's body details
     ROOM_RINGS[spec["grid"]["name"]] = [(x, z) for x, z in lining["room_ring"]]
+    cab_plane = spec.get("cabBulkhead", {}).get("z")
+    if cab_plane is not None:
+        # The conservative room stops 30mm behind the native cab cut. Extend
+        # its rendered floor/side edges to the measured partition, then omit
+        # the duplicate front wall below. Keep navigation's room ring intact.
+        extended = []
+        for height, ring in rings:
+            front = max(z for x,z in ring)
+            extended.append((height, [(x, cab_plane if abs(z-front)<1e-6 else z) for x,z in ring]))
+        rings = extended
     # The wall leaves out the segments whose middle is inside an opening, so a segment's length (a quarter of a
     # metre on a bus) is how coarse the door's edges would be, and a door leaf standing a few centimetres outside
     # the lining then shows the ground behind it in a slit. The rings get a point at each side opening's edges
@@ -954,24 +1115,248 @@ def build_shell(measure, spec, tex_dir):
         arc.append(arc[-1] + math.hypot(b2[0] - a[0], b2[1] - a[1]))
     perimeter = arc[-1]
     walls = UVBuilder(name + "_walls")
+    entry = UVBuilder(name + "_entry") if spec.get("entryOpening") else None
     zs = [z for _, z in rings[-1][1]]
     axis_lo, axis_hi = min(zs) + 0.9, max(zs) - 0.9
     holes = spec.get("openings", [])
     for (h0, r0), (h1, r1) in zip(rings, rings[1:]):
         for i in range(n):
             j = (i + 1) % n
+            if cab_plane is not None and all(abs(point[1]-cab_plane)<1e-6
+                    for point in (r0[i],r0[j],r1[i],r1[j])):
+                continue
             mx = (r0[i][0] + r0[j][0] + r1[i][0] + r1[j][0]) / 4
             mz = (r0[i][1] + r0[j][1] + r1[i][1] + r1[j][1]) / 4
             my = (h0 + h1) / 2
+            target=walls
             if any(in_box(mx, my, mz, box) for box in holes):
-                continue
+                if entry and not spec.get('rearClosure') and in_box(mx,my,mz,spec["entryOpening"]):target=entry
+                else:continue
             inward = P(cx, my, min(max(mz, axis_lo), axis_hi)) - P(mx, my, mz)
             inward.z = 0.0
             u0, u1 = arc[i] / perimeter, arc[i + 1] / perimeter
             v0, v1 = (h0 - floor_y) / (top - floor_y), (h1 - floor_y) / (top - floor_y)
-            walls.poly([P(r0[i][0], h0, r0[i][1]), P(r1[i][0], h1, r1[i][1]),
+            target.poly([P(r0[i][0], h0, r0[i][1]), P(r1[i][0], h1, r1[i][1]),
                         P(r1[j][0], h1, r1[j][1]), P(r0[j][0], h0, r0[j][1])],
-                       [(u0, v0), (u0, v1), (u1, v1), (u1, v0)], inward)
+                       [wall_uv(u0, v0), wall_uv(u0, v1), wall_uv(u1, v1), wall_uv(u1, v0)], inward)
+            if target is entry or spec.get("cabBulkhead"):
+                # The camera can see either side of a lowered rear door. Native
+                # cargo cuts also expose the back of the side lining; retain an
+                # opaque inside skin instead of showing the native dark cavity.
+                target.poly([P(r0[i][0], h0, r0[i][1]), P(r1[i][0], h1, r1[i][1]),
+                            P(r1[j][0], h1, r1[j][1]), P(r0[j][0], h0, r0[j][1])],
+                           [wall_uv(u0,v0),wall_uv(u0,v1),wall_uv(u1,v1),wall_uv(u1,v0)], -inward)
+    for corner_return in spec.get("cornerReturns", []):
+        # Angular body outlines omit some real corner turns. Add a narrow
+        # opaque skin between the unchanged lining arc and the exact native
+        # corner spine. No floor, room ring or navigation point is moved.
+        section = corner_return["section"]
+        side, end = corner_return["side"], corner_return["end"]
+        skin = corner_return.get("skin", .003)
+
+        def corner_at(height):
+            for a, b in zip(section, section[1:]):
+                if a[0] - 1e-8 <= height <= b[0] + 1e-8:
+                    t = (height - a[0]) / (b[0] - a[0])
+                    return (a[1] + (b[1] - a[1]) * t - side * skin,
+                            a[2] + (b[2] - a[2]) * t - end * skin)
+            raise AssertionError("corner return outside measured height range")
+
+        heights = sorted({row[0] for row in section} |
+                         {h for h, _ in rings if section[0][0] < h < section[-1][0]})
+        sampled = [(h, shell_rings.ring_at(rings, h), corner_at(h)) for h in heights]
+        assert all(ring is not None for _, ring, _ in sampled)
+        brackets = []
+        for height, ring, corner in sampled:
+            angle = math.atan2(corner[1] - cz, corner[0] - cx)
+            delta = [((math.atan2(z - cz, x - cx) - angle + math.pi) % (2 * math.pi) - math.pi)
+                     for x, z in ring]
+            brackets.append((max((i for i in range(n) if delta[i] <= 0), key=lambda i: delta[i]),
+                             min((i for i in range(n) if delta[i] > 0), key=lambda i: delta[i])))
+        first = brackets[0][0]
+        offsets = [((index - first + n // 2) % n - n // 2) for pair in brackets for index in pair]
+        indices = [(first + offset) % n for offset in range(min(offsets), max(offsets) + 1)]
+        assert 2 <= len(indices) <= 8, "measured corner must span a local lining arc"
+
+        def corner_face(points, uv, normal):
+            verts = [P(*point) for point in points]
+            if (verts[1] - verts[0]).cross(verts[2] - verts[0]).length < 1e-10:
+                return
+            # The cutaway can expose either side of this narrow return.
+            walls.poly(verts, uv, normal)
+            walls.poly(verts, uv, -normal)
+
+        for (h0, r0, c0), (h1, r1, c1) in zip(sampled, sampled[1:]):
+            for index in (indices[0], indices[-1]):
+                a0, a1 = r0[index], r1[index]
+                u = arc[index] / perimeter
+                v0, v1 = (h0 - floor_y) / (top - floor_y), (h1 - floor_y) / (top - floor_y)
+                d0, d1 = math.dist(a0, c0) / perimeter, math.dist(a1, c1) / perimeter
+                corner_face([(a0[0], h0, a0[1]), (a1[0], h1, a1[1]),
+                             (c1[0], h1, c1[1]), (c0[0], h0, c0[1])],
+                            [wall_uv(u, v0), wall_uv(u, v1), wall_uv(u + d1, v1), wall_uv(u + d0, v0)],
+                            P(-side, 0, -end))
+        for (height, ring, corner), upward in ((sampled[0], -1), (sampled[-1], 1)):
+            # Caps cover only the new wedge outside the existing lining arc.
+            # They are above the floor, below/above all current wall cut modes.
+            for ia, ib in zip(indices, indices[1:]):
+                a, b = ring[ia], ring[ib]
+                points = [(a[0], height, a[1]), (b[0], height, b[1]), (corner[0], height, corner[1])]
+                corner_face(points, [wall_uv(arc[ia] / perimeter, (height - floor_y) / (top - floor_y)),
+                                     wall_uv(arc[ib] / perimeter, (height - floor_y) / (top - floor_y)),
+                                     wall_uv(arc[ia] / perimeter, (height - floor_y) / (top - floor_y))],
+                            Vector((0, 0, upward)))
+    cowl = spec.get("cowlReturn")
+    if cowl:
+        # A low measured return joins a bus's lining to its surviving native
+        # cowl. It is part of the normally cut walls, not an opaque bulkhead.
+        from mathutils.geometry import tessellate_polygon
+        polygon, high = cowl["polygon"], cowl["height"]
+        low = high - cowl["thickness"]
+        left = min(x for x, z in polygon)
+        rear = min(z for x, z in polygon)
+        area = sum(a[0] * b[1] - b[0] * a[1] for a, b in zip(polygon, polygon[1:] + polygon[:1]))
+        winding = 1 if area > 0 else -1
+        def cowl_uv(x, y, z):
+            return wall_uv((x - left) / perimeter, (y - floor_y + z - rear) / (top - floor_y))
+        for tri in tessellate_polygon([[Vector((x, z, 0)) for x, z in polygon]]):
+            # Blender versions expose either input indices or Vector points.
+            points = [(point.x, point.y) if hasattr(point, "x") else polygon[point] for point in tri]
+            for height, upward in ((high, 1), (low, -1)):
+                walls.poly([P(x, height, z) for x, z in points],
+                           [cowl_uv(x, height, z) for x, z in points], Vector((0, 0, upward)))
+        for a, b in zip(polygon, polygon[1:] + polygon[:1]):
+            points = [(a[0], low, a[1]), (a[0], high, a[1]), (b[0], high, b[1]), (b[0], low, b[1])]
+            normal = P(winding * (b[1] - a[1]), 0, winding * (a[0] - b[0]))
+            walls.poly([P(*point) for point in points], [cowl_uv(*point) for point in points], normal)
+    closure=spec.get('rearClosure')
+    if closure:
+        rear=closure['z'];rim=.035
+        section=closure['section']
+        def rear_section_at(height):
+            lo=max((s for s in section if s[0]<=height),default=section[0])
+            hi=min((s for s in section if s[0]>=height),default=section[-1])
+            t=(height-lo[0])/(hi[0]-lo[0]) if hi[0]>lo[0] else 0
+            return (height,lo[1]+(hi[1]-lo[1])*t,lo[2]+(hi[2]-lo[2])*t)
+
+        # The opening removes the last side-wall segments as well as the rear
+        # wall. The measured closure is wider and slightly aft of that room:
+        # a flat leaf/rim alone leaves a channel through both rear corners.
+        # Follow the actual split floor arc, so returns meet surviving wall
+        # edges without changing the authored room/navigation outline.
+        join=spec['entryOpening']['z'][1]
+        is_rear=[z<=join+1e-7 for x,z in floor_ring]
+        start=next(i for i in range(n) if is_rear[i] and not is_rear[i-1])
+        rear_indices=[]
+        for offset in range(n):
+            index=(start+offset)%n
+            if not is_rear[index]:break
+            rear_indices.append(index)
+        if floor_ring[rear_indices[0]][0]>floor_ring[rear_indices[-1]][0]:
+            rear_indices.reverse()
+        left_index,right_index=rear_indices[0],rear_indices[-1]
+        assert rear<min(floor_ring[i][1] for i in rear_indices), 'rear closure must be aft of the room floor'
+
+        def edge_at(height,index):
+            ring=shell_rings.ring_at(rings,height)
+            if ring is None:ring=rings[0 if height<=rings[0][0] else -1][1]
+            return ring[index]
+
+        def return_face(points,facing,metal=False,double=False,builder=None):
+            # Triangular corner wedges can repeat their rear endpoint. Keep
+            # one vertex there; do not emit zero-area or overlapping quads.
+            clean=[]
+            for point in points:
+                if not clean or point!=clean[-1]:clean.append(point)
+            if len(clean)>1 and clean[0]==clean[-1]:clean.pop()
+            if len(clean)<3:return
+            corners=[P(*point) for point in clean]
+            if (corners[1]-corners[0]).cross(corners[2]-corners[0]).length<1e-10:return
+            if metal:
+                _,left,right=rear_section_at(floor_y)
+                uv=[swatch_uv('metal',(x-left)/(right-left),(z-rear)/(join-rear)) for x,y,z in clean]
+            else:
+                uv=[wall_uv((x-section[0][1])/perimeter,(y-floor_y)/(top-floor_y)) for x,y,z in clean]
+            builder=walls if builder is None else builder
+            builder.poly(corners,uv,facing)
+            if double:builder.poly(corners,uv,-facing)
+
+        # Split at both sources' heights so each return shares the exact edge
+        # of the wall and the measured rim. Opposite-facing skins use the same
+        # backface-culling convention as the rear closure, with no co-facing
+        # overlap against either existing surface.
+        heights=sorted({floor_y,min(top,rings[-1][0])} |
+                       {h for h,_ in rings if floor_y<h<top} |
+                       {s[0] for s in section if floor_y<s[0]<min(top,rings[-1][0])})
+        for h0,h1 in zip(heights,heights[1:]):
+            _,l0,r0=rear_section_at(h0);_,l1,r1=rear_section_at(h1)
+            for index,side,x0,x1 in ((left_index,-1,l0+rim,l1+rim),(right_index,1,r0-rim,r1-rim)):
+                a0,z0=edge_at(h0,index);a1,z1=edge_at(h1,index)
+                return_face([(a0,h0,z0),(a1,h1,z1),(x1,h1,rear),(x0,h0,rear)],
+                            P(-side,0,0),double=True)
+
+        # Fill only the narrow space outside the existing rear floor arc.
+        # Its side wedges end on the jambs and its rear edge on the leaf; the
+        # doorway centre remains open when the leaf is hidden. Existing metal
+        # swatches supply the sill without a new texture or coplanar floor.
+        _,left,right=rear_section_at(floor_y)
+        left+=rim;right-=rim
+        rear_arc=[floor_ring[i] for i in rear_indices]
+        def threshold_x(x):
+            return left+(right-left)*(x-rear_arc[0][0])/(rear_arc[-1][0]-rear_arc[0][0])
+        for (x0,z0),(x1,z1) in zip(rear_arc,rear_arc[1:]):
+            return_face([(x0,floor_y,z0),(x1,floor_y,z1),
+                         (threshold_x(x1),floor_y,rear),(threshold_x(x0),floor_y,rear)],
+                        Vector((0,0,1)),metal=True)
+
+        # Continuous bands follow the real body instead of the narrower room box.
+        # Opposite faces retain both rear camera views; the static rim remains
+        # around an open door. The closed leaf also reaches the measured lower skirt.
+        def rear_face(builder,points):
+            uv=[wall_uv((x-closure['section'][0][1])/perimeter,(y-floor_y)/(top-floor_y)) for x,y in points]
+            corners=[P(x,y,rear) for x,y in points]
+            for direction in (-1,1):builder.poly(corners,uv,Vector((0,direction,0)))
+        for a,b in zip(closure['section'],closure['section'][1:]):
+            y0,l0,r0=a;y1,l1,r1=b
+            rear_face(walls,[(l0,y0),(l1,y1),(l1+rim,y1),(l0+rim,y0)])
+            rear_face(walls,[(r0-rim,y0),(r1-rim,y1),(r1,y1),(r0,y0)])
+            rear_face(entry,[(l0+rim,y0),(l1+rim,y1),(r1-rim,y1),(r0-rim,y0)])
+        # The native rear posts stand aft of the flat inside leaf. Follow their
+        # measured, height-dependent contour so the cutaway cannot look through
+        # the channel behind the frame. Every station is inside the native skin;
+        # no body-wide maximum-depth extrusion is used at the tapered roof.
+        depth_sections=closure.get('depthSections',[])
+        for (y0,row0),(y1,row1) in zip(depth_sections,depth_sections[1:]):
+            assert len(row0)==len(row1), 'rear contour stations must align'
+            for j in range(len(row0)-1):
+                a0,a1,b0,b1=row0[j],row1[j],row0[j+1],row1[j+1]
+                for side,column in ((-1,1),(1,2)):
+                    # Outer and inner skins make a static jamb with a 35mm
+                    # border. Its inner skin also closes the leaf volume's side
+                    # when shut, avoiding coincident leaf/frame side faces.
+                    for inset in (0,-side*rim):
+                        return_face([(a0[column]+inset,y0,a0[0]),(a1[column]+inset,y1,a1[0]),
+                                     (b1[column]+inset,y1,b1[0]),(b0[column]+inset,y0,b0[0])],
+                                    P(-side,0,0),double=True)
+            z0,l0,r0=row0[-1];z1,l1,r1=row1[-1]
+            if z0<rear-1e-7 or z1<rear-1e-7:
+                for side,x0,x1 in ((-1,l0,l1),(1,r0,r1)):
+                    return_face([(x0,y0,z0),(x1,y1,z1),(x1-side*rim,y1,z1),(x0-side*rim,y0,z0)],
+                                P(0,0,-1),double=True)
+                # The aft centre belongs to the same entry model as the front
+                # leaf. Open/missing-door visibility removes both together.
+                return_face([(l0+rim,y0,z0),(l1+rim,y1,z1),(r1-rim,y1,z1),(r0-rim,y0,z0)],
+                            P(0,0,-1),double=True,builder=entry)
+        if depth_sections:
+            for (height,row),upward in ((depth_sections[0],-1),(depth_sections[-1],1)):
+                for a,b in zip(row,row[1:]):
+                    for side,column in ((-1,1),(1,2)):
+                        return_face([(a[column],height,a[0]),(b[column],height,b[0]),
+                                     (b[column]-side*rim,height,b[0]),(a[column]-side*rim,height,a[0])],
+                                    Vector((0,0,upward)),double=True)
+                    return_face([(a[1]+rim,height,a[0]),(b[1]+rim,height,b[0]),
+                                 (b[2]-rim,height,b[0]),(a[2]-rim,height,a[0])],
+                                Vector((0,0,upward)),double=True,builder=entry)
     if not spec.get("reuseTexture"):
         wall_texture(os.path.join(tex_dir, "Vehicles", "MELensShell_%s_walls.png" % spec["texture"]),
                      perimeter, top - floor_y, rng, style)
@@ -1068,36 +1453,78 @@ def build_shell(measure, spec, tex_dir):
         floor_texture(os.path.join(tex_dir, "Vehicles", "MELensShell_%s_floor.png" % spec["texture"]),
                       bounds, floor_poly, rng, style)
     objects = [floor.finish(), walls.finish()]
+    if entry:
+        # The original door is a thin exterior mesh. Supply its inside skin at
+        # precisely the removed lining segments; Lua hides it for an open/missing door.
+        objects.append(entry.finish())
     if spec.get("cabBulkhead"):
         # The cab and its cargo partition remain opaque at every wall setting.
-        # Two faces close the otherwise exposed backfaces of factory cab parts.
-        front = max(z for x, z in floor_ring) - 0.003
+        # A solid skin closes the otherwise exposed backfaces of factory cab parts.
+        front = spec["cabBulkhead"].get("z", max(z for x, z in floor_ring) - 0.003)
         xs = [x for x, z in floor_ring if z > front - 0.05]
         left, right = min(xs), max(xs)
         high = spec["cabBulkhead"]["top"]
         partition = UVBuilder(name + "_bulkhead")
-        points = [(left, floor_y-.015), (left, high), (right, high), (right, floor_y-.015)]
-        points += [(x, max(y, floor_y-.015)) for segment in spec["cabBulkhead"].get("section", [])
-                   for x, y in segment if y >= floor_y-.03]
-        # Cap the actual outer cab cross-section, including raised roofs and
-        # tapered shoulders. A rectangle fitted only to the cargo lining leaves
-        # factory roof backfaces visible around its upper/outboard edges.
-        def cross(o, a, c):
-            return (a[0]-o[0])*(c[1]-o[1])-(a[1]-o[1])*(c[0]-o[0])
-        ordered = sorted(set(points))
+        low = floor_y-.015
+        section = spec["cabBulkhead"].get("section", [])
+        skin_inset = spec["cabBulkhead"].get("inset", .003)
+        heights = []
+        for y in sorted({low, high} | {y for segment in section for x,y in segment if y >= low}):
+            if heights and y-heights[-1] < 1e-6:heights[-1]=y
+            else:heights.append(y)
         lower, upper = [], []
-        for chain, sequence in ((lower, ordered), (upper, reversed(ordered))):
-            for point in sequence:
-                while len(chain)>1 and cross(chain[-2],chain[-1],point)<=0:chain.pop()
-                chain.append(point)
-        outline = lower[:-1]+upper[:-1]
-        corners = [P(x, y, front) for x,y in outline]
+        for y in heights:
+            crossings = []
+            for (x0,y0),(x1,y1) in section:
+                if min(y0,y1)-1e-6 <= y <= max(y0,y1)+1e-6:
+                    if abs(y1-y0) < 1e-6:
+                        crossings.extend((x0,x1))
+                    else:
+                        t=min(1,max(0,(y-y0)/(y1-y0)))
+                        crossings.append(x0+(x1-x0)*t)
+            # Intersect the actual skin at each height, including the lower
+            # floor cut. A convex hull bridges trim protrusions into a false
+            # wedge outside the straight body below them; clamping low points
+            # upward also imports an unrelated underbody width at the floor.
+            # Keep the cap inside coincident native side skins. Native cap-hide
+            # controls exposed the same fine seam on several body families.
+            # Clamp each side to the centre at narrow roof-tip sections.
+            if crossings and skin_inset:
+                lo,hi = min(crossings),max(crossings)
+                centre = (lo+hi)/2
+                crossings = [min(centre,lo+skin_inset),max(centre,hi-skin_inset)]
+            # Sparse sections can contain only internal cab edges at a height.
+            # They must not narrow the opaque partition inside the room itself.
+            # Above its ceiling, retain the measured roof contour.
+            if y <= high+1e-6:
+                crossings.extend((left,right))
+            lower.append((min(crossings) if crossings else left,y))
+            upper.append((max(crossings) if crossings else right,y))
+        # Retain counter-clockwise winding for the perimeter's outward normals.
+        outline = []
+        for point in reversed(lower+list(reversed(upper))):
+            if not outline or point != outline[-1]:outline.append(point)
+        if outline[-1] == outline[0]:outline.pop()
+        # A thin solid partition overlaps the native cut instead of sharing its
+        # exact depth. Coplanar factory faces otherwise flicker through as dark
+        # stripes or large black panels. Its forward skin and edge returns seal
+        # the joint to the retained cab without a grass-visible slit.
+        # Native interior clipping ends 30mm behind the cut plane. Cover that
+        # retained band with 3mm clearance; measured cab backfaces farther aft
+        # can supply an explicit depth. The front skin still seals the cab cut.
+        cargo_face, cab_face = front-spec["cabBulkhead"].get("depth",.033), front+.002
+        corners = [P(x, y, cargo_face) for x,y in outline]
         # Match the lining's wall panels instead of stretching its entire atlas.
         u0 = arc[max(range(n), key=lambda i: floor_ring[i][1])] / perimeter
         cap_height = max(y for x,y in outline)-floor_y
-        uv = [(u0+(x-left)/perimeter, (y-floor_y)/cap_height) for x,y in outline]
-        for direction in (-1, 1):
-            partition.poly(corners, uv, Vector((0, direction, 0)))
+        uv = [wall_uv(u0+(x-left)/perimeter, (y-floor_y)/cap_height) for x,y in outline]
+        partition.poly(corners, uv, Vector((0,-1,0)))
+        partition.poly([P(x,y,cab_face) for x,y in outline],uv,Vector((0,1,0)))
+        for i,(x0,y0) in enumerate(outline):
+            x1,y1=outline[(i+1)%len(outline)]
+            outward=Vector((-(y1-y0),0,-(x1-x0)))
+            partition.poly([P(x0,y0,cargo_face),P(x1,y1,cargo_face),P(x1,y1,cab_face),P(x0,y0,cab_face)],
+                           [uv[i],uv[(i+1)%len(uv)],uv[(i+1)%len(uv)],uv[i]],outward)
         objects.append(partition.finish())
     return objects
 

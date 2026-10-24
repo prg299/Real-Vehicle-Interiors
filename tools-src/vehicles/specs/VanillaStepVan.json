@@ -69,16 +69,16 @@
     },
     "entryOpening": {
         "x": [
-            -0.5,
-            0.5
+            -0.816,
+            0.816
         ],
         "y": [
             -0.588,
-            0.73
+            0.79
         ],
         "z": [
             -2.25,
-            -1.87
+            -1.915
         ]
     },
     "windowBoxes": [
@@ -95,6 +95,20 @@
                 -1.9,
                 0.12
             ]
+        },
+        {
+            "x": [
+                -0.736,
+                0.736
+            ],
+            "y": [
+                -0.578,
+                -0.543
+            ],
+            "z": [
+                -1.91,
+                0.11
+            ]
         }
     ],
     "openings": [],
@@ -104,13 +118,21 @@
         "MELensFurnitureRight1",
         "MELensFurnitureRight2"
     ],
-    "wheelWells": [],
+    "wheelWells": [
+        {
+            "z": -1.08,
+            "inner": 0.43,
+            "halfLength": 0.42,
+            "top": -0.378
+        }
+    ],
     "vanillaSeats": [
         "FrontLeft",
         "FrontRight"
     ],
     "waterTank": 40,
     "fuelTank": 20,
+    "factoryLayout": true,
     "spots": [
         {
             "wall": "left",

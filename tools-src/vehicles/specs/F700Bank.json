@@ -58,7 +58,9 @@
                 11.1111
             ]
         },
-        "87fordF700WindowrlB": {
+        "87fordF700WindowrlB": true,
+        "87fordF700WindowrrB": true,
+        "87fordF700WindshieldB": {
             "plane": [
                 0,
                 -1,
@@ -66,14 +68,7 @@
                 11.1111
             ]
         },
-        "87fordF700WindowrrB": {
-            "plane": [
-                0,
-                -1,
-                0,
-                11.1111
-            ]
-        },
+        "87fordF700WindshieldRear": true,
         "87fordF700bankInterior": {
             "plane": [
                 0,
@@ -106,16 +101,16 @@
     },
     "entryOpening": {
         "x": [
-            -0.5,
-            0.5
+            -0.895,
+            0.895
         ],
         "y": [
             -0.248,
-            0.99
+            1.05
         ],
         "z": [
             -1.805,
-            -1.425
+            -1.47
         ]
     },
     "windowBoxes": [
@@ -131,6 +126,20 @@
             "z": [
                 -1.455,
                 0.97
+            ]
+        },
+        {
+            "x": [
+                -0.815,
+                0.815
+            ],
+            "y": [
+                -0.238,
+                -0.203
+            ],
+            "z": [
+                -1.465,
+                0.96
             ]
         }
     ],
@@ -155,6 +164,7 @@
     ],
     "waterTank": 40,
     "fuelTank": 20,
+    "factoryLayout": true,
     "spots": [
         {
             "wall": "left",

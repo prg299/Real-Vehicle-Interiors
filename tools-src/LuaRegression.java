@@ -45,7 +45,9 @@ public final class LuaRegression {
             client + "MELens_Bed.lua", "tools-src/regression/bed.lua",
             "tools-src/regression/standing.lua", "tools-src/regression/entry-setup.lua",
             "game:media/lua/client/Vehicles/TimedActions/ISEnterVehicle.lua",
-            client + "MELens_Cabin.lua", "tools-src/regression/entry.lua"
+            "tools-src/regression/profile-keep-planes.lua",
+            client + "MELens_Cabin.lua", "tools-src/regression/entry.lua",
+            "tools-src/regression/profile-keep-planes.lua"
         }) {
             if (name.endsWith("/MELens_Home.lua")) {
                 var events = (KahluaTable) env.rawget("Events");
@@ -86,8 +88,25 @@ public final class LuaRegression {
         Object[] fleetResult = thread.pcall(LuaCompiler.loadstring(Files.readString(fleet, StandardCharsets.UTF_8),
             fleet.toString(), env), new Object[0]);
         if (!Boolean.TRUE.equals(fleetResult[0])) throw new AssertionError(java.util.Arrays.toString(fleetResult));
+        Object[] looseGeometry = thread.pcall(LuaCompiler.loadstring(Files.readString(
+            root.resolve(shared + "MELens_Loose.lua"), StandardCharsets.UTF_8), "MELens_Loose.lua", env), new Object[0]);
+        if (!Boolean.TRUE.equals(looseGeometry[0])) throw new AssertionError(java.util.Arrays.toString(looseGeometry));
+        Object[] floorPlacement = thread.pcall(LuaCompiler.loadstring(Files.readString(
+            root.resolve("tools-src/regression/factory-floor-placement.lua"), StandardCharsets.UTF_8), "factory-floor-placement.lua", env), new Object[0]);
+        if (!Boolean.TRUE.equals(floorPlacement[0])) throw new AssertionError(java.util.Arrays.toString(floorPlacement));
+        Object[] factoryRoles = thread.pcall(LuaCompiler.loadstring(Files.readString(
+            root.resolve("tools-src/regression/factory-roles.lua"), StandardCharsets.UTF_8), "factory-roles.lua", env), new Object[0]);
+        if (!Boolean.TRUE.equals(factoryRoles[0])) throw new AssertionError(java.util.Arrays.toString(factoryRoles));
         for (String name : new String[] { shared + "MELens_VisionGeometry.lua", shared + "MELens_Vision.lua",
                 "tools-src/regression/vision.lua" }) {
+            Object[] checked = thread.pcall(LuaCompiler.loadstring(Files.readString(root.resolve(name), StandardCharsets.UTF_8),
+                    name, env), new Object[0]);
+            if (!Boolean.TRUE.equals(checked[0])) throw new AssertionError(name + ": " + java.util.Arrays.toString(checked));
+        }
+        thread.pcall(LuaCompiler.loadstring("Events.OnGameStart={Add=function() end};"
+            + "Events.OnMainMenuEnter={Add=function() end}", "shelf-load-doubles", env), new Object[0]);
+        for (String name : new String[] { client + "MELens_LooseView.lua",
+                "tools-src/regression/shelf-contents.lua" }) {
             Object[] checked = thread.pcall(LuaCompiler.loadstring(Files.readString(root.resolve(name), StandardCharsets.UTF_8),
                     name, env), new Object[0]);
             if (!Boolean.TRUE.equals(checked[0])) throw new AssertionError(name + ": " + java.util.Arrays.toString(checked));

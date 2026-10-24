@@ -288,6 +288,47 @@ function MELens.initFurnitureSeat(vehicle, part)
     if MELens.Parts then MELens.Parts.syncFurnitureSeats(vehicle) end
 end
 
+-- Global hide rules share Java's model-name / mesh: alias map. Remember the
+-- exact last registered body-space plane rather than reconstructing it from a
+-- profile later (several profiles may register the same alias).
+local registeredKeepPlanes = {}
+local activeBodyKeepPlanes = {}
+local noKeepPlane = { 0, 0, 0, -1 }
+
+local function writeKeepPlane(rv, model, p)
+    rv.setKeepPlane(model, p[1], p[2], p[3], p[4])
+end
+
+local function registerKeepPlane(model, a, b, c, d)
+    local p = { a, b, c, d }
+    MELensRV.setKeepPlane(model, a, b, c, d)
+    registeredKeepPlanes[model] = p
+    -- A late script registration updates the restoration baseline without
+    -- replacing the active vehicle's narrower override.
+    if activeBodyKeepPlanes[model] then
+        writeKeepPlane(MELensRV, model, activeBodyKeepPlanes[model])
+    end
+end
+
+-- Per-profile overrides are already in BODY mesh space, including translated
+-- native submodels. Only aliases touched by the previous profile are restored.
+function MELens.applyBodyKeepPlanes(profile)
+    local rv = MELensRV
+    if not rv or not rv.setKeepPlane then return end
+    local restored = false
+    for model in pairs(activeBodyKeepPlanes) do
+        writeKeepPlane(rv, model, registeredKeepPlanes[model] or noKeepPlane)
+        restored = true
+    end
+    if restored then activeBodyKeepPlanes = {} end
+    if not profile or not profile.bodyKeepPlanes then return end
+    for model, p in pairs(profile.bodyKeepPlanes) do
+        local copy = { p[1], p[2], p[3], p[4] }
+        writeKeepPlane(rv, model, copy)
+        activeBodyKeepPlanes[model] = copy
+    end
+end
+
 function MELens.addStandingPositions()
     local manager = getScriptManager()
     if not manager then return end
@@ -316,14 +357,14 @@ function MELens.addStandingPositions()
                 local m = profile.mesh
                 for model, keep in pairs(profile.hideKI5 or {}) do
                     if keep == true then
-                        MELensRV.setKeepPlane(model, 0, 0, 0, 1)
+                        registerKeepPlane(model, 0, 0, 0, 1)
                     elseif type(keep) == "table" and keep.plane then
-                        -- any plane in the model's mesh space: a*x + b*y + c*z + d > 0 is hidden
+                        -- any plane in BODY mesh space: a*x + b*y + c*z + d > 0 is hidden
                         local p = keep.plane
-                        MELensRV.setKeepPlane(model, p[1], p[2], p[3], p[4])
+                        registerKeepPlane(model, p[1], p[2], p[3], p[4])
                     else
                         -- remove below passenger height `keep`: mesh z > lift - keep / scale
-                        MELensRV.setKeepPlane(model, 0, 0, 1, keep / m.scale - m.lift)
+                        registerKeepPlane(model, 0, 0, 1, keep / m.scale - m.lift)
                     end
                 end
             end

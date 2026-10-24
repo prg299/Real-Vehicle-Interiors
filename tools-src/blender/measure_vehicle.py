@@ -5,7 +5,12 @@
 # config: { "name", "fbx", "body": object, "interior": [objects], "prefix": [name
 #           prefixes of the vehicle's own objects], "out": json path,
 #           "map": {"sx": -90, "sy": 90, "sz": 90} (optional; KI5's scale 0.1 x 0.9),
-#           "floor": height (optional; the floor's height when the rays find another) }
+#           "floor": height (optional; the floor's height when the rays find another),
+#           "cabParts": [{"mesh": object, "offset": [x,y,z]}] (optional; passenger space),
+#           "exportSections": true (optional; exact body sections without a cab envelope),
+#           "sectionHeightsFrom": [{"x": [lo,hi], "z": [lo,hi]}] (optional; also slice at native vertex heights in these regions),
+#           "sectionHeights": [height, ...] (optional; exact requested section planes),
+#           "cabSectionZ": exact passenger-space cap plane (optional) }
 #
 # Writes, in passenger space (tiles; x to the vehicle's left, y up, z to the front):
 #   floor: the height most rays straight down along the middle meet first;
@@ -82,12 +87,22 @@ def bounds(name):
     return {"min": [round(v, 4) for v in lo], "max": [round(v, 4) for v in hi]}
 
 
-def slice_segments(name, py, axis=1):
+def slice_segments(name, py, axis=1, exact=False):
     """Keep exact cross-section segments so embedded seats cannot shrink the body envelope."""
     verts, _, polys = world_mesh(name)
     pv = [to_passenger(v) for v in verts]
     segments = []
     for poly in polys:
+        if exact:
+            # At a native vertex height, adjacent edges can report the same
+            # point twice. Pairing those duplicates loses the real corner's
+            # incident skin. This opt-in path also retains coplanar edges.
+            other = 2 if axis == 1 else 1
+            if all(abs(pv[index][axis] - py) < 1e-10 for index in poly):
+                for i in range(len(poly)):
+                    a, b = pv[poly[i]], pv[poly[(i + 1) % len(poly)]]
+                    segments.append([(a[0], a[other]), (b[0], b[other])])
+                continue
         cuts = []
         for i in range(len(poly)):
             pa, pb = pv[poly[i]], pv[poly[(i + 1) % len(poly)]]
@@ -96,6 +111,15 @@ def slice_segments(name, py, axis=1):
             t = (py - pa[axis]) / (pb[axis] - pa[axis])
             other = 2 if axis == 1 else 1
             cuts.append((pa[0] + (pb[0] - pa[0]) * t, pa[other] + (pb[other] - pa[other]) * t))
+        if exact:
+            unique = []
+            for point in cuts:
+                if not any(math.dist(point, previous) < 1e-9 for previous in unique):
+                    unique.append(point)
+            if len(unique) >= 2:
+                segments.append(max(((a, b) for i, a in enumerate(unique) for b in unique[i + 1:]),
+                                    key=lambda pair: math.dist(*pair)))
+            continue
         segments.extend([cuts[i], cuts[i + 1]] for i in range(0, len(cuts) - 1, 2))
     return segments
 
@@ -156,15 +180,42 @@ result = {"name": cfg["name"], "floor": floor, "ceiling": ceiling, "body": body_
           "outlines": {}, "parts": {}}
 if "mesh" in cfg:
     result["mesh"] = cfg["mesh"]
-if cfg.get("fitEnvelope"):
+if cfg.get("fitEnvelope") or cfg.get("exportSections"):
     result["sections"] = {}
-    result["cabSection"] = slice_segments(body, cfg["sampleZ"][1] - .04, axis=2)
+if cfg.get("fitEnvelope"):
+    cab_z = cfg.get("cabSectionZ", cfg["sampleZ"][1] - .04)
+    result["cabSection"] = slice_segments(body, cab_z, axis=2)
+    result["cabSectionSources"] = [body]
+    for part in cfg.get("cabParts", []):
+        name = part["mesh"]
+        obj = bpy.data.objects.get(name)
+        if obj is None or obj.type != "MESH":
+            print("CAB SKIN NOT PRESENT: %s" % name)
+            continue
+        dx, dy, dz = part.get("offset", [0, 0, 0])
+        # Slice each resolved skin at the same vehicle plane after its model
+        # offset, then union exact endpoints with the main body's section.
+        segments = slice_segments(name, cab_z - dz, axis=2)
+        if segments:
+            result["cabSection"].extend(
+                [[x + dx, y + dy] for x, y in segment] for segment in segments)
+            result["cabSectionSources"].append(name)
 h = floor - 0.1
 while h <= ceiling + 0.05:
     result["outlines"]["%.2f" % h] = slice_outline(body, h)
-    if cfg.get("fitEnvelope"):
+    if cfg.get("fitEnvelope") or cfg.get("exportSections"):
         result["sections"]["%.2f" % h] = slice_segments(body, h)
     h = round(h + 0.1, 4)
+if cfg.get("sectionHeightsFrom") or cfg.get("sectionHeights"):
+    assert "sections" in result, "requested section heights require exported sections"
+    verts, _, _ = world_mesh(body)
+    heights = {p[1] for p in map(to_passenger, verts)
+               if any(all(box[axis][0] <= p[index] <= box[axis][1]
+                          for axis, index in (("x", 0), ("z", 2)))
+                      for box in cfg.get("sectionHeightsFrom", []))}
+    heights.update(cfg.get("sectionHeights", []))
+    for h in sorted(heights):
+        result["sections"]["%.12f" % h] = slice_segments(body, h, exact=True)
 prefixes = cfg.get("prefix", [])
 for obj in bpy.data.objects:
     if obj.type == "MESH" and any(obj.name.startswith(p) for p in prefixes):

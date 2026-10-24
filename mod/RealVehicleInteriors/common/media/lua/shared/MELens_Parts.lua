@@ -46,7 +46,8 @@ P.EMPTY_ITEM = "Base.MELensRV_Seat" -- harmless repair placeholder; keeps empty 
 ------------------------------------------------------------------------------------
 
 P.PIECES = { "bed", "dinette", "kitchen", "fridge", "cabinet", "wardrobe", "washroom", "heater", "shelf",
-             "busseat", "busseat2", "box", "stretcher", "metalcase" }
+             "busseat", "busseat2", "box", "stretcher", "metalcase", "safe",
+             "parcels", "medlocker", "medbench", "equipmentrack", "workbench" }
 
 -- Cargo spots (a box truck's) take boxes and nothing else, other spots everything but
 -- boxes, so a part only declares the models it can show.
@@ -57,7 +58,7 @@ for _, piece in ipairs(P.PIECES) do
 end
 
 function P.piecesFor(spot)
-    return spot and spot.cargo and CARGO_PIECES or FURNITURE
+    return spot and (spot.pieces or (spot.cargo and CARGO_PIECES)) or FURNITURE
 end
 
 -- Bus seats face the vehicle's front on either wall: on a right-hand wall (whose length
@@ -101,12 +102,17 @@ P.VEHICLE_USE = {
 
 function P.vehicleUse(vehicle)
     local script = vehicle and vehicle:getScript()
-    return script and P.VEHICLE_USE[script:getFullName()] or nil
+    local profile = M.profileFor(vehicle)
+    return profile and profile.factoryUse or (script and P.VEHICLE_USE[script:getFullName()] or nil)
 end
 
 function P.factoryPiece(vehicle, index, spot)
+    local profile = M.profileFor(vehicle)
+    if profile and profile.factoryLayout then
+        return spot and not spot.empty and spot.default or nil
+    end
     local use = P.vehicleUse(vehicle)
-    return use and use.fittings[index] or (spot and not spot.empty and spot.default or nil)
+    return use and use.fittings and use.fittings[index] or (spot and not spot.empty and spot.default or nil)
 end
 
 -- The piece standing at a spot part, or nil.
@@ -190,6 +196,11 @@ end
 function P.fits(spot, piece)
     local kit = P.kit(piece)
     if not kit or not spot then return false end
+    if spot.pieces then
+        local declared = false
+        for _, name in ipairs(spot.pieces) do if name == piece then declared = true;break end end
+        if not declared then return false end
+    end
     if (kit.kind == "box") ~= (spot.cargo == true) then
         return false          -- boxes only at cargo spots, and only boxes there
     end
@@ -347,11 +358,13 @@ end
 local HEAD = { front = { 0, 1 }, back = { 0, -1 }, left = { 1, 0 }, right = { -1, 0 } }
 
 -- Which seat of a spot a KI5 seat id is (1, 2, ...), and the spot.
-local function seatInSpot(profile, id)
+local function seatInSpot(vehicle, profile, id)
     for index, spot in ipairs(profile.spots or {}) do
         for k, sid in ipairs(spot.seats or {}) do
             if sid == id then
-                return spot, index, k
+                local part = P.spotPart(vehicle, index)
+                local piece = P.pieceAt(part) or (not part and P.factoryPiece(vehicle, index, spot))
+                if piece then return spot, index, k end
             end
         end
     end
@@ -361,7 +374,7 @@ end
 -- The pose for a KI5 seat on whatever stands at its spot: { pose, x, y, z, turn }, or
 -- nil when nothing there is to lie or sit on.
 function P.seatPose(vehicle, profile, id)
-    local spot, index, k = seatInSpot(profile, id)
+    local spot, index, k = seatInSpot(vehicle, profile, id)
     if not spot then return nil end
     local piece = P.pieceAt(P.spotPart(vehicle, index))
     if not piece and vehicle:getPartById(P.SPOT .. index) == nil then
@@ -382,6 +395,10 @@ function P.seatPose(vehicle, profile, id)
         local x, z = P.spotPoint(spot, sign * 0.34, 0.27)
         local fx, fz = -sign * w.along[1], -sign * w.along[2]
         return { pose = "facingLeft", x = x, y = floor + 0.395, z = z, turn = math.atan2(fz, fx) }
+    elseif piece == "medbench" and k <= 2 then
+        local x,z = P.spotPoint(spot, (k - 1.5) * .52, .22)
+        local out = P.WALLS[spot.wall].out
+        return { pose = "facingLeft", x = x, y = floor + .395, z = z, turn = math.atan2(out[2], out[1]) }
     elseif (piece == "busseat" and k == 1) or (piece == "busseat2" and k <= 2) then
         local middle = piece == "busseat" and 0 or (k - 1.5) * 0.75
         local x, z = P.spotPoint(spot, middle, 0.40)
@@ -606,6 +623,24 @@ function P.createSpot(vehicle, part)
     if isClient() then return end
     local data = part:getModData()
     local container = part:getItemContainer()
+    local placeholder = part:getInventoryItem()
+    if placeholder and placeholder:getFullType() == P.EMPTY_ITEM then part:setInventoryItem(nil) end
+    local profile, index = M.profileFor(vehicle), P.spotIndex(part)
+    if profile and profile.factoryLayout then
+        local stamp = vehicle:getModData()
+        -- Only an untouched first released slot identifies a newly created vehicle.
+        -- Appending factory slots to a saved/cleared conversion must not refill it.
+        if index == 1 and not data[P.INITIALIZED_KEY] and not part:getInventoryItem()
+                and (not container or container:isEmpty()) then
+            stamp.MELensFactoryLayout = profile.factoryLayout
+        end
+        local spot = profile.spots[index]
+        if spot and spot.factory and stamp.MELensFactoryLayout ~= profile.factoryLayout then
+            data[P.INITIALIZED_KEY] = true
+            P.applyPiece(vehicle, part)
+            return
+        end
+    end
     if data[P.INITIALIZED_KEY] or part:getInventoryItem() ~= nil
             or (container ~= nil and not container:isEmpty()) then
         data[P.INITIALIZED_KEY] = true
@@ -649,13 +684,22 @@ function P.fillFurniture(part, piece, vehicle)
     local listName = use and use.loot and use.loot[piece] or P.FURNITURE_LOOT[piece]
     local lists = ProceduralDistributions and ProceduralDistributions.list
     local list = lists and listName and lists[listName]
-    if not container or not list or not list.items then return end
+    if not container then return end
     local ok, err = pcall(function()
-        for _ = 1, math.min(list.rolls or 1, 2) do
-            for i = 1, #list.items - 1, 2 do
+        local function add(name)
+            local item = container:AddItem(string.find(name, "%.") and name or ("Base." .. name))
+            if item and container.getCapacityWeight and container:getCapacityWeight() > container:getCapacity() then
+                container:Remove(item)
+            end
+        end
+        for _, pack in ipairs(use and use.stock and use.stock[piece] or {}) do
+            for _ = 1, pack[2] do add(pack[1]) end
+        end
+        for _ = 1, math.min(list and list.rolls or 0, 2) do
+            for i = 1, #(list.items or {}) - 1, 2 do
                 local name, weight = list.items[i], tonumber(list.items[i + 1]) or 0
                 if type(name) == "string" and ZombRandFloat(0, 100) < weight then
-                    container:AddItem(string.find(name, "%.") and name or ("Base." .. name))
+                    add(name)
                 end
             end
         end
@@ -671,6 +715,41 @@ function P.initSpot(vehicle, part)
     -- repair/create callback can mistake them for a newly added interior.
     if not isClient() then part:getModData()[P.INITIALIZED_KEY] = true end
     P.applyPiece(vehicle, part)
+end
+
+-- Some freight (full-size gas cylinders) belongs on the floor rather than inside
+-- a cupboard. These are ordinary, removable inventory items with saved positions.
+-- As with factory fittings, only an untouched new vehicle receives them once.
+function P.createFloor(vehicle, part)
+    if isClient() then return end
+    local data = part:getModData()
+    if data[P.INITIALIZED_KEY] then return end
+    data[P.INITIALIZED_KEY] = true
+    local profile = M.profileFor(vehicle)
+    local container = part:getItemContainer()
+    if not profile or not profile.factoryFloor or not container or not container:isEmpty()
+            or vehicle:getModData().MELensFactoryLayout ~= profile.factoryLayout
+            or not M.sandbox("StartFurnished", true) or not M.sandbox("FurnitureLoot", true) then return end
+    local loose = M.Loose
+    if not loose then return end
+    local surface = { kind = "floor", s = 0, y = profile.floorY }
+    for _, cargo in ipairs(profile.factoryFloor) do
+        if loose.fitsSurface(vehicle, profile, surface, cargo.x, cargo.z, cargo.hx, cargo.hz) then
+            local item = container:AddItem(cargo.t)
+            if item then
+                if container:getCapacityWeight() > container:getCapacity() then
+                    container:Remove(item)
+                else
+                    loose.set(vehicle, item, cargo.x, profile.floorY, cargo.z, cargo.r or 0, 0)
+                end
+            end
+        end
+    end
+    container:setExplored(true)
+end
+
+function P.initFloor(vehicle, part)
+    if not isClient() then part:getModData()[P.INITIALIZED_KEY] = true end
 end
 
 -- settleBox, where a failure never stops the vehicle from updating. (Not from init: a vehicle's parts
@@ -696,13 +775,30 @@ function P.updateSpot(vehicle, part, elapsedMinutes)
     end
 end
 
--- The shell's models are always shown (they are only drawn in the vehicle you are in).
+-- Closed cargo doors need their own inside skin: the native leaf can be single-sided.
+-- Only change the model when the real door state changes; never persist render state.
+P.shellDoorStates = setmetatable({}, { __mode = "k" })
+function P.syncShellDoors(vehicle, profile, force)
+    local shell = profile and profile.shell
+    if not shell or not shell.entryModel then return end
+    local part = vehicle:getPartById(P.SHELL)
+    local leaf = vehicle:getPartById(shell.entryDoor)
+    local door = leaf and leaf:getDoor()
+    local visible = door ~= nil and leaf:getInventoryItem() ~= nil and not door:isOpen()
+    if part and (force or P.shellDoorStates[vehicle] ~= visible) then
+        part:setModelVisible("MELensShell" .. shell.entryModel, visible)
+        P.shellDoorStates[vehicle] = visible
+    end
+end
+
+-- Shells are drawn only in the occupied vehicle; the entry skin follows its door.
 function P.initShell(vehicle, part)
     if not MELensRV then return end
     local profile = M.profileFor(vehicle)
     for i = 1, profile and profile.shell and #profile.shell.models or 0 do
         part:setModelVisible("MELensShell" .. i, true)
     end
+    P.syncShellDoors(vehicle, profile, true)
 end
 
 ------------------------------------------------------------------------------------
@@ -780,7 +876,7 @@ local function spotScript(index, spot, profile, withModels)
     -- `Vehicle:repair()` installs a part's declared itemType into every empty
     -- compatible part. Bare slots use a harmless placeholder that init/refresh removes;
     -- omitting itemType entirely causes the engine to discard installed furniture on load.
-    local installTypes = (" itemType = %s, "):format(spot.empty and P.EMPTY_ITEM or itemTypeList(pieces))
+    local installTypes = (" itemType = %s, "):format((spot.empty or spot.factory) and P.EMPTY_ITEM or itemTypeList(pieces))
     if withModels then
         local o = M.modelOffset(spot.x, profile.floorY + (spot.rise or 0), spot.z, profile)
         local modelScale = 0.9 / (profile.vehicleScale or 0.9)
@@ -825,7 +921,7 @@ function P.extendScript(script, profile)
         script:Load(script:getName(), spotScript(index, spot, profile, java))
     end
     script:Load(script:getName(), string.format(
-        "{ part %s { category = nodisplay, area = %s, container { capacity = 100, conditionAffectsCapacity = false, test = MELens.Parts.floorTest, } } }",
+        "{ part %s { category = nodisplay, area = %s, container { capacity = 100, conditionAffectsCapacity = false, test = MELens.Parts.floorTest, } lua { create = MELens.Parts.createFloor, init = MELens.Parts.initFloor, } } }",
         P.FLOOR, area))
     -- KI5's cargo storage gives way to the boxes (see P.ki5StorageTest)
     for _, id in ipairs(profile.ki5Storage or {}) do

@@ -13,6 +13,11 @@
     "texture": "scamp16",
     "floorOutline": { "inset": 0.012, "band": 0.06 },
     "floorY": -0.32,
+    "bodyKeepPlanes": {
+        "KI5trailersSpare": [0, 1, 0, 16.3],
+        "87scampCamperRear0": [0, 0, -1, 4.310444]
+    },
+    "openingPads": { "scamp16_door_fr": 0.08 },
     "hide": {
         "TrailerKI5camperScamp16Interior": "ceiling",
         "87scampCamperSeatfl": true,
@@ -42,7 +47,8 @@
     "wheelWells": [
         {
             "z": 0.18,
-            "inner": 0.56
+            "inner": 0.56,
+            "top": -0.015
         }
     ],
     "spots": [
