@@ -125,6 +125,16 @@ CompanionDogs.data(a).trust=100;a:setCustomName("MP care dog");CompanionDogs.tra
         menu(h.lua('return getText("IGUI_PD_Inspect")'))
         lab.wait(lambda:h.lua('local w=ISCDStatusWindow.instanceFor(getPlayer());return w and w:isVisible()'),bool,'native interior Inspect remains open')
         lab.capture('A','mp-native-interior-inspect');h.lua('ISCDStatusWindow.instanceFor(getPlayer()):close();return true')
+        before=lab.wait(all_states,lambda ss:ss['server']['animals'][0].get('upkeep') is not None,
+            'first loaded Companion Dogs upkeep pass')
+        lab.server('local g=getGameTime();g:setTimeOfDay(g:getTimeOfDay()+40/60);return "forty minute Stay control"')
+        lab.wait(lambda:read('server'),lambda s:s['hours']>before['server']['hours']+.6
+            and s['animals'][0]['upkeep']>before['server']['animals'][0]['upkeep']+30,'Stay spans an expired wandering timer')
+        after=all_states()
+        for side in ('A','B','server'):
+            prior=next(iter(before[side]['records'].values()));current=next(iter(after[side]['records'].values()))
+            h.check(current['x']==prior['x'] and current['z']==prior['z'],'Stay dog voluntarily wandered on '+side)
+        h.REPORT['nativeStayFortyMinutes']={'before':before,'after':after}
         carry_case()
         lab.server('''local v=getVehicleById('''+str(lab.vid)+''');local A=MELens.Animals;local a=A.list(v)[1];local r=A.record(v,a)
 for _,kind in ipairs({"food","water"}) do local b=MELens.Loose.floorContainer(v):AddItem("Base.CompanionDogsBowl");b:getModData()[kind=="food" and "cdFoodMeals" or "cdWater"]=100

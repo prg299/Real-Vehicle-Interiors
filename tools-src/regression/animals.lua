@@ -181,9 +181,19 @@ do
     check(math.abs(dog.values.hunger-.01)<.00001,'trailer care charges unloaded hours on return')
     CompanionDogs.troughFeedTrigger=function(p) return p==owner and .4 or .9 end
     check(A.trigger(dog)==.4,'interior dog ignores its owners Companion Dogs feeding threshold')
+    local resting=A.record(v,dog)
+    resting.nextMove=hour-1;entries={}
+    local restX,restZ=resting.x,resting.z
+    for _=1,3 do hour=hour+1;A.updateVehicle(v,profile) end
+    check(resting.x==restX and resting.z==restZ,'Stay permits voluntary pacing after the quiet timer expires')
+    CompanionDogs.getState=function() return 'follow' end
+    A.updateVehicle(v,profile)
+    check(resting.x~=restX or resting.z~=restZ,'Stay guard also prevents a following dog from moving')
+    CompanionDogs.getState=function() return 'stay' end
     local bowl={data={},refreshes=0}
     function bowl:getFullType() return 'Base.CompanionDogsBowl' end
     function bowl:getModData() return self.data end
+    function bowl:getContainer() return nil end
     CompanionDogs.absorbRealWater=function(b)
         if b.data.cdWater then return false end
         b.data.cdWater=80;return true
@@ -198,6 +208,20 @@ do
         'authority does not convert real filled water through Companion Dogs')
     A.sources(v,profile,dog,'water',0,0)
     check(bowl.refreshes==1,'repeated source scans credit the same filled bowl again')
+    -- Armed dogs can have zero native hunger while CD's saved value is hungry.
+    -- Stay must permit a required meal and retain the real bowl's remaining stock.
+    CompanionDogs.getHunger=function(a) return a.data.gunHungerSave or a.values.hunger end
+    CompanionDogs.setNeed=function(a,kind,value)
+        a.values[kind]=value
+        if kind=='hunger' then a.data.gunHungerSave=value end
+    end
+    dog.values.hunger,dog.values.thirst,dog.data.gunHungerSave=0,0,.6
+    resting.x,resting.z,resting.p,resting.u=0,0,'idle',nil
+    bowl.data.cdFoodMeals=100
+    A.updateVehicle(v,profile)
+    check(math.abs(dog.data.gunHungerSave-.1)<.00001 and resting.p=='eat',
+        'Stay or cleared native hunger prevents an armed companion from eating')
+    check(math.abs(bowl.data.cdFoodMeals-50)<.00001,'armed-dog feeding does not conserve bowl stock')
     v.animals=list();A.onMinute()
     local ghost=false;for _ in pairs(A.records(v,false)) do ghost=true end
     check(not ghost,'external Bring/extraction leaves a ghost occupancy record')

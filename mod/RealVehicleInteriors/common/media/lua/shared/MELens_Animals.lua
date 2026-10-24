@@ -326,6 +326,12 @@ function A.sources(vehicle, profile, animal, want, fromX, fromZ)
 end
 
 local function stat(animal, which)
+    local CD = companionDogs()
+    -- CD keeps hunger separately while its armed-dog protection clears the
+    -- native stat. Use the same accessor as its normal feeding/upkeep code.
+    if which == CharacterStat.HUNGER and CD and CD.isDog(animal) and type(CD.getHunger) == "function" then
+        return CD.getHunger(animal)
+    end
     return animal:getStats():get(which)
 end
 
@@ -475,6 +481,11 @@ local function look(vehicle, profile, animal, r, hours)
             end
         end
     end
+    -- Stay still allows necessary feeding/drinking, like CD's outside care,
+    -- but must not resume our unrelated voluntary wandering when a timer expires.
+    local CD = companionDogs()
+    if CD and CD.isDog(animal) and CD.isCompanion and CD.isCompanion(animal)
+            and CD.getState and CD.getState(animal) == (CD.STATE_STAY or "stay") then return changed end
     -- Needs can interrupt a rest, but a satisfied animal mostly stays settled.
     -- A missing timer on an old record starts a quiet interval on first load.
     if not r.nextMove then

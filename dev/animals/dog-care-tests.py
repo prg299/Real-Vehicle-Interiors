@@ -182,6 +182,15 @@ d.ownerKey=o.key;d.ownerName=o.name;CompanionDogs.regInvalidate();return true'''
         enter_native();wait(snap,lambda s:len(s['animals'])==1,'native Follow brings dog inside again',timeout=60)
         h.REPORT['nativeFollowRoundTrip']=snap()
         dog_state('stay')
+        h.lua('''local a=MELens.Animals.list(MELensTest.vehicle)[1];CompanionDogs.setNeed(a,"hunger",0);CompanionDogs.setNeed(a,"thirst",0)
+local r=MELens.Animals.record(MELensTest.vehicle,a);r.u=nil;return true''')
+        before=wait(snap,lambda s:s['animals'][0].get('upkeep') is not None,'initial loaded care clock')
+        h.lua('local g=getGameTime();g:setTimeOfDay(g:getTimeOfDay()+40/60);return true')
+        after=wait(snap,lambda s:s['animals'][0].get('upkeep',0)>before['animals'][0]['upkeep']+30,
+            'Stay spans an expired voluntary movement timer')
+        origin,settled=before['animals'][0]['record'],after['animals'][0]['record']
+        h.check(origin['x']==settled['x'] and origin['z']==settled['z'],'Stay dog wandered without needing food or water')
+        h.REPORT['nativeStayFortyMinutes']={'before':before,'after':after}
         dog_menu(h.lua('return getText("ContextMenu_PickUpAnimalBody")'))
         c=wait(carried,lambda c:c['count']==1,'native Pick up produces carried dog')
         h.check(c['uid']==uid and len(snap()['animals'])==0,'pickup changed or duplicated dog identity')
