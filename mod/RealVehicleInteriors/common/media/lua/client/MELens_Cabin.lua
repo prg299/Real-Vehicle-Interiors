@@ -28,7 +28,7 @@ local CABIN_VAR = "MELensCabin"      -- "Idle" / "Walk": the standing poses
 local SEAT_VAR = "MELensCabinSeat"   -- "true" while entering, standing in or leaving
 local POSITION_KEY = "MELensCabin"   -- vehicle modData: where you were standing
 local IDLE_DELAY = 0.15             -- seconds without movement before the idle pose
-local RUN_SPEED_MULTIPLIER = 1.65   -- Shift/Run moves faster within the same walkable floor
+local RUN_SPEED_MULTIPLIER = 2.8    -- ~3.78 tiles/s at the default walk speed, matching steady vanilla Run
 local MAX_MOVE_STEP = 0.05          -- small collision steps also when running or after a slow frame
 
 local TURN_SPEED = 18.0              -- radians per second
