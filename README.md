@@ -42,6 +42,12 @@ The `MELens` and `me.lens.rv` identifiers remain for save and add-on compatibili
 
 Back up saves before changing mods. Known beta gaps include intermittent multiplayer passenger-position resets and incomplete fresh multiplayer bus/save-reload, trait and loose-item interaction checks. Animals has separate unfinished runtime checks. No bulk uninstall migration is provided; empty interior storage and have occupants exit before removal.
 
+## Viewpoint compatibility
+
+Tested with Project Viewpoint **0.1.6.1** on Build **42.21**. Entering a walk-in interior switches first-person or third-person view to isometric, including when using interior furniture. Driver seats keep Viewpoint controls; after leaving an interior, use Viewpoint's normal camera keys to change views again.
+
+Native single-player checks cover camper and bus entry/exit, walking, bed/dining seats, Dashboard menus and the F700 driver camera. Multiplayer, split-screen and controller combinations still need testing. Viewpoint remains optional and its files are not included.
+
 ## License
 
 [MIT](LICENSE) for authored contributions. See [third-party notices](THIRD_PARTY_NOTICES.md) for external dependencies and generated shaders.

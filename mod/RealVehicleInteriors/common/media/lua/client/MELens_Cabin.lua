@@ -1124,6 +1124,11 @@ local function update()
     if profile and M.inVanillaSeat(player, vehicle, profile) then
         profile = nil        -- driving (or in the cab): the vehicle as the game draws it
     end
+    -- Use Viewpoint's own camera transition before arming the isometric cutaway.
+    -- Also covers seated furniture and loading a save inside; the cab keeps its camera.
+    if profile and java() and java().useInteriorCamera then
+        java().useInteriorCamera(player)
+    end
     armCutaway(profile and vehicle or nil, profile, dt)
     if not profile then
         if session then endSession() end

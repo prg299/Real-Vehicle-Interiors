@@ -59,6 +59,9 @@ public final class Cutaway {
 
     /** Returns true when the draw is to be skipped. */
     public static boolean beginVehicleDraw(Model model, ModelSlotRenderData slot, ModelInstanceRenderData inst) {
+        if (ViewpointCompat.active()) {
+            return false;
+        }
         drawCalls.incrementAndGet();
         if (slot == null || inst == null || model == null) {
             return false;
@@ -241,6 +244,9 @@ public final class Cutaway {
 
     public static void endVehicleDraw(ModelSlotRenderData slot, ModelInstanceRenderData inst) {
         endVehicleDraw();
+        if (ViewpointCompat.active()) {
+            return;
+        }
         // the depth the game gave the camper's models this draw (see alignCabinDepth)
         Object vehicle = RV.cutVehicle;
         if (vehicle != null && slot != null && slot.object == vehicle && inst != null && inst.modelInstance != null) {
@@ -273,6 +279,9 @@ public final class Cutaway {
      * drew a zombie on the far side of a long camper in front of all of it.
      */
     public static void alignCabinDepth(ModelSlotRenderData slot, ModelInstanceRenderData inst) {
+        if (ViewpointCompat.active()) {
+            return;
+        }
         Object vehicle = depthVehicle;
         if (vehicle == null || vehicle != RV.cutVehicle || slot == null || inst == null || inst.modelInstance == null) {
             return;
@@ -339,6 +348,9 @@ public final class Cutaway {
     }
 
     public static void orientCabinCharacter(ModelSlotRenderData slot) {
+        if (ViewpointCompat.active()) {
+            return;
+        }
         if (slot == null || !slot.inVehicle || slot.character == null) {
             return;
         }
