@@ -10,6 +10,7 @@ require "MELens_Inside"
 require "MELens_LooseUI"
 require "MELens_LooseView"
 require "TimedActions/MELens_AnimalActions"
+require "MELens_AnimalContext"
 
 MELens = MELens or {}
 local M = MELens
@@ -305,44 +306,7 @@ end
 function UI.menu(player, vehicle, profile, hit, context)
     local animal = hit.animal
     if not animal then return end
-    local header = context:addOptionOnTop(UI.nameOf(animal))
-    local icon = animal:getInventoryIconTextureName()
-    if icon and icon ~= "" then header.iconTexture = getTexture(icon) end
-    local sub = ISContextMenu:getNew(context)
-    context:addSubMenu(header, sub)
-    local id = animal:getAnimalID()
-    local pick = sub:addOption(getText("ContextMenu_PickUpAnimalBody"), player, function()
-        M.standingThen(player, function()
-            local sx, sz = M.LooseUI.standFor(vehicle, profile, hit.entry.x, hit.entry.z, 0, player)
-            M.walkTo(player, sx, sz, function()
-                ISTimedActionQueue.add(MELensPickUpAnimal:new(player, vehicle, id))
-            end)
-        end)
-    end)
-    if not A.canPickUp(animal, player) then
-        pick.notAvailable = true
-    end
-    if AnimalContextMenu and AnimalContextMenu.onAnimalInfo then
-        sub:addOption(getText("ContextMenu_AnimalInfo"), animal, AnimalContextMenu.onAnimalInfo, player)
-    end
-    -- Trailer animals are absent from the world's square-based dog menu. Use
-    -- Companion Dogs' own requests and status window, including its ownership,
-    -- obedience and health checks, rather than changing the dog's state here.
-    local CD = CompanionDogs
-    if isDog(animal) and CD.isCompanion and CD.isCompanion(animal)
-            and CD.isOwnedBy and CD.isOwnedBy(animal, player) then
-        if CD.request and CD.getState then
-            local following = CD.getState(animal) == CD.STATE_FOLLOW
-            sub:addOption(getText(following and "IGUI_PD_Stay" or "IGUI_PD_Follow"), player, function()
-                CD.request("setstate", animal, { state = following and CD.STATE_STAY or CD.STATE_FOLLOW }, player)
-            end)
-        end
-        if ISCDStatusWindow and ISCDStatusWindow.OpenFor then
-            sub:addOption(getText("IGUI_PD_Inspect"), player, function()
-                ISCDStatusWindow.OpenFor(animal, nil, player)
-            end)
-        end
-    end
+    return M.AnimalContext.menu(player, animal, context)
 end
 
 local previousMenu = M.LooseUI.menu

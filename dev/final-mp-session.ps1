@@ -297,6 +297,7 @@ function Finish-Connection($record) {
     }
     [void](Lua $record.port 'MELensMedia.start(); GameWindow.doRenderEvent(true); return 1')
     [void](Wait-Lua $record 'local p=getPlayer(); return p and isClient() and isIngameState() and p:getOnlineID()>=0 and MELens and MEMCNativeLab and MELensNativeText and "connected" or "waiting"' '^connected$' 120)
+    [void](Lua $record.port ([IO.File]::ReadAllText((Join-Path $PSScriptRoot 'lua\setup.lua'))))
     Write-Host "CLIENT_WORLD_READY $($record.name)"
 }
 function Capture($record, [string]$name) {
@@ -564,7 +565,7 @@ try {
     $a = Start-NativeClient $profileA $ClientLuaPortA
     # Reuse connection-screen setup only. Restore its environment override.
     $previousPort = $env:MELENS_LUA_PORT
-    try { & (Join-Path $PSScriptRoot 'mp_connect.ps1') -Port $ServerPort -User 'MELensAdmin' -Password $adminSecret -LuaPort $ClientLuaPortA -OwnedClientPid $a.gameId -OwnedClientStartTicks $a.startTicks -OwnedServerPid $server.Id -OwnedServerStartTicks $session.serverStartTicks -OwnedServerConsole $serverConsole }
+    try { & (Join-Path $PSScriptRoot 'mp_connect.ps1') -Port $ServerPort -User 'MELensAdmin' -Password $adminSecret -LuaPort $ClientLuaPortA -OwnedClientPid $a.gameId -OwnedClientStartTicks $a.startTicks -OwnedServerPid $server.Id -OwnedServerStartTicks $session.serverStartTicks -OwnedServerConsole $serverConsole -DeferWorldSetup }
     finally { $env:MELENS_LUA_PORT = $previousPort }
     Finish-Connection $a
     $serverProbe = @'
@@ -578,7 +579,7 @@ MELensDevResult=nil; sendClientCommand(getPlayer(),"MELensDev","eval",{id=20601,
     Write-Host 'FIRST_FRAME_READY client-a'
     $b = Start-NativeClient $profileB $ClientLuaPortB
     $previousPort = $env:MELENS_LUA_PORT
-    try { & (Join-Path $PSScriptRoot 'mp_connect.ps1') -Port $ServerPort -User 'MELensGuest' -Password $guestSecret -LuaPort $ClientLuaPortB -OwnedClientPid $b.gameId -OwnedClientStartTicks $b.startTicks -OwnedServerPid $server.Id -OwnedServerStartTicks $session.serverStartTicks -OwnedServerConsole $serverConsole }
+    try { & (Join-Path $PSScriptRoot 'mp_connect.ps1') -Port $ServerPort -User 'MELensGuest' -Password $guestSecret -LuaPort $ClientLuaPortB -OwnedClientPid $b.gameId -OwnedClientStartTicks $b.startTicks -OwnedServerPid $server.Id -OwnedServerStartTicks $session.serverStartTicks -OwnedServerConsole $serverConsole -DeferWorldSetup }
     finally { $env:MELENS_LUA_PORT = $previousPort }
     Finish-Connection $b
     Capture $b 'first-frame'

@@ -130,6 +130,13 @@ function A.record(vehicle, animal)
     return records and records[key(animal)] or nil
 end
 
+function A.nearAnimal(vehicle, animal, player, reach)
+    if A.inside(player) ~= vehicle or not A.alive(animal) then return false end
+    local record = A.record(vehicle, animal)
+    local x, z = P.characterAt(vehicle, player)
+    return record ~= nil and x ~= nil and (record.x-x)^2+(record.z-z)^2 <= (reach or 1.5)^2
+end
+
 local function now()
     return getGameTime():getWorldAgeHours()
 end

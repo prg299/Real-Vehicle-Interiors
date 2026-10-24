@@ -7,8 +7,26 @@
 require "TimedActions/ISBaseTimedAction"
 require "MELens_Animals"
 require "MELens_Loose"
+require "TimedActions/Animals/ISPetAnimal"
 
 local function A() return MELens.Animals end
+
+-- The normal pet action checks world-square distance. Trailer passengers use
+-- the same action and server effect, with distance measured on their cabin floor.
+function MELens.Animals.wrapPetAction()
+    if not ISPetAnimal or ISPetAnimal.MELensInsideWrapped then return end
+    local previous = ISPetAnimal.isValid
+    ISPetAnimal.isValid = function(self)
+        local vehicle = self.animal and self.animal:getVehicle()
+        if vehicle and A().inside(self.character) == vehicle then
+            return A().nearAnimal(vehicle, self.animal, self.character, 3)
+        end
+        return previous(self)
+    end
+    ISPetAnimal.MELensInsideWrapped = true
+end
+MELens.Animals.wrapPetAction()
+Events.OnGameBoot.Add(MELens.Animals.wrapPetAction)
 
 local function refreshWindows(character)
     local pdata = getPlayerData(character:getPlayerNum())
@@ -145,9 +163,7 @@ function MELensPickUpAnimal:complete()
     local vehicle = self.vehicle
     local animal = self:animal()
     if not self:isValid() then return false end
-    local record = A().record(vehicle, animal)
-    local x, z = MELens.Parts.characterAt(vehicle, self.character)
-    if not record or not x or (record.x-x)^2+(record.z-z)^2 > 1.5^2 then return false end
+    if not A().nearAnimal(vehicle, animal, self.character) then return false end
     local data = {}
     for k, v in pairs(animal:getModData()) do data[k] = v end
     local fresh = vehicle:removeAnimalFromTrailer(animal)

@@ -7,7 +7,7 @@
 param([int]$Port = 17361, [string]$User = 'MELensAdmin', [string]$Password = '', [int]$LuaPort = 0,
     [int]$OwnedClientPid = 0, [long]$OwnedClientStartTicks = 0,
     [int]$OwnedServerPid = 0, [long]$OwnedServerStartTicks = 0, [string]$OwnedServerConsole,
-    [int]$ConnectSeconds = 180)
+    [int]$ConnectSeconds = 180, [switch]$DeferWorldSetup)
 $root = Split-Path $PSScriptRoot -Parent
 $lua = Join-Path $root 'scripts\lua.ps1'
 if ($LuaPort) { $env:MELENS_LUA_PORT = "$LuaPort" }
@@ -60,7 +60,14 @@ if CharacterCreationMain and CharacterCreationMain.instance and CharacterCreatio
     CharacterCreationMain.instance:onOptionMouseDown({ internal = "NEXT" }, 0, 0) return "character" end
 return "waiting"
 '@
-    if ($state -eq 'ingame') { break }
+    if ($state -eq 'ingame' -or ($DeferWorldSetup -and $state -eq 'loading')) { break }
+}
+if ($DeferWorldSetup -and $state -in @('loading','ingame')) {
+    # The owned parent waits for the native loading marker, releases the final
+    # loading screen, and only then applies world setup. Waiting for IngameState
+    # here would deadlock that handoff; a placeholder is not world readiness.
+    Write-Host 'Connection handed off to owned native loading-screen finisher'
+    return
 }
 if ($state -ne 'ingame') { throw 'Owned MP client never reached IngameState before its connection deadline' }
 Start-Sleep -Seconds 3
