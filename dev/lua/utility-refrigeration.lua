@@ -27,8 +27,15 @@ end
 function T.foodControls()
     local v,cold = T.vehicle,T.fridge:getItemContainer()
     local warm = v:getPartById(P.FLOOR):getItemContainer()
-    T.cold, T.warm = assert(cold:AddItem("Base.Apple")), assert(warm:AddItem("Base.Apple"))
-    for _,food in ipairs({T.cold,T.warm}) do food:setAge(0);food:setHeat(1);food:updateAge(true) end
+    local function existing(container)
+        for i=0,container:getItems():size()-1 do local item=container:getItems():get(i)
+            if instanceof(item,"Food") then return item end end
+        local food=assert(container:AddItem("Base.Apple"));food:setAge(0);food:setHeat(1);return food
+    end
+    -- Cold restart reuses the saved items. Never reset their condition or send a
+    -- second AddItem packet over the native full-container synchronization.
+    T.cold, T.warm = existing(cold),existing(warm)
+    for _,food in ipairs({T.cold,T.warm}) do food:updateAge(true) end
     local r=T.snapshot();r.controlColdId=T.cold:getID();r.controlWarmId=T.warm:getID();return r
 end
 function T.advance(hours)
@@ -40,7 +47,6 @@ function T.ageControls()
     local square=T.vehicle:getSquare();local before=square:haveElectricity()
     T.cold:updateAge(true);T.warm:updateAge(true)
     assert(square:haveElectricity()==before,"fridge advice leaked square power")
-    for _,food in ipairs({T.cold,T.warm}) do sendAddItemToContainer(food:getContainer(),food) end
     return T.snapshot()
 end
 function T.overlap()
