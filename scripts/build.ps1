@@ -39,7 +39,7 @@ if ($LASTEXITCODE) { throw 'jar failed' }
 Write-Host 'Checking Lua syntax with the game''s Kahlua compiler...'
 & $javac -d $tools -cp $gameJar (Join-Path $Lens.Root 'tools-src\LuaCheck.java')
 if ($LASTEXITCODE) { throw 'LuaCheck compile failed' }
-& $java -cp "$tools;$gameJar" LuaCheck (Join-Path $Lens.Root 'mod\RealVehicleInteriors')
+& $java -Xmx256m -cp "$tools;$($Lens.GameRoot)/*" LuaCheck (Join-Path $Lens.Root 'mod\RealVehicleInteriors')
 if ($LASTEXITCODE) { throw 'Lua syntax check failed' }
 
 Write-Host 'Checking JSON translations...'
