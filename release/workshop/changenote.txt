@@ -1,5 +1,7 @@
-2.0.16 - Lua startup hotfix
+2.0.17 - Refrigerator and utility fixes
 
-Fixes the Index 200 out of bounds Lua compiler error when debug mode is enabled. Factory profile setup now stays within the game's debug compiler limits. All 64 Lua files compile in both normal and debug modes.
+- RV refrigerators use the game's food-preservation rules and update their cold state when power changes or the vehicle loads.
+- Prevents repeated or stale generator update intervals from charging the same game time twice. Normal configured fuel rates are unchanged.
+- Automatic roof runoff no longer mixes into stored clean water. Empty and already contaminated tanks can still collect rain when that option is enabled.
 
-Existing vehicles, furniture, loot, utilities and animal save identifiers are unchanged. This hotfix does not change refrigerator or generator behavior; those reports are being tested separately.
+Existing furniture, food, fuel and water remain saved. Refrigeration requires the Java component through ZombieBuddy wherever food is simulated, including the dedicated server. This update does not restore already spoiled food or purify already contaminated water.
