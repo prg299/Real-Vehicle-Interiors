@@ -82,6 +82,7 @@ def main():
             debit=elapsed*expected['rate']
             h.REPORT['restart']['fuelAccounting']={'elapsedHours':elapsed,'used':used,'expectedDebit':debit,'toleranceLitres':.005}
             h.check(elapsed>=0 and actual['clock']<=actual['hours']+.001,'restart generator clock is invalid')
+            h.check(actual['hours']-actual['clock']<.05,'restart generator accounting is stale')
             h.check(actual['rate']==expected['rate'] and abs(used-debit)<.005,'restart fuel debit differs from accounted appliance time')
         lab.enter_e('A');h.REPORT['inputCoverage'].append('native Interact entry into KI5 Step Van')
         if snap()['on']:switch(False)
