@@ -13,7 +13,7 @@ def load(name):
 def main():
     p=argparse.ArgumentParser();p.add_argument('--session',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--verify-source',type=Path);p.add_argument('--finish-source',type=Path)
     args=p.parse_args();d=load('final-mp-interior-tests');lab=d.InteriorLab(args.session,args.output);h=lab.h
-    h.REPORT.update(scope=__doc__,inputCoverage=[],fixtures=['admin spawn/repair/furniture','fresh identical native apples','one bounded game-hour advance','native climate override restored'],lootNativeMouseInput=False,lootUsesProductionTransferAction=False)
+    h.REPORT.update(scope=__doc__,inputCoverage=[],fixtures=['spawn/repair/furniture only for initial setup','saved native food reused on restart' if args.verify_source else 'fresh native apples','Dashboard/loot window opening','one bounded game-hour advance','native climate override restored'],lootNativeMouseInput=False,lootUsesProductionTransferAction=False)
     def server(code):return json.loads(lab.server(d.JSON_ENCODER+'local r=(function() '+code+' end)();return enc(r)'))
     def snap():return server('return MELensUtilityProbe.snapshot()')
     def peers():
@@ -41,6 +41,7 @@ def main():
         def cold_inventory():return h.lua('local c=MELens.Parts.spotPart(MELensTest.vehicle,4):getItemContainer();local page=getPlayerLoot(0);local heats={};for i=0,c:getItems():size()-1 do local item=c:getItems():get(i);if instanceof(item,"Food") then heats[#heats+1]=item:getHeat() end end;return {selected=page.inventoryPane.inventory==c,heats=heats}')
         shown=lab.wait(cold_inventory,lambda s:s['selected'] and h._sequence(s['heats']) and max(h._sequence(s['heats']))<.3,'native cold-food inventory')
         h.REPORT['nativeFridgeInventory']=shown;lab.capture('A','step-van-cold-food-inventory')
+        h.REPORT['inputCoverage'].append('native loot title/pin and fridge container selection')
         overlap=server('return MELensUtilityProbe.overlap()');h.check(abs(overlap['after']-overlap['before'])<.005,'overlapping callbacks double bill time');h.REPORT['overlap']=overlap
         rain=server('return MELensUtilityProbe.rain()');h.check(rain['water']==20 and not rain['tainted'],'rain taints potable storage');h.REPORT['rain']=rain
         switch(False);switch(True)
