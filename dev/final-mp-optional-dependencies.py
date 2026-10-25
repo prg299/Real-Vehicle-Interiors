@@ -169,10 +169,7 @@ return {queueCount=q and #q.queue or 0,controls={}} end};return true''')
         for role, value in h.REPORT['activeMods'].items():
             h.check(set(h._sequence(value['mods'])) == {'ZombieBuddy', 'RealVehicleInteriors', 'RealVehicleInteriors_Dev'}, role + ' not core-only')
             h.check(not value['damn'] and not value['camper'] and not value['b700'], role + ' optional packs unexpectedly available')
-        h.lua("SendCommandToServer('/teleportto 10813,10140,0');return true")
-        lab.wait(lambda: h.lua('return math.abs(getPlayer():getX()-10813)<2 and math.abs(getPlayer():getY()-10140)<2'), bool, 'admin at owned field')
-        h.lua('SendCommandToServer(\'/teleportplayer "MELensGuest" "MELensAdmin"\');return true')
-        lab.wait(lambda: lab.b.lua('return math.abs(getPlayer():getX()-10813)<4 and math.abs(getPlayer():getY()-10140)<4'), bool, 'guest at owned field')
+        lab.position_players_at_field()
         # Teleport updates the position before the destination chunks load.
         # AddVehicleCommand rejects an absent server square as Invalid location.
         # Choose a nearby clear tile only after all three worlds expose it.
