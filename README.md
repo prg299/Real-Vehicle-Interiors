@@ -1,8 +1,10 @@
 # Real Vehicle Interiors
 
-Walk around inside KI5 campers, B700 buses and F700 box trucks in **Project Zomboid Build 42.21**. Furnish your vehicle, sleep, cook, wash, store supplies and take your base with you.
+Walk around inside supported vanilla vehicles and optional KI5 vehicle packs in **Project Zomboid Build 42.21**. Furnish your vehicle, sleep, cook, wash, store supplies and take your base with you.
 
-**Version: 2.0.17 (beta).** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541) · [Animals details and testing](docs/ANIMALS.md)
+**Version: 2.0.18 (beta candidate, not uploaded).** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541) · [Animals details and testing](docs/ANIMALS.md)
+
+2.0.18 makes all vehicle packs and damnlib optional. Vanilla benches use the game's chair animation without damnlib; existing enabled damnlib seating stays unchanged. Vehicle, furniture, loot and utility IDs are preserved.
 
 2.0.16 fixes the startup Lua compiler error when debug mode is enabled. Vehicle layouts and saved furniture/loot IDs are unchanged.
 
@@ -12,12 +14,11 @@ Supports **193 additional vehicle definitions across 12 body families**, includi
 
 ## Requirements
 
-Enable these dependencies before `RealVehicleInteriors`:
+Enable ZombieBuddy before `RealVehicleInteriors`:
 
 - [ZombieBuddy](https://steamcommunity.com/sharedfiles/filedetails/?id=3619862853) (`ZombieBuddy`)
-- [that DAMN Library](https://steamcommunity.com/sharedfiles/filedetails/?id=3171167894) (`damnlib`)
-- [Campers!](https://steamcommunity.com/sharedfiles/filedetails/?id=3670064951) (`KI5campers`)
-- ['87 Ford B700/F700 Trucks](https://steamcommunity.com/sharedfiles/filedetails/?id=3110911330) (`87fordB700`)
+
+No vehicle mods or damnlib are required for vanilla vehicles. Install any subset of the supported vehicle packs; each pack keeps its own dependencies. Missing packs are skipped automatically.
 
 Clients need the Java component loaded through ZombieBuddy. In multiplayer, the native indoor panic, sight and refrigerator food-preservation adapters also need Java on the server. Other interior features retain their existing support on servers without the Java component.
 
@@ -47,6 +48,8 @@ Output: `build/rv/package/RealVehicleInteriors`. Game files and Workshop downloa
 The `MELens` and `me.lens.rv` identifiers remain for save and add-on compatibility.
 
 Back up saves before changing mods. Known beta gaps include intermittent multiplayer passenger-position resets and incomplete fresh multiplayer bus/save-reload, trait and loose-item interaction checks. No bulk uninstall migration is provided; empty interior storage and have occupants exit before removal.
+
+The 2.0.18 candidate passes native single-player entry, bench/bed use, get-up, exit and vanilla Dashboard checks with only ZombieBuddy, and with just KI5 Campers plus its own damnlib dependency. The independent multiplayer bench observer has regression coverage; native two-client testing remains pending. The live Workshop release remains 2.0.17.
 
 Carry small animals inside and use their normal right-click actions. Animals use native animations and eat and drink when supplied. Optional [Companion Dogs](https://steamcommunity.com/sharedfiles/filedetails/?id=3740052292) can follow their owner in and out, Stay, be carried and use Bring from outside. Loaded vehicles continue their care; unloaded time pauses Companion Dogs needs. Breeding, egg collection, milking, shearing and unrestricted interior animal AI are outside this version's scope.
 

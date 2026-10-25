@@ -1,11 +1,11 @@
 name=Real Vehicle Interiors [B42] [MP] [BETA]
 id=RealVehicleInteriors
-description=Build 42.21. Walk around inside KI5 campers, B700 buses and F700 box trucks. The interior and stored items travel with the vehicle. Sleep, cook, wash, store supplies and rearrange furniture. MP beta; back up saves. Requires ZombieBuddy, damnlib and supported KI5 vehicle mods. AI was used to make this mod. If you have a problem with that, don't download it.
-require=\ZombieBuddy,\damnlib,\KI5campers,\87fordB700
+description=Build 42.21. Walk around inside supported vanilla vehicles and optional KI5 vehicle packs. The interior and stored items travel with the vehicle. Sleep, cook, wash, store supplies and rearrange furniture. MP beta; back up saves. Requires ZombieBuddy. Vehicle packs are optional and retain their own dependencies. AI was used to make this mod. If you have a problem with that, don't download it.
+require=\ZombieBuddy
 poster=poster.png
 icon=icon.png
 versionMin=42.21
-modversion=2.0.17
+modversion=2.0.18
 category=vehicle
 javaJarFile=media/java/RealVehicleInteriors.jar
 javaPkgName=me.lens.rv

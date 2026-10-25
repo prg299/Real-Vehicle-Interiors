@@ -34,7 +34,8 @@ public final class LuaRegression {
             shared + "MELens_Profile_B700.lua", shared + "MELens_WalkGrid_B700_Shell.lua",
             shared + "MELens_Parts.lua", shared + "MELens_Utilities.lua", shared + "TimedActions/MELens_Actions.lua",
             client + "MELens_Interact.lua", shared + "MELens_Sync.lua", shared + "MELens_Phobia.lua",
-            "tools-src/regression/f700.lua", "tools-src/regression/phobia.lua", "tools-src/regression/checks.lua",
+            "tools-src/regression/f700.lua", "tools-src/regression/optional-dependencies.lua",
+            "tools-src/regression/phobia.lua", "tools-src/regression/checks.lua",
             "tools-src/regression/lifecycle.lua", "tools-src/regression/java-readiness.lua",
             "tools-src/regression/model-recovery.lua", shared + "MELens_Home.lua",
             "tools-src/regression/utilities.lua", "tools-src/regression/lamps.lua",
@@ -48,7 +49,7 @@ public final class LuaRegression {
             "game:media/lua/client/Vehicles/TimedActions/ISEnterVehicle.lua",
             "tools-src/regression/profile-keep-planes.lua",
             client + "MELens_Cabin.lua", "tools-src/regression/entry.lua",
-            "tools-src/regression/profile-keep-planes.lua"
+            "tools-src/regression/profile-keep-planes.lua", "tools-src/regression/optional-seat-observers.lua"
         }) {
             if (name.endsWith("/MELens_Home.lua")) {
                 var events = (KahluaTable) env.rawget("Events");

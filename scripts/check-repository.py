@@ -32,6 +32,11 @@ required = ['README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md',
 for path in required:
     require((ROOT / path).is_file(), f'Missing {path}')
 require('MIT License' in (ROOT / 'LICENSE').read_text('utf-8'), 'Expected MIT license')
+for relative in ('mod/RealVehicleInteriors/mod.info', 'mod/RealVehicleInteriors/42.21/mod.info'):
+    info = (ROOT / relative).read_text('utf-8')
+    dependencies = re.search(r'^require=(.*)$', info, re.M)
+    require(dependencies and dependencies[1].strip() == '\\ZombieBuddy',
+            f'{relative}: ZombieBuddy must be the only hard dependency')
 
 seen = set()
 for p in paths:

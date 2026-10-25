@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animNode>
+    <m_Name>melens_seat_idle</m_Name>
+    <m_AnimName>Bob_SatChair</m_AnimName>
+    <m_ConditionPriority>100</m_ConditionPriority>
+    <m_Looped>true</m_Looped>
+    <m_BlendTime>0.20</m_BlendTime>
+    <m_SpeedScale>0.48</m_SpeedScale>
+    <m_SyncTrackingEnabled>false</m_SyncTrackingEnabled>
+    <m_Conditions>
+        <m_Name>damnPosition</m_Name>
+        <m_Type>STRING</m_Type>
+        <m_StringValue>MELensSeat</m_StringValue>
+    </m_Conditions>
+</animNode>

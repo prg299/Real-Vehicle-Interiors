@@ -67,7 +67,8 @@ local vehicle = {
     getSeat = function() return -1 end,
     getModData = function() return { MELensLightsOff = true } end,
 }
-local player = { vehicle = vehicle, isDead = function() return false end }
+local player = { vehicle = vehicle, isDead = function() return false end,
+    getVariableString = function() return "" end }
 function player:getVehicle() return self.vehicle end
 getSpecificPlayer = function() return player end
 M.Profiles["Base.KeepActive"] = currentProfile
@@ -90,7 +91,7 @@ plane("FixtureNoDefault", 0, 0, 0, -1, "alias without baseline did not become no
 
 M.Profiles["Base.KeepActive"] = p13
 fixture.tick()
-event("OnExitVehicle", {})
+event("OnExitVehicle", { getVariableString = function() return "" end })
 plane("FixtureSpare", 0, 1, 0, 7.2, "another player's exit cleared local override")
 event("OnExitVehicle", player)
 plane("FixtureSpare", 0, 1, 0, 99, "local exit did not restore global plane")
