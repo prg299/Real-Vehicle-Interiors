@@ -84,7 +84,7 @@ def main():
     h = lab.h
     apis = {'A': h, 'B': lab.b}
     names = {'A': 'MELensAdmin', 'B': 'MELensGuest'}
-    h.REPORT.update(scope=__doc__, inputCoverage=[], fixtures=[
+    h.REPORT.update(scope=__doc__, inputCoverage=[], lootUsesProductionTransferAction=False, fixtures=[
         'fresh owned world and server spawn/repair/unlocked doors',
         'normal approach path and facing fixtures',
         'read-only furniture projection/production-picker fixture',
@@ -173,12 +173,30 @@ return {queueCount=q and #q.queue or 0,controls={}} end};return true''')
         lab.wait(lambda: h.lua('return math.abs(getPlayer():getX()-10813)<2 and math.abs(getPlayer():getY()-10140)<2'), bool, 'admin at owned field')
         h.lua('SendCommandToServer(\'/teleportplayer "MELensGuest" "MELensAdmin"\');return true')
         lab.wait(lambda: lab.b.lua('return math.abs(getPlayer():getX()-10813)<4 and math.abs(getPlayer():getY()-10140)<4'), bool, 'guest at owned field')
+        # Teleport updates the position before the destination chunks load.
+        # AddVehicleCommand rejects an absent server square as Invalid location.
+        # Choose a nearby clear tile only after all three worlds expose it.
+        candidates = [(10819, 10140), (10807, 10140), (10813, 10146), (10813, 10134),
+                      (10821, 10148), (10805, 10132)]
+        points = '{' + ','.join('{x=' + str(x) + ',y=' + str(y) + '}' for x, y in candidates) + '}'
+        square_code = 'local r={};for _,p in ipairs(' + points + ') do r[#r+1]=getCell():getGridSquare(p.x,p.y,0)~=nil end;return r'
+        ready = lab.wait(lambda: {'server': h._sequence(server(square_code)),
+                                 'A': h._sequence(h.lua(square_code)), 'B': h._sequence(lab.b.lua(square_code))},
+                         lambda states: any(all(states[role][i] for role in ('A', 'B', 'server'))
+                                            for i in range(len(candidates))),
+                         'spawn tile loaded on both clients and server', timeout=20)
         loaded = h._sequence(server('local r={};local it=getCell():getVehicles():iterator();while it:hasNext() do local v=it:next();r[#r+1]={x=v:getX(),y=v:getY()} end;return r'))
-        candidates = d.clear_spawn_candidates(loaded)
+        candidates = d.clear_spawn_candidates(loaded, [point for i, point in enumerate(candidates)
+                                                     if all(ready[role][i] for role in ('A', 'B', 'server'))])
         h.check(candidates, 'no clear native vehicle spawn')
         x, y = candidates[0]
+        h.REPORT['spawn'] = {'x': x, 'y': y, 'tileReadyBeforeCommand': ready,
+                             'loadedVehicles': loaded, 'clearanceTiles': 14}
         h.lua(f"SendCommandToServer('/addvehicle Base.VanSeats {x},{y},0');return true")
-        lab.vid = lab.wait(lambda: int(lab.server('local it=getCell():getVehicles():iterator();while it:hasNext() do local v=it:next();if v:getScript():getFullName()=="Base.VanSeats" then return tostring(v:getId()) end end;return "-1"')), lambda n: n >= 0, 'fresh vanilla passenger van')
+        find = ('local it=getCell():getVehicles():iterator();while it:hasNext() do local v=it:next();'
+                'if v:getScript():getFullName()=="Base.VanSeats" and (v:getX()-' + str(x) + ')^2+(v:getY()-' + str(y) + ')^2<25 '
+                'then return tostring(v:getId()) end end;return "-1"')
+        lab.vid = lab.wait(lambda: int(lab.server(find)), lambda n: n >= 0, 'fresh vanilla passenger van')
         server(f'local v=getVehicleById({lab.vid});v:repair();for i=0,v:getPartCount()-1 do local p=v:getPartByIndex(i);if p:getDoor() then p:getDoor():setLocked(false);v:transmitPartDoor(p) end end;return true')
         for side, api in apis.items():
             lab.wait(lambda api=api: api.lua(f'return getVehicleById({lab.vid})~=nil'), bool, side + ' vehicle replication')
