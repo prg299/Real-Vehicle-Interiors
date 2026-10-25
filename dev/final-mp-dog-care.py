@@ -27,13 +27,15 @@ for _,row in ipairs(r.animals) do if row.id==a:getAnimalID() then
 row.uid=d.uid;row.token=d.companionToken;row.owner=d.ownerKey;row.state=CompanionDogs.getState(a)
 row.upkeep=d.lastUpkeepMin;row.health=a:getHealth();row.hunger=CompanionDogs.getHunger(a) end end end
 r.sqlId=v:getSqlId();r.hours=getGameTime():getWorldAgeHours()
+r.rawCount=v:getAnimals():size();r.engineRoom=v:getCurrentTotalAnimalSize();r.roomUsed=MELens.Animals.roomUsed(v)
 '''
         r=json.loads(lab.server(driver.JSON_ENCODER+code+'return enc(r)')) if side=='server' else (h if side=='A' else lab.b).lua(code+'return r')
         for key in ('animals','floor'):r[key]=h._sequence(r.get(key))
         return r
 
     def all_states():return {side:read(side) for side in ('A','B','server')}
-    def count(n):return lab.wait(all_states,lambda ss:all(len(s['animals'])==n for s in ss.values()),str(n)+' dogs on server and both peers',timeout=60)
+    def count(n):return lab.wait(all_states,lambda ss:all(len(s['animals'])==n and s['rawCount']==n
+        and abs(s['engineRoom']-s['roomUsed'])<.001 for s in ss.values()),str(n)+' dogs and matching raw list/capacity on server and both peers',timeout=60)
 
     def menu(label,side='A',enabled=True):
         api=h if side=='A' else lab.b
@@ -94,11 +96,12 @@ r.sqlId=v:getSqlId();r.hours=getGameTime():getWorldAgeHours()
         reject_guest()
 
         def carried():
-            return h.lua('local it=getPlayer():getInventory():getFirstTypeRecurse("Animal");local a=it and it:getAnimal();return {count=getPlayer():getInventory():getCountTypeRecurse("Animal"),id=it and it:getID(),uid=a and CompanionDogs.ensureUid(a)}')
+            return h.lua('local it=getPlayer():getInventory():getFirstTypeRecurse("Animal");local a=it and it:getAnimal();return {count=getPlayer():getInventory():getCountTypeRecurse("Animal"),id=it and it:getID(),uid=a and CompanionDogs.ensureUid(a),vehicle=a and a:getVehicle()~=nil}')
 
         menu(h.lua('return getText("IGUI_PD_Carry")'))
         item=lab.wait(carried,lambda s:s['count']==1,'native owner pickup creates one carried dog')
         h.check(item['uid']==uid,'pickup changed companion UID');h.REPORT['nativePickup']=count(0)
+        h.check(not carried()['vehicle'],'carried dog retains a stale vehicle link')
         exit_owner();h.check(carried()['uid']==uid,'native exit lost carried dog')
         h.REPORT['carryOutside']=carried();lab.capture('A','mp-owner-carries-dog-outside')
         lab.enter_e('A');h.check(carried()['uid']==uid,'native re-entry lost carried dog')

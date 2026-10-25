@@ -4,5 +4,6 @@
 - Companion Dogs can follow their owner inside and outside, Stay, be carried, and be recalled with Bring while the owner is outside.
 - Supplied animals eat and drink inside. Companion Dogs use their normal care rules while the vehicle is loaded; unloaded time pauses their needs as usual.
 - Fixes interior petting, Inspect, bowl placement and stale occupancy after a dog leaves. Existing saves, companion identities, furniture, loot and utilities are retained.
+- Fixes stale client animal lists and used capacity when carrying an animal after a multiplayer save/rejoin.
 
 Companion Dogs is optional. Keep suitable food and water available. This update does not add breeding, egg collection, milking, shearing or unrestricted interior animal AI. Back up saves before updating the beta.

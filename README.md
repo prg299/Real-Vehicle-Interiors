@@ -1,10 +1,8 @@
-# Real Vehicle Interiors — Animals WIP
-
-Unreleased work on `animals-support`. See [Animals status](docs/ANIMALS.md).
+# Real Vehicle Interiors
 
 Walk around inside KI5 campers, B700 buses and F700 box trucks in **Project Zomboid Build 42.21**. Furnish your vehicle, sleep, cook, wash, store supplies and take your base with you.
 
-**Current release: 2.0.14 (beta). Animals candidate: 2.0.15, not uploaded.** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541) · [Animals branch](https://github.com/prg299/Real-Vehicle-Interiors/tree/animals-support)
+**Version: 2.0.15 (beta).** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541) · [Animals details and testing](docs/ANIMALS.md)
 
 Includes the vehicle expansion, Viewpoint compatibility, vanilla dashboard and interior sight concealment.
 
@@ -44,9 +42,11 @@ Output: `build/rv/package/RealVehicleInteriors`. Game files and Workshop downloa
 - `dev/` — isolated test helpers
 - `release/` — Workshop metadata
 
-The `MELens` and `me.lens.rv` identifiers remain for save and add-on compatibility. Animals support is unreleased and kept on `animals-support`, separate from `main`.
+The `MELens` and `me.lens.rv` identifiers remain for save and add-on compatibility.
 
-Back up saves before changing mods. Known beta gaps include intermittent multiplayer passenger-position resets and incomplete fresh multiplayer bus/save-reload, trait and loose-item interaction checks. Animals has separate unfinished runtime checks. No bulk uninstall migration is provided; empty interior storage and have occupants exit before removal.
+Back up saves before changing mods. Known beta gaps include intermittent multiplayer passenger-position resets and incomplete fresh multiplayer bus/save-reload, trait and loose-item interaction checks. No bulk uninstall migration is provided; empty interior storage and have occupants exit before removal.
+
+Carry small animals inside and use their normal right-click actions. Animals use native animations and eat and drink when supplied. Optional [Companion Dogs](https://steamcommunity.com/sharedfiles/filedetails/?id=3740052292) can follow their owner in and out, Stay, be carried and use Bring from outside. Loaded vehicles continue their care; unloaded time pauses Companion Dogs needs. Breeding, egg collection, milking, shearing and unrestricted interior animal AI are outside this version's scope.
 
 The dashboard uses the game's standard window and buttons by default. Enabled Neat UI mods retain the rounded dashboard. Both views use the same resource controls and timed actions.
 
