@@ -2,7 +2,7 @@
 
 Walk around inside KI5 campers, B700 buses and F700 box trucks in **Project Zomboid Build 42.21**. Furnish your vehicle, sleep, cook, wash, store supplies and take your base with you.
 
-**Version: 2.0.16 (beta).** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541) · [Animals details and testing](docs/ANIMALS.md)
+**Version: 2.0.17 (beta candidate, not uploaded).** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541) · [Animals details and testing](docs/ANIMALS.md)
 
 2.0.16 fixes the startup Lua compiler error when debug mode is enabled. Vehicle layouts and saved furniture/loot IDs are unchanged.
 
@@ -19,7 +19,7 @@ Enable these dependencies before `RealVehicleInteriors`:
 - [Campers!](https://steamcommunity.com/sharedfiles/filedetails/?id=3670064951) (`KI5campers`)
 - ['87 Ford B700/F700 Trucks](https://steamcommunity.com/sharedfiles/filedetails/?id=3110911330) (`87fordB700`)
 
-Clients need the Java component loaded through ZombieBuddy. In multiplayer, the native indoor panic and sight adapters also need Java on the server. Other interior features retain their existing support on servers without the Java component.
+Clients need the Java component loaded through ZombieBuddy. In multiplayer, the native indoor panic, sight and refrigerator food-preservation adapters also need Java on the server. Other interior features retain their existing support on servers without the Java component.
 
 ## Build
 

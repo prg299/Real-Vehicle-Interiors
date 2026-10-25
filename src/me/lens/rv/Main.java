@@ -11,7 +11,8 @@ public final class Main {
         // Load (not initialise) the classes the animal hooks patch before ZombieBuddy applies the patches (it runs this
         // first): IsoSprite was otherwise loaded while the patches were being applied, after ZombieBuddy listed the loaded
         // classes and before its hook for new ones, and stayed unpatched (no animals drawn).
-        for (String name : new String[] { "zombie.iso.sprite.IsoSprite", "zombie.core.skinnedmodel.advancedanimation.AnimatedModel$WorldModelCamera" }) {
+        for (String name : new String[] { "zombie.iso.sprite.IsoSprite", "zombie.core.skinnedmodel.advancedanimation.AnimatedModel$WorldModelCamera",
+                "zombie.inventory.ItemContainer", "zombie.inventory.types.Food", "zombie.iso.IsoGridSquare" }) {
             try {
                 Class.forName(name, false, Main.class.getClassLoader());
             } catch (Throwable t) {

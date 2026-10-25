@@ -165,7 +165,12 @@ function H.rainTick()
         local profile = M.profileFor(vehicle)
         local square = profile and vehicle:getSquare()
         if square and square:isOutside() and U.part(vehicle, M.Parts.WATER) then
-            U.changeWater(vehicle, rain * (ROOF[profile.kind] or 2.5), true)
+            -- Roof runoff may refill an empty/dirty tank, but must not silently
+            -- contaminate potable water the player deliberately stored.
+            local tank = U.waterState(vehicle)
+            if tank.water <= 0 or tank.tainted then
+                U.changeWater(vehicle, rain * (ROOF[profile.kind] or 2.5), true)
+            end
         end
     end
 end

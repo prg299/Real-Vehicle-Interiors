@@ -298,6 +298,30 @@ U.setSwitch(f.v, "generator", true)
 U.setSwitch(f.v, "generator", false)
 near(f.gen.data.fuel, before - 0.2 / 3, "repeated start resets away running time")
 
+-- Callback overlap/reinitialization may not bill the same game hour twice.
+f = fixture(); f.gen.data.on = true; f.fridge.container.temperature = 0
+U.initGenerator(f.v, f.gen)
+near(f.fridge.container.temperature, U.FRIDGE_COLD, "saved running fridge stays warm until next callback")
+local protectedFuel = f.gen.data.fuel
+worldHour = worldHour + 1
+U.updateGenerator(f.v, f.gen, 60)
+near(f.gen.data.fuel, protectedFuel - 0.2, "one real hour loses incorrect fuel")
+U.updateGenerator(f.v, f.gen, 60)
+near(f.gen.data.fuel, protectedFuel - 0.2, "duplicate callback double bills generator")
+U.initGenerator(f.v, f.gen)
+worldHour = worldHour + 1 / 6
+U.updateGenerator(f.v, f.gen, 7200)
+near(f.gen.data.fuel, protectedFuel - 0.2 - 0.2 / 6, "stale callback bills parked history after reload")
+f.gen.lastUpdated = worldHour - 72
+U.setSwitch(f.v, "generator", false)
+near(f.gen.data.fuel, protectedFuel - 0.2 - 0.2 / 6, "stop bills native stale clock after processed callback")
+near(f.fridge.container.temperature, 0, "switch off leaves fridge cold")
+U.setSwitch(f.v, "generator", true)
+near(f.fridge.container.temperature, U.FRIDGE_COLD, "switch on leaves fridge warm until minute callback")
+worldHour = worldHour - 1
+U.updateGenerator(f.v, f.gen, 120)
+near(f.gen.data.fuel, protectedFuel - 0.2 - 0.2 / 6, "clock rollback bills generator future")
+
 -- Shore power is actual production Home scanning/caching; battery charge alone is not appliance power.
 active = fixture(); active.gen.data.on = false
 shoreGenerator = nil; now = now + 3000
@@ -370,6 +394,13 @@ near(active.water.data.water, 2.5, "camper roof rain amount"); check(active.wate
 client = true; H.rainTick()
 check(active.water.data.water == 2.5, "client independently fills tank")
 client = false
+
+active.water.data.water, active.water.data.tainted = 20, false
+H.rainTick()
+check(active.water.data.water == 20 and not active.water.data.tainted, "roof runoff contaminates stored potable water")
+active.water.data.tainted = true
+H.rainTick()
+check(active.water.data.water == 22.5 and active.water.data.tainted, "already dirty tank stops collecting rain")
 
 -- Dirty bandages use the game's clean-item replacement contract, preserving favorite and packet identity.
 f = fixture(); local dirty = item("Base.BandageDirty"); dirty.afterCleaning = "Base.Bandage"

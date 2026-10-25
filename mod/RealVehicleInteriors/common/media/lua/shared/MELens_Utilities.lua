@@ -85,6 +85,13 @@ end
 
 -- On load: keep a running camper running.
 function U.initGenerator(vehicle, part)
+    if not hasVehicleState(vehicle) then return end
+    local data, hours = part:getModData(), getGameTime():getWorldAgeHours()
+    local previous = tonumber(data.MELensGeneratorHour)
+    if not previous or previous > hours then
+        data.MELensGeneratorHour = hours
+    end
+    U.powerLost(vehicle) -- restore fridge temperatures before the next part minute
     if U.busy(vehicle) then
         U.wake(vehicle)
     end
@@ -208,7 +215,14 @@ end
 
 function U.updateGenerator(vehicle, part, elapsedMinutes)
     if not hasVehicleState(vehicle) then return end
-    U.runGenerator(vehicle, part, elapsedMinutes)
+    local data, hours = part:getModData(), getGameTime():getWorldAgeHours()
+    local previous = tonumber(data.MELensGeneratorHour)
+    local minutes = math.max(0, num(elapsedMinutes, 0))
+    if previous then minutes = math.min(minutes, math.max(0, hours - previous) * 60) end
+    -- The part's native clock can be stale after reinitialization. Persist our
+    -- processed boundary so repeated/overlapping callbacks cannot bill time twice.
+    data.MELensGeneratorHour = hours
+    U.runGenerator(vehicle, part, minutes)
     -- Nothing running, warming or cooling any more: let the camper rest.
     -- The stock Engine callback can clear this flag earlier in the same update.
     -- Re-arm it while appliances are active, even with the engine stopped and cold.
@@ -487,18 +501,20 @@ function U.setSwitch(vehicle, which, on)
     if which == "generator" and (data.on == true) ~= (on == true) then
         local hours = getGameTime():getWorldAgeHours()
         if data.on == true then
-            U.runGenerator(vehicle, part, math.max(0, hours - part:getLastUpdated()) * 60)
+            local previous = tonumber(data.MELensGeneratorHour) or part:getLastUpdated()
+            U.runGenerator(vehicle, part, math.max(0, hours - previous) * 60)
         end
         -- Native part callbacks measure time since last update, including time spent parked OFF.
         -- Start the clock now so restarting cannot burn fuel for that idle interval.
         part:setLastUpdated(hours)
+        data.MELensGeneratorHour = hours
     end
     part:getModData().on = on == true
     U.transmit(vehicle, part)
     U.wake(vehicle)
-    if which == "generator" and not on then
+    if which == "generator" then
         U.powerLost(vehicle)
-        U.syncBatteryCharge(vehicle, true)
+        if not on then U.syncBatteryCharge(vehicle, true) end
     end
     return true
 end
