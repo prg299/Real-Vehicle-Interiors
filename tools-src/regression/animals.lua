@@ -5,7 +5,7 @@ do
     local saved={}
     for _,k in ipairs({'isClient','isServer','getGameTime','ZombRand','ZombRandFloat',
             'AnimalDefinitions','CharacterStat','Fluid','CompanionDogs','instanceof',
-            'getCell','getNumActivePlayers','getSpecificPlayer'}) do saved[k]=_G[k] end
+            'getCell','getNumActivePlayers','getSpecificPlayer','getOnlinePlayers'}) do saved[k]=_G[k] end
     local oldPoints,oldFloor,oldList,oldPrune,oldCharacter,oldFits=L.floorPoints,L.floorContainer,L.list,L.prune,P.characterAt,L.fitsSurface
     local hour=100
     getGameTime=function() return {getWorldAgeHours=function() return hour end} end
@@ -18,7 +18,9 @@ do
     AnimalDefinitions={animals={hen={canBePicked=true,eatTypeTrough='Vegetables',thirstHungerTrigger=.1}}}
     instanceof=function(o,c) return o and o.class==c end
     local function list(values)
-        local l=values or {};function l:size() return #self end;function l:get(i) return self[i+1] end;return l
+        local l=values or {};function l:size() return #self end;function l:get(i) return self[i+1] end
+        function l:remove(value) for i,v in ipairs(self) do if v==value then table.remove(self,i);return true end end;return false end
+        return l
     end
     local function animal(id)
         local a={id=id,class='IsoAnimal',values={hunger=0,thirst=0},data={}}
@@ -29,6 +31,7 @@ do
         function a:getHealth() return 100 end
         function a:getModData() return self.data end
         function a:getVehicle() return self.vehicle end
+        function a:setVehicle(vehicle) self.vehicle=vehicle end
         function a:getStats() return {get=function(_,k) return a.values[k] end,set=function(_,k,v) a.values[k]=v end} end
         function a:getData() return {eatItem=function(_,item) a.values.hunger=0;item.eaten=true end} end
         return a
@@ -39,6 +42,7 @@ do
     function v:getScriptName() return 'Base.AnimalsRegression' end
     function v:getAnimals() return self.animals end
     function v:getModData() return self.data end
+    function v:setCurrentTotalAnimalSize(size) self.totalAnimalSize=size end
     function v:getSeat() return 0 end
     function v:getScript() return {getFullName=function() return 'Base.AnimalsRegression' end,
         getPassenger=function() return {getId=function() return v.passenger end} end} end
@@ -226,9 +230,33 @@ do
     local ghost=false;for _ in pairs(A.records(v,false)) do ghost=true end
     check(not ghost,'external Bring/extraction leaves a ghost occupancy record')
 
+    -- A restarted MP trailer may retain the carried copy after native pickup.
+    -- Reconcile only when the server record AND replicated hands agree it left.
+    local stale,heldAnimal,neighbor=animal(88),animal(88),animal(89)
+    stale.vehicle,heldAnimal.vehicle,neighbor.vehicle=v,v,v
+    local heldItem={class='AnimalInventoryItem',data={uid='unchanged'}}
+    function heldItem:getAnimal() return heldAnimal end
+    local hands={getPrimaryHandItem=function() return heldItem end,getSecondaryHandItem=function() return heldItem end}
+    getOnlinePlayers=function() return list({hands}) end
+    v.animals=list({stale,neighbor});v.data[A.KEY]={};isClient=function() return true end
+    check(#A.list(v)==1 and v.animals[1]==neighbor,'client keeps a carried animal in its trailer list')
+    check(stale.vehicle==nil and heldAnimal.vehicle==nil,'carried copy retains its obsolete vehicle link')
+    check(v.totalAnimalSize==30 and A.roomUsed(v)==30,'stale pickup leaves phantom trailer capacity')
+    check(heldItem:getAnimal()==heldAnimal and heldItem.data.uid=='unchanged' and heldAnimal.id==88,
+        'client reconciliation recreates or changes the carried animal')
+    check(#A.list(v)==1 and neighbor.vehicle==v,'repeated reconciliation changes a valid passenger')
+    stale.vehicle,heldAnimal.vehicle=v,v;v.animals=list({stale});v.data[A.KEY]={['88']={x=0,z=0}}
+    check(#A.list(v)==1 and stale.vehicle==v,'stale held equipment removes a committed drop')
+    v.data[A.KEY]={};getOnlinePlayers=function() return list({{getPrimaryHandItem=function() return nil end,getSecondaryHandItem=function() return nil end}}) end
+    check(#A.list(v)==1,'missing placement metadata alone removes a newly arriving animal')
+    getOnlinePlayers=function() return list({hands}) end;v.data[A.KEY]=nil
+    check(#A.list(v)==1 and stale.vehicle==v,'client removes an animal before its first authority snapshot')
+    v.data[A.KEY]={};isClient=function() return false end
+    check(#A.list(v)==1 and stale.vehicle==v,'client cache repair changes server or single-player authority')
+
     M.Profiles['Base.AnimalsRegression']=nil
     L.floorPoints,L.floorContainer,L.list,L.prune,P.characterAt,L.fitsSurface=oldPoints,oldFloor,oldList,oldPrune,oldCharacter,oldFits
     for _,k in ipairs({'isClient','isServer','getGameTime','ZombRand','ZombRandFloat',
             'AnimalDefinitions','CharacterStat','Fluid','CompanionDogs','instanceof',
-            'getCell','getNumActivePlayers','getSpecificPlayer'}) do _G[k]=saved[k] end
+            'getCell','getNumActivePlayers','getSpecificPlayer','getOnlinePlayers'}) do _G[k]=saved[k] end
 end

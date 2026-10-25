@@ -35,11 +35,49 @@ A.WATER_PER_THIRST = 0.5 -- litres drunk per 1.0 of thirst (a quarter litre per 
 -- Which vehicles, which animals
 ------------------------------------------------------------------------------------
 
+local function reconcileCarried(vehicle, animals)
+    if not isClient() or not animals or animals:size() == 0 then return end
+    local records = vehicle:getModData()[A.KEY]
+    if type(records) ~= "table" then return end -- no authoritative interior snapshot yet
+    local players = getOnlinePlayers()
+    local held = {}
+    for i = 0, players:size() - 1 do
+        local player = players:get(i)
+        for _, item in pairs({ player:getPrimaryHandItem(), player:getSecondaryHandItem() }) do
+            if item and instanceof(item, "AnimalInventoryItem") then
+                local animal = item:getAnimal()
+                if animal then held[tostring(animal:getAnimalID())] = animal end
+            end
+        end
+    end
+    local changed = false
+    for i = animals:size() - 1, 0, -1 do
+        local animal = animals:get(i)
+        local id = tostring(animal:getAnimalID())
+        local carried = held[id]
+        -- A restored trailer can retain the carried instance after the native
+        -- pickup packet. Require both authoritative removal and a replicated
+        -- held animal; never infer removal from a missing record alone.
+        if carried and not records[id] then
+            animals:remove(animal)
+            if animal:getVehicle() == vehicle then animal:setVehicle(nil) end
+            if carried:getVehicle() == vehicle then carried:setVehicle(nil) end
+            changed = true
+        end
+    end
+    if changed then
+        local size = 0
+        for i = 0, animals:size() - 1 do size = size + animals:get(i):getAnimalTrailerSize() end
+        vehicle:setCurrentTotalAnimalSize(size)
+    end
+end
+
 -- The animals inside a vehicle ME: LENS knows (a Lua list), or {}.
 function A.list(vehicle)
     local out = {}
     if not vehicle or not M.profileFor(vehicle) then return out end
     local animals = vehicle:getAnimals()
+    reconcileCarried(vehicle, animals)
     for i = 0, (animals and animals:size() or 0) - 1 do
         local animal = animals:get(i)
         if animal then out[#out + 1] = animal end

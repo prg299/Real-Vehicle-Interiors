@@ -24,6 +24,7 @@ import zombie.Lua.LuaManager;
 public final class Main {
     static final ConcurrentLinkedQueue<Task> tasks = new ConcurrentLinkedQueue<>();
     private static HttpServer server;
+    private static volatile Thread dispatcherThread;
 
     record Task(String code, int depth, CompletableFuture<String> result) {}
 
@@ -48,6 +49,10 @@ public final class Main {
             reply(exchange, 405, "{\"error\":\"POST Lua code\"}");
             return;
         }
+        if (!ownsLuaThread()) {
+            reply(exchange, 503, "{\"ok\":false,\"loading\":true,\"error\":\"Lua belongs to the loading thread\"}");
+            return;
+        }
         String code = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
         int depth = 3;
         String query = exchange.getRequestURI().getQuery();
@@ -68,8 +73,12 @@ public final class Main {
 
     /** Called on the main thread every UI update. */
     public static void runTasks() {
+        dispatcherThread = Thread.currentThread();
+        if (!ownsLuaThread()) return;
         Task task;
-        while ((task = tasks.poll()) != null) {
+        // One request per frame: a connection request can transfer Lua to the
+        // loading thread before the next UI update. Never drain into that state.
+        if ((task = tasks.poll()) != null) {
             try {
                 Object closure = LuaCompiler.loadstring(task.code, "dev", LuaManager.env);
                 LuaReturn ret = LuaManager.caller.protectedCall(LuaManager.thread, closure);
@@ -82,6 +91,11 @@ public final class Main {
                 task.result.complete("{\"ok\":false,\"error\":" + json(String.valueOf(failure)) + "}");
             }
         }
+    }
+
+    private static boolean ownsLuaThread() {
+        return dispatcherThread != null && LuaManager.thread != null && LuaManager.env != null
+            && LuaManager.thread.debugOwnerThread == dispatcherThread;
     }
 
     private static String toJson(Object value, int depth) {

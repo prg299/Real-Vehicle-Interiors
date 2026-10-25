@@ -130,6 +130,30 @@ if ($resumeSession) { $session.priorFinishedUtc = $resumeSession.finishedUtc }
 function Write-Json([string]$path, $value) {
     [IO.File]::WriteAllText($path, ($value | ConvertTo-Json -Depth 15), [Text.UTF8Encoding]::new($false))
 }
+$script:ownedIdentities = @{}
+function Record-OwnedTree {
+    # Capture exact early UTC creation identities without command lines/secrets.
+    # Short native lifetimes may finish between the coordinator's audit pulses.
+    $rows = @(Get-CimInstance Win32_Process)
+    $owned = @{}; $owned[[int]$PID] = $true
+    do {
+        $added = $false
+        foreach ($row in $rows) {
+            if ($owned.ContainsKey([int]$row.ParentProcessId) -and -not $owned.ContainsKey([int]$row.ProcessId)) {
+                $owned[[int]$row.ProcessId] = $true; $added = $true
+            }
+        }
+    } while ($added)
+    foreach ($row in $rows) {
+        if (-not $owned.ContainsKey([int]$row.ProcessId)) { continue }
+        $created = $row.CreationDate.ToUniversalTime()
+        $key = "$($row.ProcessId):$($created.Ticks)"
+        $script:ownedIdentities[$key] = @{ pid = [int]$row.ProcessId; parentPid = [int]$row.ParentProcessId
+            name = $row.Name; createdUtc = $created.ToString('o'); cimStartTicks = $created.Ticks }
+    }
+    Write-Json (Join-Path $runPath 'owned-process-identities.json') @{ recordedUtc = [DateTime]::UtcNow.ToString('o')
+        rootPid = $PID; processes = @($script:ownedIdentities.Values) }
+}
 function File-Sha256([string]$path) {
     $stream = [IO.File]::OpenRead($path)
     try { return [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($stream)).ToLowerInvariant() }
@@ -254,6 +278,7 @@ function Start-NativeClient($profile, [int]$port) {
     $psi.Environment['PATH'] = "$($Lens.GameRoot)\win64;$($Lens.GameRoot);$env:PATH"
     foreach ($key in @('JAVA_TOOL_OPTIONS', '_JAVA_OPTIONS', 'JDK_JAVA_OPTIONS')) { [void]$psi.Environment.Remove($key) }
     $keeper = [Diagnostics.Process]::Start($psi)
+    Record-OwnedTree
     $record = [pscustomobject]@{ name = $profile.name; port = $port; profile = $profile; keeper = $keeper
         stdout = $keeper.StandardOutput.ReadToEndAsync(); stderr = $keeper.StandardError.ReadToEndAsync()
         gameId = 0; startTicks = 0; path = $path }
@@ -267,6 +292,7 @@ function Start-NativeClient($profile, [int]$port) {
     $native = Get-Content -LiteralPath $started -Raw | ConvertFrom-Json
     $record.gameId = [int]$native.pid
     $record.startTicks = (Get-Process -Id $record.gameId).StartTime.ToUniversalTime().Ticks
+    Record-OwnedTree
     Write-Host "CLIENT_PROCESS_READY $($record.name) pid=$($record.gameId) lua=$port inactiveDesktop=true"
     [void](Wait-Lua $record 'return MainScreen and MainScreen.instance and "menu" or "waiting"' '^menu$' 240)
     [void](Lua $port 'UIManager.setShowLuaDebuggerOnError(false); pcall(function() doLuaDebuggerAction("Resume") end); return 1')
@@ -413,6 +439,7 @@ function Start-ReviewDriver($q, [DateTime]$reviewDeadline) {
     # The environment is inherited unchanged. run-heavy verifies actual Windows
     # job membership and keeps the complete parent/client/server/driver tree cap.
     $process = [Diagnostics.Process]::Start($psi)
+    Record-OwnedTree
     $receipt.pid = $process.Id; $receipt.startTicks = $process.StartTime.ToUniversalTime().Ticks
     $receipt.status = 'running'; $receipt.deadlineUtc = [DateTime]::UtcNow.AddSeconds($seconds).ToString('o')
     $script:driver = [pscustomobject]@{ process = $process; stdout = $process.StandardOutput.ReadToEndAsync()
@@ -452,6 +479,7 @@ function Complete-ReviewDriver([string]$reason = '') {
 }
 
 try {
+    Record-OwnedTree
     # Compile once into the new run, then stage all three profiles sequentially.
     $classes = Join-Path $runPath 'dev-classes'
     New-Item -ItemType Directory -Path $classes | Out-Null
@@ -550,6 +578,7 @@ try {
     $psi.Environment['PATH'] = "$($Lens.GameRoot)\win64;$($Lens.GameRoot);$env:PATH"
     foreach ($key in @('JAVA_TOOL_OPTIONS', '_JAVA_OPTIONS', 'JDK_JAVA_OPTIONS')) { [void]$psi.Environment.Remove($key) }
     $server = [Diagnostics.Process]::Start($psi)
+    Record-OwnedTree
     $serverStdout = $server.StandardOutput.ReadToEndAsync(); $serverStderr = $server.StandardError.ReadToEndAsync()
     $session.serverPid = $server.Id; $session.serverStartTicks = $server.StartTime.ToUniversalTime().Ticks; $session.serverCache = $serverProfile.cache
     Write-Host "SERVER_PROCESS_READY pid=$($server.Id) port=$ServerPort noJava=$(-not [bool]$ServerJava) serverJava=$([bool]$ServerJava)"
