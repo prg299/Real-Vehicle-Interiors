@@ -74,8 +74,15 @@ def main():
             h.check(actual['sqlId']==expected['sqlId'] and actual['fridgeId']==expected['fridgeId'] and actual['parts']==expected['parts'],'restart changed vehicle/furniture/part identifiers')
             h.check(actual['on']==expected['on'] and actual['water']==expected['water'] and actual['tainted']==expected['tainted'],'restart changed utility state')
             h.check([f['id'] for f in h._sequence(actual['foods'])]==[f['id'] for f in h._sequence(expected['foods'])],'restart changed food identity')
-            h.check(abs(actual['fuel']-expected['fuel'])<.08,'restart unexpected fuel debit')
-            h.REPORT['restart']={'expected':expected,'actual':actual}
+            # The dedicated world advances while the second client joins.
+            # Compare the two accounted generator clocks, not a fixed debit
+            # allowance that mistakes normal elapsed play time for a reload bug.
+            elapsed=actual['clock']-expected['clock']
+            used=expected['fuel']-actual['fuel']
+            debit=elapsed*expected['rate']
+            h.REPORT['restart']['fuelAccounting']={'elapsedHours':elapsed,'used':used,'expectedDebit':debit,'toleranceLitres':.005}
+            h.check(elapsed>=0 and actual['clock']<=actual['hours']+.001,'restart generator clock is invalid')
+            h.check(actual['rate']==expected['rate'] and abs(used-debit)<.005,'restart fuel debit differs from accounted appliance time')
         lab.enter_e('A');h.REPORT['inputCoverage'].append('native Interact entry into KI5 Step Van')
         if snap()['on']:switch(False)
         switch(True);lab.capture('A','step-van-generator-powered')
