@@ -32,7 +32,7 @@ function T.foodControls()
     local r=T.snapshot();r.controlColdId=T.cold:getID();r.controlWarmId=T.warm:getID();return r
 end
 function T.advance(hours)
-    local time=getGameTime();assert(time:getTimeOfDay()+hours<24,"bounded same-day clock fixture")
+    local time=getGameTime();assert(hours>0 and hours<=1,"bounded clock fixture")
     time:setTimeOfDay(time:getTimeOfDay()+hours)
     return time:getWorldAgeHours()
 end

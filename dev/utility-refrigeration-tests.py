@@ -13,7 +13,7 @@ def load(name):
 def main():
     p=argparse.ArgumentParser();p.add_argument('--session',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--verify-source',type=Path)
     args=p.parse_args();d=load('final-mp-interior-tests');lab=d.InteriorLab(args.session,args.output);h=lab.h
-    h.REPORT.update(scope=__doc__,inputCoverage=[],fixtures=['admin spawn/repair/furniture','fresh identical native apples','one bounded same-day game-hour advance','native climate override restored'],lootNativeMouseInput=False,lootUsesProductionTransferAction=False)
+    h.REPORT.update(scope=__doc__,inputCoverage=[],fixtures=['admin spawn/repair/furniture','fresh identical native apples','one bounded game-hour advance','native climate override restored'],lootNativeMouseInput=False,lootUsesProductionTransferAction=False)
     def server(code):return json.loads(lab.server(d.JSON_ENCODER+'local r=(function() '+code+' end)();return enc(r)'))
     def snap():return server('return MELensUtilityProbe.snapshot()')
     def peers():
@@ -58,7 +58,7 @@ def main():
         h.check(before['powered'] and before['fridge'],'native food does not recognize powered custom fridge')
         unchanged=snap();h.check(abs(unchanged['fuel']-before['fuel'])<.003,'unchanged-input fuel control changed')
         h.REPORT['unchangedControl']={'before':before,'after':unchanged}
-        hours=server('local n=getGameTime():getTimeOfDay();local hours=math.min(1,23.9-n);assert(hours>.1);return MELensUtilityProbe.advance(hours)')
+        hours=server('return MELensUtilityProbe.advance(1)')
         lab.wait(lambda:snap(),lambda s:s['hours']>=hours,'server clock advance')
         lab.wait(snap,lambda s:before['fuel']-s['fuel'] >= (s['hours']-before['hours'])*before['rate']-.015,'native generator callback accounts advanced interval',timeout=45)
         after=server('return MELensUtilityProbe.ageControls()')
