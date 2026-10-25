@@ -112,5 +112,7 @@
     "IGUI_MELens_NoPropane": "Brak gazu: podłącz butlę.",
     "IGUI_MELens_PropaneFull": "Butle są pełne.",
     "IGUI_MELens_ItemsFell": "Przedmioty zsunęły się i spadły na podłogę.",
-    "IGUI_MELens_ReasonTall": "To jest za wysokie na ten regał."
+    "IGUI_MELens_ReasonTall": "To jest za wysokie na ten regał.",
+    "IGUI_MELens_AnimalNoRoom": "Nie ma tu już na niego miejsca.",
+    "IGUI_MELens_AnimalNotAlive": "To zwierzę nie żyje."
 }

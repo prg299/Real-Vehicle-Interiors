@@ -112,5 +112,7 @@
     "IGUI_MELens_NoPropane": "Sem propano: insira um botijão.",
     "IGUI_MELens_PropaneFull": "Os botijões estão cheios.",
     "IGUI_MELens_ItemsFell": "Algumas coisas escorregaram e caíram no chão.",
-    "IGUI_MELens_ReasonTall": "Isto é alto demais para essa estante."
+    "IGUI_MELens_ReasonTall": "Isto é alto demais para essa estante.",
+    "IGUI_MELens_AnimalNoRoom": "Não há mais espaço para ele aqui dentro.",
+    "IGUI_MELens_AnimalNotAlive": "Ele não está vivo."
 }

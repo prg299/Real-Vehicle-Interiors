@@ -13,6 +13,7 @@ param(
     [string]$Run = 'final-mp-206',
     [string]$ResumeFrom,
     [switch]$ServerJava,
+    [switch]$CompanionDogs,
     [string]$PackagePath,
     [switch]$AllowOtherGames,
     [ValidateRange(1024, 65534)][int]$ServerPort = 17361,
@@ -26,6 +27,10 @@ $explicitServerPort = $PSBoundParameters.ContainsKey('ServerPort')
 . (Join-Path $PSScriptRoot '..\scripts\common.ps1')
 . (Join-Path $PSScriptRoot 'existing-test-acknowledgements.ps1')
 $ErrorActionPreference = 'Stop'
+if ($CompanionDogs) {
+    $Lens.Dependencies += @{ Id = 'CompanionDogs'; Item = '3740052292'; Folder = 'CompanionDogs' }
+}
+$testModIds = @($Lens.Dependencies | ForEach-Object { $_.Id }) + @('RealVehicleInteriors', 'RealVehicleInteriors_Dev')
 if ($PackagePath) {
     $resolvedPackage = [IO.Path]::GetFullPath((Resolve-Path -LiteralPath $PackagePath -ErrorAction Stop).Path)
     $packageRoot = [IO.Path]::GetFullPath($Lens.Out)
@@ -57,6 +62,7 @@ if ($ResumeFrom) {
         $ancestor = [IO.Path]::GetDirectoryName($ancestor)
     }
     $resumeSession = Get-Content -LiteralPath (Join-Path $resumePath 'session.json') -Raw | ConvertFrom-Json
+    if ([bool]$CompanionDogs -ne ($resumeSession.companionDogs -eq $true)) { throw 'Resume must use the original CompanionDogs flag' }
     $resumeCredentials = Get-Content -LiteralPath (Join-Path $resumePath 'credentials.json') -Raw | ConvertFrom-Json
     $priorNoJava = $resumeSession.serverNoJava -eq $true -and $resumeSession.serverJava -ne $true
     $priorServerJava = $resumeSession.serverJava -eq $true -and $resumeSession.serverNoJava -ne $true
@@ -106,6 +112,7 @@ $driver = $null
 $serverStdout = $null; $serverStderr = $null
 $session = [ordered]@{
     serverNoJava = (-not [bool]$ServerJava); serverJava = [bool]$ServerJava
+    companionDogs = [bool]$CompanionDogs
     packagePath = $Lens.Package; allowOtherGames = [bool]$AllowOtherGames
     unmanagedGamePids = $otherGamePids; clientLuaPortA = $ClientLuaPortA; clientLuaPortB = $ClientLuaPortB
     stockClientClasses = $true; inactiveDesktops = $true
@@ -122,6 +129,30 @@ if ($resumeSession) { $session.priorFinishedUtc = $resumeSession.finishedUtc }
 
 function Write-Json([string]$path, $value) {
     [IO.File]::WriteAllText($path, ($value | ConvertTo-Json -Depth 15), [Text.UTF8Encoding]::new($false))
+}
+$script:ownedIdentities = @{}
+function Record-OwnedTree {
+    # Capture exact early UTC creation identities without command lines/secrets.
+    # Short native lifetimes may finish between the coordinator's audit pulses.
+    $rows = @(Get-CimInstance Win32_Process)
+    $owned = @{}; $owned[[int]$PID] = $true
+    do {
+        $added = $false
+        foreach ($row in $rows) {
+            if ($owned.ContainsKey([int]$row.ParentProcessId) -and -not $owned.ContainsKey([int]$row.ProcessId)) {
+                $owned[[int]$row.ProcessId] = $true; $added = $true
+            }
+        }
+    } while ($added)
+    foreach ($row in $rows) {
+        if (-not $owned.ContainsKey([int]$row.ProcessId)) { continue }
+        $created = $row.CreationDate.ToUniversalTime()
+        $key = "$($row.ProcessId):$($created.Ticks)"
+        $script:ownedIdentities[$key] = @{ pid = [int]$row.ProcessId; parentPid = [int]$row.ParentProcessId
+            name = $row.Name; createdUtc = $created.ToString('o'); cimStartTicks = $created.Ticks }
+    }
+    Write-Json (Join-Path $runPath 'owned-process-identities.json') @{ recordedUtc = [DateTime]::UtcNow.ToString('o')
+        rootPid = $PID; processes = @($script:ownedIdentities.Values) }
 }
 function File-Sha256([string]$path) {
     $stream = [IO.File]::OpenRead($path)
@@ -195,7 +226,8 @@ function Stage-Profile([string]$name, [bool]$includeDeveloperJava = $true) {
         New-Item -ItemType Directory -Path $javaDir -Force | Out-Null
         Copy-Item -LiteralPath $script:devJar -Destination (Join-Path $javaDir 'RealVehicleInteriors_Dev.jar') -Force
     }
-    $modList = "VERSION = 1,`nmods`n{`n    mod = ZombieBuddy,`n    mod = damnlib,`n    mod = KI5campers,`n    mod = 87fordB700,`n    mod = KI5trailers,`n    mod = RealVehicleInteriors,`n    mod = RealVehicleInteriors_Dev,`n}`nmaps`n{`n}`n"
+    $modLines = ($testModIds | ForEach-Object { "    mod = $_,`n" }) -join ''
+    $modList = "VERSION = 1,`nmods`n{`n${modLines}}`nmaps`n{`n}`n"
     [IO.File]::WriteAllText((Join-Path $mods 'default.txt'), $modList)
     [IO.File]::WriteAllText((Join-Path $mods 'reset-mods-42_00.txt'), 'Owned isolated MP test profile.')
     $options = @'
@@ -217,7 +249,13 @@ musicVolume=0
         # Keep the prior client's preferences and key bindings byte-for-byte.
         # This harness originally staged the same bounded rendering settings.
     } else {
-        $options = Add-ExistingTestAcknowledgements $options (Join-Path $Lens.TestHome 'Zomboid\options.ini')
+        $acknowledgements = Join-Path $Lens.TestHome 'Zomboid\options.ini'
+        if (-not (Test-Path -LiteralPath $acknowledgements -PathType Leaf)) {
+            # A new worktree has no established testhome yet. Match SP Prepare:
+            # copy only values the user already acknowledged, read-only.
+            $acknowledgements = Join-Path $env:USERPROFILE 'Zomboid\options.ini'
+        }
+        $options = Add-ExistingTestAcknowledgements $options $acknowledgements
         [IO.File]::WriteAllText($optionsPath, $options)
     }
     return [pscustomobject]@{ name = $name; home = $profileHome; cache = $cache; mods = $mods }
@@ -240,6 +278,7 @@ function Start-NativeClient($profile, [int]$port) {
     $psi.Environment['PATH'] = "$($Lens.GameRoot)\win64;$($Lens.GameRoot);$env:PATH"
     foreach ($key in @('JAVA_TOOL_OPTIONS', '_JAVA_OPTIONS', 'JDK_JAVA_OPTIONS')) { [void]$psi.Environment.Remove($key) }
     $keeper = [Diagnostics.Process]::Start($psi)
+    Record-OwnedTree
     $record = [pscustomobject]@{ name = $profile.name; port = $port; profile = $profile; keeper = $keeper
         stdout = $keeper.StandardOutput.ReadToEndAsync(); stderr = $keeper.StandardError.ReadToEndAsync()
         gameId = 0; startTicks = 0; path = $path }
@@ -253,6 +292,7 @@ function Start-NativeClient($profile, [int]$port) {
     $native = Get-Content -LiteralPath $started -Raw | ConvertFrom-Json
     $record.gameId = [int]$native.pid
     $record.startTicks = (Get-Process -Id $record.gameId).StartTime.ToUniversalTime().Ticks
+    Record-OwnedTree
     Write-Host "CLIENT_PROCESS_READY $($record.name) pid=$($record.gameId) lua=$port inactiveDesktop=true"
     [void](Wait-Lua $record 'return MainScreen and MainScreen.instance and "menu" or "waiting"' '^menu$' 240)
     [void](Lua $port 'UIManager.setShowLuaDebuggerOnError(false); pcall(function() doLuaDebuggerAction("Resume") end); return 1')
@@ -283,6 +323,7 @@ function Finish-Connection($record) {
     }
     [void](Lua $record.port 'MELensMedia.start(); GameWindow.doRenderEvent(true); return 1')
     [void](Wait-Lua $record 'local p=getPlayer(); return p and isClient() and isIngameState() and p:getOnlineID()>=0 and MELens and MEMCNativeLab and MELensNativeText and "connected" or "waiting"' '^connected$' 120)
+    [void](Lua $record.port ([IO.File]::ReadAllText((Join-Path $PSScriptRoot 'lua\setup.lua'))))
     Write-Host "CLIENT_WORLD_READY $($record.name)"
 }
 function Capture($record, [string]$name) {
@@ -398,6 +439,7 @@ function Start-ReviewDriver($q, [DateTime]$reviewDeadline) {
     # The environment is inherited unchanged. run-heavy verifies actual Windows
     # job membership and keeps the complete parent/client/server/driver tree cap.
     $process = [Diagnostics.Process]::Start($psi)
+    Record-OwnedTree
     $receipt.pid = $process.Id; $receipt.startTicks = $process.StartTime.ToUniversalTime().Ticks
     $receipt.status = 'running'; $receipt.deadlineUtc = [DateTime]::UtcNow.AddSeconds($seconds).ToString('o')
     $script:driver = [pscustomobject]@{ process = $process; stdout = $process.StandardOutput.ReadToEndAsync()
@@ -437,6 +479,7 @@ function Complete-ReviewDriver([string]$reason = '') {
 }
 
 try {
+    Record-OwnedTree
     # Compile once into the new run, then stage all three profiles sequentially.
     $classes = Join-Path $runPath 'dev-classes'
     New-Item -ItemType Directory -Path $classes | Out-Null
@@ -495,14 +538,14 @@ try {
     $adminSecret = if ($resumeCredentials) { [string]$resumeCredentials.adminSecret } else { [Guid]::NewGuid().ToString('N') }
     $guestSecret = if ($resumeCredentials) { [string]$resumeCredentials.guestSecret } else { [Guid]::NewGuid().ToString('N') }
     Write-Json (Join-Path $runPath 'credentials.json') @{ admin = 'MELensAdmin'; adminSecret = $adminSecret; guest = 'MELensGuest'; guestSecret = $guestSecret; serverName = $serverName; serverPort = $ServerPort }
-    $serverIni = "Open=true`nPublic=false`nPVP=false`nPauseEmpty=true`nUPnP=false`nDefaultPort=$ServerPort`nUDPPort=$($ServerPort+1)`nMods=ZombieBuddy;damnlib;KI5campers;87fordB700;KI5trailers;RealVehicleInteriors;RealVehicleInteriors_Dev`nWorkshopItems=`nMap=Muldraugh, KY`nSteamVAC=false`nDoLuaChecksum=true`nAntiCheatChecksum=2`n"
+    $serverIni = "Open=true`nPublic=false`nPVP=false`nPauseEmpty=true`nUPnP=false`nDefaultPort=$ServerPort`nUDPPort=$($ServerPort+1)`nMods=$($testModIds -join ';')`nWorkshopItems=`nMap=Muldraugh, KY`nSteamVAC=false`nDoLuaChecksum=true`nAntiCheatChecksum=2`n"
     New-Item -ItemType Directory -Path (Join-Path $serverProfile.cache 'Server') -Force | Out-Null
     $serverIniPath = Join-Path $serverProfile.cache "Server\$serverName.ini"
     $sandboxPath = Join-Path $serverProfile.cache "Server\${serverName}_SandboxVars.lua"
     if ($resumePath) {
         $serverIni = [IO.File]::ReadAllText($serverIniPath)
         foreach ($pair in @(@('DefaultPort', "$ServerPort"), @('UDPPort', "$($ServerPort+1)"),
-            @('Mods', 'ZombieBuddy;damnlib;KI5campers;87fordB700;KI5trailers;RealVehicleInteriors;RealVehicleInteriors_Dev'),
+            @('Mods', ($testModIds -join ';')),
             @('DoLuaChecksum', 'true'), @('AntiCheatChecksum', '2'), @('UPnP', 'false'))) {
             $serverIni = Set-Ini $serverIni $pair[0] $pair[1]
         }
@@ -535,6 +578,7 @@ try {
     $psi.Environment['PATH'] = "$($Lens.GameRoot)\win64;$($Lens.GameRoot);$env:PATH"
     foreach ($key in @('JAVA_TOOL_OPTIONS', '_JAVA_OPTIONS', 'JDK_JAVA_OPTIONS')) { [void]$psi.Environment.Remove($key) }
     $server = [Diagnostics.Process]::Start($psi)
+    Record-OwnedTree
     $serverStdout = $server.StandardOutput.ReadToEndAsync(); $serverStderr = $server.StandardError.ReadToEndAsync()
     $session.serverPid = $server.Id; $session.serverStartTicks = $server.StartTime.ToUniversalTime().Ticks; $session.serverCache = $serverProfile.cache
     Write-Host "SERVER_PROCESS_READY pid=$($server.Id) port=$ServerPort noJava=$(-not [bool]$ServerJava) serverJava=$([bool]$ServerJava)"
@@ -550,7 +594,7 @@ try {
     $a = Start-NativeClient $profileA $ClientLuaPortA
     # Reuse connection-screen setup only. Restore its environment override.
     $previousPort = $env:MELENS_LUA_PORT
-    try { & (Join-Path $PSScriptRoot 'mp_connect.ps1') -Port $ServerPort -User 'MELensAdmin' -Password $adminSecret -LuaPort $ClientLuaPortA -OwnedClientPid $a.gameId -OwnedClientStartTicks $a.startTicks -OwnedServerPid $server.Id -OwnedServerStartTicks $session.serverStartTicks -OwnedServerConsole $serverConsole }
+    try { & (Join-Path $PSScriptRoot 'mp_connect.ps1') -Port $ServerPort -User 'MELensAdmin' -Password $adminSecret -LuaPort $ClientLuaPortA -OwnedClientPid $a.gameId -OwnedClientStartTicks $a.startTicks -OwnedServerPid $server.Id -OwnedServerStartTicks $session.serverStartTicks -OwnedServerConsole $serverConsole -DeferWorldSetup }
     finally { $env:MELENS_LUA_PORT = $previousPort }
     Finish-Connection $a
     $serverProbe = @'
@@ -564,7 +608,7 @@ MELensDevResult=nil; sendClientCommand(getPlayer(),"MELensDev","eval",{id=20601,
     Write-Host 'FIRST_FRAME_READY client-a'
     $b = Start-NativeClient $profileB $ClientLuaPortB
     $previousPort = $env:MELENS_LUA_PORT
-    try { & (Join-Path $PSScriptRoot 'mp_connect.ps1') -Port $ServerPort -User 'MELensGuest' -Password $guestSecret -LuaPort $ClientLuaPortB -OwnedClientPid $b.gameId -OwnedClientStartTicks $b.startTicks -OwnedServerPid $server.Id -OwnedServerStartTicks $session.serverStartTicks -OwnedServerConsole $serverConsole }
+    try { & (Join-Path $PSScriptRoot 'mp_connect.ps1') -Port $ServerPort -User 'MELensGuest' -Password $guestSecret -LuaPort $ClientLuaPortB -OwnedClientPid $b.gameId -OwnedClientStartTicks $b.startTicks -OwnedServerPid $server.Id -OwnedServerStartTicks $session.serverStartTicks -OwnedServerConsole $serverConsole -DeferWorldSetup }
     finally { $env:MELENS_LUA_PORT = $previousPort }
     Finish-Connection $b
     Capture $b 'first-frame'

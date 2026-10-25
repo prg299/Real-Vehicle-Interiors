@@ -112,5 +112,7 @@
     "IGUI_MELens_NoPropane": "Pas de propane : insérez un réservoir.",
     "IGUI_MELens_PropaneFull": "Les réservoirs sont pleins.",
     "IGUI_MELens_ItemsFell": "Des objets ont glissé et sont tombés par terre.",
-    "IGUI_MELens_ReasonTall": "C'est trop haut pour cette étagère."
+    "IGUI_MELens_ReasonTall": "C'est trop haut pour cette étagère.",
+    "IGUI_MELens_AnimalNoRoom": "Il n'y a plus de place pour lui ici.",
+    "IGUI_MELens_AnimalNotAlive": "Il n'est pas vivant."
 }

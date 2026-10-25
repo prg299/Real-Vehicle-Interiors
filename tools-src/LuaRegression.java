@@ -112,6 +112,13 @@ public final class LuaRegression {
                     name, env), new Object[0]);
             if (!Boolean.TRUE.equals(checked[0])) throw new AssertionError(name + ": " + java.util.Arrays.toString(checked));
         }
+        for (String name : new String[] { shared + "MELens_Animals.lua", shared + "TimedActions/MELens_AnimalActions.lua",
+                "tools-src/regression/animals.lua", client + "MELens_AnimalContext.lua",
+                "tools-src/regression/animal-context.lua" }) {
+            Object[] checked = thread.pcall(LuaCompiler.loadstring(Files.readString(root.resolve(name), StandardCharsets.UTF_8),
+                    name, env), new Object[0]);
+            if (!Boolean.TRUE.equals(checked[0])) throw new AssertionError(name + ": " + java.util.Arrays.toString(checked));
+        }
         System.out.println("ME_LENS regression assertions=" + env.rawget("assertions")
             + " productionLua=true engineDoubles=true nativeInput=false");
     }

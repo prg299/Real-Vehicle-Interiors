@@ -74,12 +74,14 @@ end
 
 -- Where to stand to reach a point on a surface: in front of the piece it is on; for the floor, next to the
 -- spot on the side you come from (not on top of it); else the nearest open floor.
-function UI.standFor(vehicle, profile, x, z, s, player)
+function UI.standFor(vehicle, profile, x, z, s, player, reach)
     player = player or getSpecificPlayer(0)
     -- Actions already accept this reach. Keep an available standing position rather
     -- than taking an unnecessary approach path into a narrow furniture corner.
-    if player and M.isStanding(player) and P.reachesLoose(player, vehicle, x, z) then
-        return P.characterAt(vehicle, player)
+    if player and M.isStanding(player) then
+        local px, pz = P.characterAt(vehicle, player)
+        if px and ((reach and (px-x)^2+(pz-z)^2 <= reach^2)
+                or (not reach and P.reachesLoose(player, vehicle, x, z))) then return px, pz end
     end
     if s and s > 0 then
         local spot = profile.spots[s]

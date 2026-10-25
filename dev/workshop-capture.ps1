@@ -1,7 +1,7 @@
 # Owned gameplay-media capture on an inactive desktop. Run the entire lifetime through run-heavy.mjs.
 param([string]$Run = 'workshop-20261017', [switch]$GroundOnly, [string]$Scenario, [string]$LoadWorld,
     [switch]$FreshProfile, [ValidateRange(1,60)][int]$ReviewMinutes = 30,
-    [switch]$LowMemory, [string]$ProfilePath,
+    [switch]$LowMemory, [string]$ProfilePath, [switch]$PreserveClock,
     [string]$Driver, [string[]]$DriverArguments = @(),
     [switch]$AllowOtherGames) # this game/input/capture stay on a separate inactive desktop
 . (Join-Path $PSScriptRoot '..\scripts\common.ps1')
@@ -134,7 +134,9 @@ try {
     [void](Wait-Lua 'return isIngameState() and "world" or "waiting"' '^world$' 60)
     Write-Host 'WORLD_READY'
     Start-Sleep -Seconds 3
-    [void](Lua (Get-Content -LiteralPath (Join-Path $Lens.Root 'dev\lua\setup.lua') -Raw))
+    $setup = Get-Content -LiteralPath (Join-Path $Lens.Root 'dev\lua\setup.lua') -Raw
+    if ($PreserveClock) { $setup = $setup.Replace('getGameTime():setTimeOfDay(12)', '-- Keep the saved clock for lifecycle/needs checks.') }
+    [void](Lua $setup)
     [void](Lua 'local p = getPlayer(); p:setX(10813.5); p:setY(10140.5); p:setLastX(10813.5); p:setLastY(10140.5); return 1')
     Start-Sleep -Seconds 2
     if ($GroundOnly) {

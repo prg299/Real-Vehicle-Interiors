@@ -9,6 +9,8 @@ import zombie.scripting.objects.CharacterTrait;
 import zombie.core.skinnedmodel.model.Model;
 import zombie.core.skinnedmodel.model.ModelInstanceRenderData;
 import zombie.core.skinnedmodel.model.ModelSlotRenderData;
+import zombie.iso.IsoObject;
+import zombie.vehicles.BaseVehicle;
 
 /**
  * Engine hooks. The render hooks do nothing unless Lua armed them; the animation-set hooks
@@ -98,6 +100,30 @@ public final class Hooks {
         @Patch.OnExit
         public static void exit(@Patch.This ModelInstanceRenderData inst, @Patch.Argument(0) ModelSlotRenderData slot) {
             Loose.afterModel(inst, slot);
+        }
+    }
+
+    /**
+     * After a vehicle queued its own draw: the animals inside the one you are in (see {@link Animals}). BaseVehicle.render
+     * queues the vehicle through IsoSprite.renderVehicle; the hook sits on the latter, which renderers that replace the
+     * cell's object pass (the PZ Optimization mod) still call.
+     */
+    @Patch(className = "zombie.iso.sprite.IsoSprite", methodName = "renderVehicle", strictMatch = true)
+    public static final class AfterVehicleRender {
+        @Patch.OnExit
+        public static void exit(@Patch.Argument(1) IsoObject object) {
+            if (object instanceof BaseVehicle vehicle) {
+                Animals.afterVehicleRender(vehicle);
+            }
+        }
+    }
+
+    /** The world camera of an animated model sets the model's depth from its own square; the animals inside take the cabin's. */
+    @Patch(className = "zombie.core.skinnedmodel.advancedanimation.AnimatedModel$WorldModelCamera", methodName = "Begin", strictMatch = true)
+    public static final class AnimalDepth {
+        @Patch.OnExit
+        public static void exit() {
+            Animals.afterCameraBegin();
         }
     }
 

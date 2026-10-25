@@ -112,5 +112,7 @@
     "IGUI_MELens_NoPropane": "Нет пропана: вставьте баллон.",
     "IGUI_MELens_PropaneFull": "Баллоны заполнены.",
     "IGUI_MELens_ItemsFell": "Вещи соскользнули и упали на пол.",
-    "IGUI_MELens_ReasonTall": "Предмет слишком высокий для этого стеллажа."
+    "IGUI_MELens_ReasonTall": "Предмет слишком высокий для этого стеллажа.",
+    "IGUI_MELens_AnimalNoRoom": "Здесь для него больше нет места.",
+    "IGUI_MELens_AnimalNotAlive": "Оно не живое."
 }
