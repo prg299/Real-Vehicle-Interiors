@@ -1,8 +1,9 @@
-2.0.17 - Refrigerator and utility fixes
+2.0.17 - Refrigerator, utility and dashboard fixes
 
 - RV refrigerators use the game's food-preservation rules and update their cold state when power changes or the vehicle loads.
 - Prevents repeated or stale generator update intervals from charging the same game time twice. Normal configured fuel rates are unchanged.
 - A removed kitchenette no longer adds a phantom stove load in electric-appliance mode.
 - Automatic roof runoff no longer mixes into stored clean water. Empty and already contaminated tanks can still collect rain when that option is enabled.
+- The Neat dashboard follows the enabled Neat UI background-opacity preferences while keeping labels and controls readable. Changes apply while the window is open.
 
 Existing furniture, food, fuel and water remain saved. Refrigeration requires the Java component through ZombieBuddy wherever food is simulated, including the dedicated server. This update does not restore already spoiled food or purify already contaminated water.

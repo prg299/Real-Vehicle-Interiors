@@ -50,7 +50,7 @@ Back up saves before changing mods. Known beta gaps include intermittent multipl
 
 Carry small animals inside and use their normal right-click actions. Animals use native animations and eat and drink when supplied. Optional [Companion Dogs](https://steamcommunity.com/sharedfiles/filedetails/?id=3740052292) can follow their owner in and out, Stay, be carried and use Bring from outside. Loaded vehicles continue their care; unloaded time pauses Companion Dogs needs. Breeding, egg collection, milking, shearing and unrestricted interior animal AI are outside this version's scope.
 
-The dashboard uses the game's standard window and buttons by default. Enabled Neat UI mods retain the rounded dashboard. Both views use the same resource controls and timed actions.
+The dashboard uses the game's standard window and buttons by default. Enabled Neat UI mods retain the rounded dashboard. Its background transparency follows Neat Rocco's setting, or Neat Crafting/Equipment preferences when Rocco is absent, and updates while open. Text and controls remain readable. Both views use the same resource controls and timed actions.
 
 Solid interior walls block zombie sight, independently of the visual roof cutaway. Windows and open, removed or destroyed doors allow normal spotting. Hearing and pursuit memory use the game's normal behavior: entering an interior does not erase an existing target. Sight uses horizontal hull/opening geometry, like the floor-level checks for vanilla rooms.
 

@@ -73,6 +73,44 @@ local C = {
     close = { 0.86, 0.33, 0.30, 1.0 },
 }
 
+local function opacity(value, fallback)
+    value = tonumber(value)
+    if not value or value ~= value then return fallback end
+    return math.max(0, math.min(1, value))
+end
+
+local function configAlpha(config, name, base)
+    if type(config[name]) ~= "function" then return base end
+    local ok, value = pcall(config[name], base)
+    return opacity(ok and value or nil, base)
+end
+
+-- Read live preferences without requiring an optional mod or writing its config.
+-- Rocco styles the vehicle windows, so its setting wins when several Neat mods
+-- are enabled. Older standalone releases without opacity controls keep our style.
+function D.neatOpacities()
+    local active = getActivatedMods()
+    if active:contains("Neat_Rocco") and type(NR_Config) == "table" then
+        local alpha = opacity(NR_Config.bgAlpha, nil)
+        if alpha then return alpha, alpha, alpha end
+    end
+    if active:contains("Neat_Crafting") and type(NC_UserConfig) == "table" then
+        local config = type(NCConfig) == "table" and NCConfig or {}
+        return configAlpha(NC_UserConfig, "getBackgroundAlpha", opacity(config.windowBackgroundAlpha, C.window[4])),
+            configAlpha(NC_UserConfig, "getTitleBarAlpha", opacity(config.titleBackgroundAlpha, C.titleBar[4])),
+            configAlpha(NC_UserConfig, "getInnerPanelAlpha", opacity(config.innerBackgroundAlpha, C.card[4]))
+    end
+    if active:contains("NeatUI_Equipment") and type(NEQ_Style) == "table" then
+        if NEQ_Style.LOOK == "cleanui" and type(CleanUI_getBackgroundOpacity) == "function" then
+            local alpha = configAlpha(_G, "CleanUI_getBackgroundOpacity", 0.65)
+            return alpha, 0.95, alpha
+        end
+        local alpha = opacity(NEQ_Style.BODY_ALPHA, nil)
+        if alpha then return alpha, C.titleBar[4], alpha end
+    end
+    return C.window[4], C.titleBar[4], C.card[4]
+end
+
 local SHAPES = "media/ui/MELens/"
 local shapes = {}
 local function shape(name)
@@ -107,7 +145,7 @@ local function rect(el, x, y, w, h, c, alpha)
 end
 
 -- A filled rectangle with rounded corners (the corner shapes tinted), r clamped to fit.
-local function roundRect(el, x, y, w, h, r, c, alpha)
+local function roundRect(el, x, y, w, h, r, c, alpha, flatTop, flatBottom)
     r = math.floor(math.min(r, w / 2, h / 2))
     local a = (alpha or 1) * c[4]
     if r < 1 then
@@ -115,14 +153,19 @@ local function roundRect(el, x, y, w, h, r, c, alpha)
         return
     end
     el:drawRect(x + r, y, w - 2 * r, h, a, c[1], c[2], c[3])
-    el:drawRect(x, y + r, r, h - 2 * r, a, c[1], c[2], c[3])
-    el:drawRect(x + w - r, y + r, r, h - 2 * r, a, c[1], c[2], c[3])
+    local top, bottom = flatTop and 0 or r, flatBottom and 0 or r
+    el:drawRect(x, y + top, r, h - top - bottom, a, c[1], c[2], c[3])
+    el:drawRect(x + w - r, y + top, r, h - top - bottom, a, c[1], c[2], c[3])
     local tl, tr, bl, br = shape("corner_tl"), shape("corner_tr"), shape("corner_bl"), shape("corner_br")
     if tl then
-        el:drawTextureScaled(tl, x, y, r, r, a, c[1], c[2], c[3])
-        el:drawTextureScaled(tr, x + w - r, y, r, r, a, c[1], c[2], c[3])
-        el:drawTextureScaled(bl, x, y + h - r, r, r, a, c[1], c[2], c[3])
-        el:drawTextureScaled(br, x + w - r, y + h - r, r, r, a, c[1], c[2], c[3])
+        if not flatTop then
+            el:drawTextureScaled(tl, x, y, r, r, a, c[1], c[2], c[3])
+            el:drawTextureScaled(tr, x + w - r, y, r, r, a, c[1], c[2], c[3])
+        end
+        if not flatBottom then
+            el:drawTextureScaled(bl, x, y + h - r, r, r, a, c[1], c[2], c[3])
+            el:drawTextureScaled(br, x + w - r, y + h - r, r, r, a, c[1], c[2], c[3])
+        end
     end
 end
 
@@ -426,11 +469,12 @@ end
 
 function MELensDashboard:prerender()
     local w, h = self.width, self.height
-    -- a soft shadow, the window, its title bar and outline
-    roundRect(self, 3, 4, w, h, S.radius + 2, { 0, 0, 0, 0.35 })
-    roundRect(self, 0, 0, w, h, S.radius, C.window)
-    roundRect(self, 0, 0, w, S.title, S.radius, C.titleBar)
-    rect(self, 0, S.title - S.radius, w, S.radius, C.titleBar)
+    local body, title, card = D.neatOpacities()
+    self.cardOpacity = card
+    roundRect(self, 3, 4, w, h, S.radius + 2, { 0, 0, 0, 0.35 }, body)
+    -- Disjoint title/body surfaces avoid an opaque strip from overlapping fills.
+    roundRect(self, 0, S.title, w, h - S.title, S.radius, C.window, body / C.window[4], true)
+    roundRect(self, 0, 0, w, S.title, S.radius, C.titleBar, title, false, true)
     rect(self, 0, S.title, w, 1, C.edge)
     roundBorder(self, 0, 0, w, h, S.radius, C.edge)
 end
@@ -445,7 +489,7 @@ function MELensDashboard:render()
     self:drawTextCentre("X", cb.x + cb.w / 2, cb.y + (cb.h - FH) / 2, 1, 1, 1, overClose and 1 or 0.6, FONT)
 
     for _, card in ipairs(self.cards) do
-        roundRect(self, card.x, card.y, card.w, card.h, S.cardRadius, C.card)
+        roundRect(self, card.x, card.y, card.w, card.h, S.cardRadius, C.card, self.cardOpacity)
         roundBorder(self, card.x, card.y, card.w, card.h, S.cardRadius, C.cardEdge)
         -- header: icon, title, status chip
         local hx = card.x + S.cardPad
