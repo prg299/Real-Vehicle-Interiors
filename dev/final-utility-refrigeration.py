@@ -70,7 +70,7 @@ def main():
         elapsed=after['hours']-before['hours'];used=before['fuel']-after['fuel']
         h.check(abs(used-elapsed*before['rate'])<.015,'native elapsed-time fuel use differs from actual appliance rate')
         h.REPORT['nativeFoodAging']={'before':before,'after':after,'coldAgeDelta':cd,'warmAgeDelta':wd,'fuelUsed':used,'elapsedHours':elapsed}
-        h.lua('local page=getPlayerLoot(0);page:setVisible(true);page:refreshBackpacks();return true')
+        h.lua('if MELens.Dashboard.instance then MELens.Dashboard.instance:close() end;local page=getPlayerLoot(0);page:setVisible(true);page:refreshBackpacks();return true')
         def fridge_button():return h.lua('local page=getPlayerLoot(0);local c=MELens.Parts.spotPart(MELensTest.vehicle,4):getItemContainer();for _,b in ipairs(page.backpacks) do if b.inventory==c then return {x=b:getAbsoluteX()+b:getWidth()/2,y=b:getAbsoluteY()+b:getHeight()/2} end end')
         button=lab.wait(fridge_button,lambda b:b is not None,'actual fridge inventory button')
         lab.input('A',x=button['x'],y=button['y'])
