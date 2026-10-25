@@ -200,7 +200,9 @@ return {queueCount=q and #q.queue or 0,controls={}} end};return true''')
                 'if v:getScript():getFullName()=="Base.VanSeats" and (v:getX()-' + str(x) + ')^2+(v:getY()-' + str(y) + ')^2<25 '
                 'then return tostring(v:getId()) end end;return "-1"')
         lab.vid = lab.wait(lambda: int(lab.server(find)), lambda n: n >= 0, 'fresh vanilla passenger van')
-        server(f'local v=getVehicleById({lab.vid});v:repair();for i=0,v:getPartCount()-1 do local p=v:getPartByIndex(i);if p:getDoor() then p:getDoor():setLocked(false);v:transmitPartDoor(p) end end;return true')
+        # The native /addvehicle command already repairs the new vehicle. A
+        # second repair races the initial container replication on both peers.
+        server(f'local v=getVehicleById({lab.vid});for i=0,v:getPartCount()-1 do local p=v:getPartByIndex(i);if p:getDoor() then p:getDoor():setLocked(false);v:transmitPartDoor(p) end end;return true')
         for side, api in apis.items():
             lab.wait(lambda api=api: api.lua(f'return getVehicleById({lab.vid})~=nil'), bool, side + ' vehicle replication')
             lab.enter_e(side)
