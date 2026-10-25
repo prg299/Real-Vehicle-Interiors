@@ -51,7 +51,13 @@ local function add(p)
         a.alpha=p:getAlpha(0)
         if seat>=0 then
             local localPos=v:getPassengerLocalPos(seat,Vector3f.new())
-            a.position={x=localPos:x(),y=localPos:y(),z=localPos:z()}
+            -- BaseVehicle.getPassengerLocalPos adds the script model offset.
+            -- Furniture placement uses model-relative coordinates, as in the
+            -- native bed-contact checks. Preserve raw data and compare one basis.
+            local offset=v:getScript():getModel():getOffset()
+            a.rawPassengerPosition={x=localPos:x(),y=localPos:y(),z=localPos:z()}
+            a.modelOffset={x=offset:x(),y=offset:y(),z=offset:z()}
+            a.position={x=localPos:x()-offset:x(),y=localPos:y()-offset:y(),z=localPos:z()-offset:z()}
             local passenger=v:getScript():getPassenger(seat)
             local expected=passenger and MELens.Parts.seatPose(v,profile,passenger:getId())
             if expected then a.expected={x=expected.x,y=expected.y,z=expected.z,pose=expected.pose,turn=expected.turn} end
@@ -225,6 +231,11 @@ return {queueCount=q and #q.queue or 0,controls={}} end};return true''')
             h.REPORT['lastPeerState'] = peers()
         except Exception:
             pass
+        for side in ('A', 'B'):
+            try:
+                lab.capture(side, 'failure-' + side.lower())
+            except Exception:
+                pass
         h.write_report('failed', error)
         print(error, flush=True)
         return 1
