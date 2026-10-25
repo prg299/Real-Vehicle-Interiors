@@ -55,6 +55,20 @@ function T.overlap()
     U.updateGenerator(T.vehicle,g.part,7200)
     return {before=before,after=U.generatorState(T.vehicle).fuel}
 end
+function T.phantomStove()
+    assert(not U.kitchen(T.vehicle),"requires the fridge-only vehicle")
+    local data=assert(U.part(T.vehicle,P.OVEN)):getModData()
+    local option=SandboxVars.MELens.PropaneAppliances;local on=data.on
+    local base,ghost
+    local ok,err=pcall(function()
+        SandboxVars.MELens.PropaneAppliances=false
+        data.on=false;base=U.generatorFuelRate(T.vehicle)
+        data.on=true;ghost=U.generatorFuelRate(T.vehicle)
+    end)
+    data.on=on;SandboxVars.MELens.PropaneAppliances=option
+    assert(ok,err);assert(math.abs(base-ghost)<.000001,"missing kitchen adds a phantom electrical load")
+    return {base=base,staleStoveOn=ghost}
+end
 function T.rain()
     local water=U.waterState(T.vehicle);water.part:getModData().water=20;water.part:getModData().tainted=false
     local cf=getClimateManager():getClimateFloat(ClimateManager.FLOAT_PRECIPITATION_INTENSITY)

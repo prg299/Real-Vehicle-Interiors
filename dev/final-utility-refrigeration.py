@@ -70,6 +70,7 @@ def main():
             lab.server(f'local v=getVehicleById({lab.vid});v:repair();for i=0,v:getPartCount()-1 do local p=v:getPartByIndex(i);if p:getDoor() then p:getDoor():setLocked(false);v:transmitPartDoor(p) end end;for i in ipairs(MELens.profileFor(v).spots) do local p=MELens.Parts.spotPart(v,i);if p:getItemContainer() then p:getItemContainer():clear() end;p:setInventoryItem(nil);MELens.Parts.applyPiece(v,p);v:transmitPartItem(p) end;local p=MELens.Parts.spotPart(v,4);p:setInventoryItem(instanceItem(MELens.Parts.itemType("fridge")));MELens.Parts.applyPiece(v,p);v:transmitPartItem(p);local g=MELens.Utilities.generatorState(v).part;g:getModData().fuel=18;g:getModData().on=false;g:setCondition(100);MELens.Utilities.transmit(v,g);return "ready"')
         for api in (h,lab.b):lab.wait(lambda api=api:api.lua(f'return getVehicleById({lab.vid})~=nil'),bool,'Step Van peer replication')
         lab.server((ROOT/'dev/lua/utility-refrigeration.lua').read_text()+f';MELensUtilityProbe.bind(getVehicleById({lab.vid}));return "probe ready"')
+        h.REPORT['phantomStove']=server('return MELensUtilityProbe.phantomStove()')
         if args.verify_source:
             actual=snap();h.check(actual['sqlId']==expected['sqlId'] and actual['fridgeId']==expected['fridgeId'] and actual['parts']==expected['parts'],'restart changed vehicle/furniture/part identifiers')
             h.check(actual['on']==expected['on'] and actual['water']==expected['water'] and actual['tainted']==expected['tainted'],'restart changed utility state')

@@ -279,6 +279,8 @@ f.oven.data.on, f.heater.data.on = true, true
 near(U.generatorFuelRate(f.v), 0.2, "propane appliances consume generator petrol")
 SandboxVars.MELens.PropaneAppliances = false
 near(U.generatorFuelRate(f.v), 0.8, "full electrical load rate")
+f.kitchen.installed, f.heater.installed = nil, nil
+near(U.generatorFuelRate(f.v), 0.2, "removed kitchen's stale stove flag consumes phantom petrol")
 SandboxVars.MELens.PropaneAppliances = true
 
 -- Starting after days parked OFF must not bill those days as running time.

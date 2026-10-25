@@ -257,7 +257,7 @@ function U.generatorFuelRate(vehicle)
     end
     if not U.propaneOn() then
         local oven, heater = U.part(vehicle, P.OVEN), U.heaterPart(vehicle)
-        if oven and oven:getModData().on == true then rate = rate + U.STOVE_FUEL_PER_HOUR end
+        if oven and U.kitchen(vehicle) and oven:getModData().on == true then rate = rate + U.STOVE_FUEL_PER_HOUR end
         if heater and heater:getModData().on == true then rate = rate + U.HEATER_FUEL_PER_HOUR end
     end
     return rate * math.max(0, M.sandbox("GeneratorFuelUse", 1.0))
