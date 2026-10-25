@@ -15,7 +15,7 @@ def load(name):
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--session',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--verify-source',type=Path)
+    p=argparse.ArgumentParser();p.add_argument('--session',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--verify-source',type=Path);p.add_argument('--finish-source',type=Path)
     args=p.parse_args();driver=load('final-mp-interior-tests');lab=driver.InteriorLab(args.session,args.output);h=lab.h
     animal=load('final-mp-animals')
     spec=importlib.util.spec_from_file_location('dog_care',ROOT/'dev/animals/dog-care-tests.py');care=importlib.util.module_from_spec(spec);spec.loader.exec_module(care)
@@ -46,7 +46,14 @@ r.sqlId=v:getSqlId();r.hours=getGameTime():getWorldAgeHours()
             h.check(r['enabled']==(enabled if title==label else True),'unexpected command availability '+title)
             lab.input(side,x=r['x'],y=r['y']);time.sleep(.2)
 
+    def select_companion():
+        if not h.lua('local a=MELens.Animals.list(MELensTest.vehicle)[1];return CompanionDogs.data(a).companionToken==CompanionDogs.playerData(getPlayer()).token'):
+            menu(h.lua('local a=MELens.Animals.list(MELensTest.vehicle)[1];return getText("IGUI_PD_Select",CompanionDogs.data(a).name)'))
+            lab.wait(lambda:h.lua('local a=MELens.Animals.list(MELensTest.vehicle)[1];return CompanionDogs.data(a).companionToken==CompanionDogs.playerData(getPlayer()).token'),bool,'native selected companion after loading or Bring')
+            h.REPORT['nativeCompanionSelection']=True
+
     def set_state(state):
+        select_companion()
         for attempt in range(5):
             if read('server')['animals'][0]['state']==state:return
             menu(h.lua('return getText('+json.dumps('IGUI_PD_Stay' if state=='stay' else 'IGUI_PD_Follow')+')'));time.sleep(2.2)
@@ -58,7 +65,7 @@ r.sqlId=v:getSqlId();r.hours=getGameTime():getWorldAgeHours()
         lab.input('A',key=int(h.lua('return getCore():getKey("Interact")')))
         lab.wait(lambda:h.lua('return getPlayer():getVehicle()==nil'),bool,'native owner Interact exit')
 
-    def carry_case():
+    def reject_guest():
         before=count(1);uid=before['server']['animals'][0]['uid']
         # The guest stays a real non-owner; no ownership fixture is needed in MP.
         lab.b.lua('MELensTest={vehicle=getVehicleById('+str(lab.vid)+')};ISUIHandler.setVisibleAllUI(true);return true')
@@ -66,8 +73,12 @@ r.sqlId=v:getSqlId();r.hours=getGameTime():getWorldAgeHours()
         position=lambda:lab.b.lua('local x,z=MELens.Parts.characterAt(MELensTest.vehicle,getPlayer());return {x=x,z=z,path=MELens.pathing(getPlayer())}')
         origin=position()
         lab.b.lua('local m=getPlayerContextMenu(0);if m then m:hideAndChildren() end;return true')
+        lab.b.lua('MELensDogCare.clickObserved=nil;MELensDogCare.observe=function(_,_,animals) if animals[1] then MELensDogCare.clickObserved=animals[1]:getAnimalID() end end;Events.OnClickedAnimalForContext.Add(MELensDogCare.observe);return true')
         point=lab.b.lua('return MELensDogCare.point()');lab.input('B',x=point['x'],y=point['y'],right=True)
-        time.sleep(.6)
+        try:
+            lab.wait(lambda:lab.b.lua('return MELensDogCare.clickObserved'),lambda value:value==before['B']['animals'][0]['id'],'guest actually dispatches native animal context event')
+        finally:
+            lab.b.lua('Events.OnClickedAnimalForContext.Remove(MELensDogCare.observe);MELensDogCare.observe=nil;return true')
         rows=h._sequence(lab.b.lua(animal.MENUS));title=lab.b.lua('return getText("IGUI_PD_Carry")')
         h.check(not any(r['name']==title and r['enabled'] for r in rows),'normal dog menu exposes guest Carry')
         after=count(1)
@@ -77,6 +88,10 @@ r.sqlId=v:getSqlId();r.hours=getGameTime():getWorldAgeHours()
                 'guest pickup click changed the dog or underlying player movement')
         h.REPORT['guestPickupRejected']=after;lab.capture('B','mp-non-owner-pickup-disabled')
         lab.b.lua('getPlayerContextMenu(0):hideAndChildren();return true')
+
+    def carry_case():
+        before=count(1);uid=before['server']['animals'][0]['uid']
+        reject_guest()
 
         def carried():
             return h.lua('local it=getPlayer():getInventory():getFirstTypeRecurse("Animal");local a=it and it:getAnimal();return {count=getPlayer():getInventory():getCountTypeRecurse("Animal"),id=it and it:getID(),uid=a and CompanionDogs.ensureUid(a)}')
@@ -89,7 +104,11 @@ r.sqlId=v:getSqlId();r.hours=getGameTime():getWorldAgeHours()
         lab.enter_e('A');h.check(carried()['uid']==uid,'native re-entry lost carried dog')
 
         interior=load('final-interior-tests');tap,_=interior.load_helpers();furniture=load('final-furniture-tests')
-        h.lua((ROOT/'dev/lua/feature-fixture.lua').read_text('utf-8'));h.lua(interior.FIXTURE);h.lua(furniture.FIXTURE)
+        # Inventory-row geometry needs only this read-only snapshot contract.
+        # The generic SP utility fixture creates client-only fluid items and
+        # syncs them to an MP server that never owned them; do not load it here.
+        h.lua('MELensFeatureTest={vehicle=getPlayer():getVehicle(),snapshot=function() return {queueCount=#ISTimedActionQueue.getTimedActionQueue(getPlayer()).queue} end};return true')
+        h.lua(interior.FIXTURE);h.lua(furniture.FIXTURE)
         h.lua('MELensInteriorTest.heater=getPlayer():getInventory():getItemWithID('+str(item['id'])+');MELensInteriorTest.heaterIndex=nil;return true')
         furniture.open_inventory_item_menu(h,interior,tap)
         title=h.lua('return getText("ContextMenu_Drop")')
@@ -104,7 +123,23 @@ r.sqlId=v:getSqlId();r.hours=getGameTime():getWorldAgeHours()
 
     try:
         h.REPORT.update(scope=__doc__,fixtures=['bonded world dog at real entrance','empty owned cargo room','separate stocked bowls','controlled needs and 10-minute server-clock advance'])
-        if args.verify_source:
+        if args.finish_source:
+            previous=json.loads(args.finish_source.read_text('utf-8'))
+            h.check(previous.get('outsideIdentity') and previous.get('nativeCarryRoundTrip') and previous.get('unattendedCare'),'continuation lacks completed native carry/care/Bring receipts')
+            expected=previous['nativeCarryRoundTrip']['server']
+            find='local it=getCell():getVehicles():iterator();while it:hasNext() do local v=it:next();if v:getSqlId()=='+str(expected['sqlId'])+' then return v:getId() end end;return -1'
+            lab.vid=int(lab.server(find));h.check(lab.vid>=0,'existing test vehicle missing')
+            h.REPORT['completedSource']=str(args.finish_source)
+            h.REPORT['priorHarnessError']=previous.get('error')
+            for key in ('nativePet','nativeStayFortyMinutes','nativePickup','carryOutside','nativeCarryRoundTrip','unattendedCare','bringOutside','outsideIdentity'):
+                h.REPORT[key]=previous[key]
+            h.lua('MELensTest={vehicle=getVehicleById('+str(lab.vid)+')};ISUIHandler.setVisibleAllUI(true);getPlayerContextMenu(0):hideAndChildren();return true');h.lua(care.FIXTURE)
+            ss=count(1);h.check(ss['server']['animals'][0]['uid']==previous['outsideIdentity'][0]['uid'],'Bring/re-entry changed companion identity')
+            set_state('stay');reject_guest();ss=all_states();a=ss['server']['animals'][0]
+            h.REPORT['savedCompanion']={**{k:a[k] for k in ('id','uid','token','owner','state')},'sqlId':ss['server']['sqlId']}
+            h.REPORT['savedFloor']=ss['server']['floor'];h.REPORT['nativeInput']=True
+            h.write_report('passed');(args.session/'request.json').write_text('{"action":"stop"}');return 0
+        elif args.verify_source:
             previous=json.loads(args.verify_source.read_text('utf-8'));expected=previous['savedCompanion']
             # A reconnect may place players outside their saved vehicle. Resolve
             # the existing vehicle by persistent SQL ID and use real Interact
@@ -147,6 +182,7 @@ CompanionDogs.data(a).trust=100;CompanionDogs.data(a).name="MP care dog";a:setCu
         for _ in range(4):
             samples.append(json.loads(h.lua('return MELensDevBones.tracks(getPlayer())')));time.sleep(.2)
         lab.capture('A','mp-native-pet-pose')
+        time.sleep(.65);lab.capture('A','mp-native-pet-contact')
         pet_tracks={}
         for sample in samples:
             for track in sample:

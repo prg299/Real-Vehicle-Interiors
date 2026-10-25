@@ -32,8 +32,9 @@ function MELensDogCare.point()
  local o=v:getScript():getModel():getOffset();local q=Vector3f.new();local base=v:getWorldPos(0,0,0,q):z()
  for _,height in ipairs({.25,.15,.4,.6,.05}) do v:getWorldPos(o:x()+a.x,o:y()+pr.floorY+height,o:z()+a.z,q)
  local sx,sy=ISCoordConversion.ToScreen(q:x(),q:y(),base+(o:y()+pr.floorY+height)/2.44949)
- local hit=MELens.Interact.pick(v,pr,sx,sy);if hit and hit.animal==a.animal then
- return {x=sx/getCore():getZoom(0),y=sy/getCore():getZoom(0),name=MELens.AnimalsUI.nameOf(a.animal)} end end
+ local zoom=getCore():getZoom(0);local px,py=math.floor(sx/zoom),math.floor(sy/zoom)
+ local hit=MELens.Interact.pick(v,pr,px*zoom,py*zoom);if hit and hit.animal==a.animal then
+ return {x=px,y=py,name=MELens.AnimalsUI.nameOf(a.animal)} end end
  error("no animal ray hit")
 end
 return true'''
