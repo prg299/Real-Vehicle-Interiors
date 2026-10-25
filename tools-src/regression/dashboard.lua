@@ -1,3 +1,86 @@
+-- Optional Neat preferences, live repaint and foreground readability. These are
+-- production draw-call contracts; native settings/input review is separate.
+do
+    local saved = {}
+    for _, key in ipairs({ "getActivatedMods", "getTexture", "NR_Config", "NC_UserConfig", "NCConfig",
+            "NEQ_Style", "CleanUI_getBackgroundOpacity" }) do saved[key] = _G[key] end
+    local enabled = {}
+    getActivatedMods = function() return { contains = function(_, id) return enabled[id] == true end } end
+    local function expect(body, title, card, label)
+        local a, b, c = MELens.Dashboard.neatOpacities()
+        check(math.abs(a-body) < 0.00001 and math.abs(b-title) < 0.00001 and math.abs(c-card) < 0.00001, label)
+    end
+    NR_Config, NC_UserConfig, NCConfig, NEQ_Style = nil, nil, nil, nil
+    expect(.96, 1, 1, "no optional settings preserves the dashboard defaults")
+    NR_Config = { bgAlpha = .3 }
+    expect(.96, 1, 1, "disabled Rocco globals cannot restyle the dashboard")
+    enabled.Neat_Rocco = true
+    expect(.3, .3, .3, "Rocco background opacity applies to body title and cards")
+    NR_Config.bgAlpha = .6
+    expect(.6, .6, .6, "open dashboard reads live Rocco option changes")
+    NR_Config.bgAlpha = 0
+    expect(0, 0, 0, "zero opacity is a valid value")
+    NR_Config.bgAlpha = 2
+    expect(1, 1, 1, "out of range opacity is clamped")
+    NR_Config.bgAlpha = -1
+    expect(0, 0, 0, "negative opacity is clamped")
+    NR_Config.bgAlpha = 0/0
+    expect(.96, 1, 1, "invalid opacity cannot poison drawing")
+    enabled = { Neat_Crafting = true }
+    NCConfig = { windowBackgroundAlpha = .82, titleBackgroundAlpha = .88, innerBackgroundAlpha = .78 }
+    NC_UserConfig = { getBackgroundAlpha = function(base) return base / 2 end,
+        getTitleBarAlpha = function() return .7 end, getInnerPanelAlpha = function(base) return base / 2 end }
+    expect(.41, .7, .39, "Crafting uses its own alpha resolvers and baseline surfaces")
+    enabled.Neat_Rocco, NR_Config.bgAlpha = true, .5
+    expect(.5, .5, .5, "vehicle window preferences take priority over Crafting")
+    enabled.Neat_Rocco = false
+    NC_UserConfig.getBackgroundAlpha = function() error("unavailable optional getter") end
+    NC_UserConfig.getInnerPanelAlpha = function() return "invalid" end
+    expect(.82, .7, .78, "failing or invalid optional getters retain safe surface defaults")
+    NC_UserConfig = {}
+    expect(.82, .88, .78, "older Crafting versions need no absent opacity functions")
+    enabled, NEQ_Style = { NeatUI_Equipment = true }, { BODY_ALPHA = .4, LOOK = "neat" }
+    expect(.4, 1, .4, "Equipment body opacity preserves its solid title convention")
+    NEQ_Style.LOOK, CleanUI_getBackgroundOpacity = "cleanui", function() return .25 end
+    expect(.25, .95, .25, "Equipment CleanUI option follows its chosen background source")
+    check(MELensVanillaDashboard.neatOpacities == nil, "vanilla dashboard does not inherit Neat painting preferences")
+
+    enabled, NR_Config = { Neat_Rocco = true }, { bgAlpha = .35 }
+    getTexture = function(path) return path end
+    local draws, texts = {}, {}
+    local w = setmetatable({ width = 580, height = 250, title = "Dashboard", controls = {},
+        closeBox = {x=530,y=8,w=24,h=24}, cards = {{x=14,y=54,w=268,h=120,title="Power",rows={},
+            buttons={{x=26,y=125,w=80,h=26,enabled=true,text="Use"}}}} }, { __index = MELensDashboard })
+    function w:getMouseX() return -1 end
+    function w:getMouseY() return -1 end
+    function w:drawRect(x,y,width,height,alpha,r,g,b)
+        draws[#draws+1] = {x=x,y=y,w=width,h=height,a=alpha,r=r,g=g,b=b}
+    end
+    function w:drawTextureScaled(_,x,y,width,height,alpha,r,g,b) self:drawRect(x,y,width,height,alpha,r,g,b) end
+    function w:drawText(_,_,_,_,_,_,alpha) texts[#texts+1] = alpha end
+    w.drawTextCentre = w.drawText
+    w:prerender(); w:render()
+    local body, title, card, button, strip = false, false, false, false, 0
+    for _, draw in ipairs(draws) do
+        if draw.r == .105 then body = draw.a == .35 end
+        if draw.r == .075 then
+            title = draw.a == .35
+            if 50 >= draw.x and 50 < draw.x+draw.w and 35 >= draw.y and 35 < draw.y+draw.h then strip = strip+1 end
+        end
+        if draw.r == .155 then card = draw.a == .35 end
+        if draw.r == .235 then button = draw.a == 1 end
+    end
+    check(body and title and card, "Neat transparency reaches production background draw calls")
+    check(strip == 1, "translucent title has no double-painted lower strip")
+    check(button, "action buttons remain readable over a transparent panel")
+    for _, alpha in ipairs(texts) do check(alpha == 1 or alpha == .6, "panel transparency does not fade labels or close glyph") end
+    NR_Config.bgAlpha = .8
+    w:prerender()
+    check(w.cardOpacity == .8, "next frame applies changed preferences without reconstructing the window")
+    for _, key in ipairs({ "getActivatedMods", "getTexture", "NR_Config", "NC_UserConfig", "NCConfig",
+            "NEQ_Style", "CleanUI_getBackgroundOpacity" }) do _G[key] = saved[key] end
+end
+
 -- Actual production paint-menu scheduling with explicit UI services.
 do
     local D, H = MELensDashboard, MELens.Home

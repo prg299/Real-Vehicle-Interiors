@@ -625,7 +625,9 @@ function P.applyPiece(vehicle, part)
     local container = part:getItemContainer()
     if container then
         container:setType(piece and ("MELensRV_" .. piece) or part:getId())
-        if piece ~= "fridge" then
+        if piece == "fridge" and M.Utilities then
+            M.Utilities.updateFridge(vehicle, part, 0)
+        else
             container:setCustomTemperature(0)
         end
     end

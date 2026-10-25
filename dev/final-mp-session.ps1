@@ -14,6 +14,7 @@ param(
     [string]$ResumeFrom,
     [switch]$ServerJava,
     [switch]$CompanionDogs,
+    [switch]$ChevyStepVan,
     [string]$PackagePath,
     [switch]$AllowOtherGames,
     [ValidateRange(1024, 65534)][int]$ServerPort = 17361,
@@ -29,6 +30,9 @@ $explicitServerPort = $PSBoundParameters.ContainsKey('ServerPort')
 $ErrorActionPreference = 'Stop'
 if ($CompanionDogs) {
     $Lens.Dependencies += @{ Id = 'CompanionDogs'; Item = '3740052292'; Folder = 'CompanionDogs' }
+}
+if ($ChevyStepVan) {
+    $Lens.Dependencies += @{ Id = '85chevyStepVan'; Item = '3614034284'; Folder = '85chevyStepVan' }
 }
 $testModIds = @($Lens.Dependencies | ForEach-Object { $_.Id }) + @('RealVehicleInteriors', 'RealVehicleInteriors_Dev')
 if ($PackagePath) {
@@ -112,7 +116,7 @@ $driver = $null
 $serverStdout = $null; $serverStderr = $null
 $session = [ordered]@{
     serverNoJava = (-not [bool]$ServerJava); serverJava = [bool]$ServerJava
-    companionDogs = [bool]$CompanionDogs
+    companionDogs = [bool]$CompanionDogs; chevyStepVan = [bool]$ChevyStepVan
     packagePath = $Lens.Package; allowOtherGames = [bool]$AllowOtherGames
     unmanagedGamePids = $otherGamePids; clientLuaPortA = $ClientLuaPortA; clientLuaPortB = $ClientLuaPortB
     stockClientClasses = $true; inactiveDesktops = $true

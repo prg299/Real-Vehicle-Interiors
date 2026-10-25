@@ -19,6 +19,60 @@ import zombie.vehicles.BaseVehicle;
 public final class Hooks {
     private Hooks() {}
 
+    @Patch(className = "zombie.inventory.ItemContainer", methodName = "isFridge", strictMatch = true)
+    public static final class InteriorFridgeType {
+        @Patch.OnExit
+        public static void exit(@Patch.This zombie.inventory.ItemContainer container,
+                @Patch.Return(readOnly = false) boolean fridge) {
+            if (Refrigeration.appliance(container)) fridge = Refrigeration.powered(container);
+        }
+    }
+
+    @Patch(className = "zombie.inventory.ItemContainer", methodName = "isPowered", strictMatch = true)
+    public static final class InteriorFridgePower {
+        @Patch.OnExit
+        public static void exit(@Patch.This zombie.inventory.ItemContainer container,
+                @Patch.Return(readOnly = false) boolean powered) {
+            if (Refrigeration.appliance(container)) powered = Refrigeration.powered(container);
+        }
+    }
+
+    @Patch(className = "zombie.inventory.ItemContainer", methodName = "getTemperature", strictMatch = true)
+    public static final class InteriorFridgeTemperature {
+        @Patch.OnExit
+        public static void exit(@Patch.This zombie.inventory.ItemContainer container,
+                @Patch.Return(readOnly = false) float temperature) {
+            if (Refrigeration.appliance(container)) temperature = Refrigeration.powered(container) ? 0.2f : 1f;
+        }
+    }
+
+    @Patch(className = "zombie.inventory.ItemContainer", methodName = "getSourceGrid", strictMatch = true)
+    public static final class InteriorFridgeSquare {
+        @Patch.OnExit
+        public static void exit(@Patch.This zombie.inventory.ItemContainer container,
+                @Patch.Return(readOnly = false) zombie.iso.IsoGridSquare square) {
+            if (Refrigeration.appliance(container)) square = Refrigeration.square(container);
+        }
+    }
+
+    @Patch(className = "zombie.inventory.types.Food", methodName = "updateAge", strictMatch = true)
+    public static final class InteriorFoodAge {
+        @Patch.OnEnter
+        public static void enter(@Patch.This zombie.inventory.types.Food food,
+                @Patch.Argument(0) boolean force) { Refrigeration.begin(food); }
+        @Patch.OnExit(onThrowable = Throwable.class)
+        public static void exit(@Patch.Argument(0) boolean force) { Refrigeration.end(); }
+    }
+
+    @Patch(className = "zombie.iso.IsoGridSquare", methodName = "haveElectricity", strictMatch = true)
+    public static final class InteriorFoodElectricity {
+        @Patch.OnExit
+        public static void exit(@Patch.This zombie.iso.IsoGridSquare square,
+                @Patch.Return(readOnly = false) boolean powered) {
+            powered = Refrigeration.electricity(square, powered);
+        }
+    }
+
     @Patch(className = "zombie.characters.IsoZombie", methodName = "spottedNew", strictMatch = true)
     public static final class InteriorSightNew {
         @Patch.OnEnter(skipOn = true)
