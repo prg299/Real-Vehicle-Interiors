@@ -156,69 +156,72 @@ MELens.Profiles["Base.86fordE150LVairportShuttle"] = profile
 MELens.Profiles["Base.86fordE150longW"] = profile
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "passenger"
-    fitted.factoryUse = {
-    loot = {  },
-    stock = {
-        parcels = {
-            { "Base.WaterBottle", 1 },
-            { "Base.BathTowel", 1 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "passenger"
+        fitted.factoryUse = {
+        loot = {  },
+        stock = {
+            parcels = {
+                { "Base.WaterBottle", 1 },
+                { "Base.BathTowel", 1 },
+            },
+            equipmentrack = {
+                { "Base.WaterBottle", 1 },
+                { "Base.BathTowel", 1 },
+            },
+            metalcase = {
+                { "Base.WaterBottle", 1 },
+                { "Base.BathTowel", 1 },
+            },
+            medlocker = {
+                { "Base.WaterBottle", 1 },
+                { "Base.BathTowel", 1 },
+            },
+            workbench = {
+                { "Base.WaterBottle", 1 },
+                { "Base.BathTowel", 1 },
+            },
+            medbench = {
+                { "Base.WaterBottle", 1 },
+                { "Base.BathTowel", 1 },
+            },
         },
-        equipmentrack = {
-            { "Base.WaterBottle", 1 },
-            { "Base.BathTowel", 1 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.697,
+            z = -0.44,
+            length = 1.1,
+            depth = 0.4,
+            default = "medbench",
+            factory = true,
+            pieces = { "medbench" },
+            seats = { "MELensFurnitureLeft1" },
         },
-        metalcase = {
-            { "Base.WaterBottle", 1 },
-            { "Base.BathTowel", 1 },
+        {
+            wall = "right",
+            x = -0.697,
+            z = -0.44,
+            length = 1.1,
+            depth = 0.4,
+            default = "medbench",
+            factory = true,
+            pieces = { "medbench" },
+            seats = { "MELensFurnitureLeft2" },
         },
-        medlocker = {
-            { "Base.WaterBottle", 1 },
-            { "Base.BathTowel", 1 },
-        },
-        workbench = {
-            { "Base.WaterBottle", 1 },
-            { "Base.BathTowel", 1 },
-        },
-        medbench = {
-            { "Base.WaterBottle", 1 },
-            { "Base.BathTowel", 1 },
-        },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.697,
-        z = -0.44,
-        length = 1.1,
-        depth = 0.4,
-        default = "medbench",
-        factory = true,
-        pieces = { "medbench" },
-        seats = { "MELensFurnitureLeft1" },
-    },
-    {
-        wall = "right",
-        x = -0.697,
-        z = -0.44,
-        length = 1.1,
-        depth = 0.4,
-        default = "medbench",
-        factory = true,
-        pieces = { "medbench" },
-        seats = { "MELensFurnitureLeft2" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.86fordE150LVairportShuttle"] = fitted
-    MELens.Profiles["Base.86fordE150longW"] = fitted
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.86fordE150LVairportShuttle"] = fitted
+        MELens.Profiles["Base.86fordE150longW"] = fitted
+    end
+    installProfile()
 end

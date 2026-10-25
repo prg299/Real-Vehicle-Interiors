@@ -194,2261 +194,2330 @@ MELens.Profiles["Base.85chevyStepVanUsLogistics"] = profile
 MELens.Profiles["Base.85chevyStepVanZippeeMarket"] = profile
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "delivery"
-    fitted.factoryUse = {
-    loot = { parcels = "PostOfficeParcels", equipmentrack = "PostOfficeParcels", metalcase = "PostOfficeParcels", medlocker = "PostOfficeParcels", workbench = "PostOfficeParcels" },
-    stock = {
-        parcels = {
-            { "Base.Parcel_Small", 2 },
-            { "Base.Parcel_Medium", 1 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "delivery"
+        fitted.factoryUse = {
+        loot = { parcels = "PostOfficeParcels", equipmentrack = "PostOfficeParcels", metalcase = "PostOfficeParcels", medlocker = "PostOfficeParcels", workbench = "PostOfficeParcels" },
+        stock = {
+            parcels = {
+                { "Base.Parcel_Small", 2 },
+                { "Base.Parcel_Medium", 1 },
+            },
+            equipmentrack = {
+                { "Base.Parcel_Small", 2 },
+                { "Base.Parcel_Medium", 1 },
+            },
+            metalcase = {
+                { "Base.Parcel_Small", 2 },
+                { "Base.Parcel_Medium", 1 },
+            },
+            medlocker = {
+                { "Base.Parcel_Small", 2 },
+                { "Base.Parcel_Medium", 1 },
+            },
+            workbench = {
+                { "Base.Parcel_Small", 2 },
+                { "Base.Parcel_Medium", 1 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.Parcel_Small", 2 },
-            { "Base.Parcel_Medium", 1 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        metalcase = {
-            { "Base.Parcel_Small", 2 },
-            { "Base.Parcel_Medium", 1 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medlocker = {
-            { "Base.Parcel_Small", 2 },
-            { "Base.Parcel_Medium", 1 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        workbench = {
-            { "Base.Parcel_Small", 2 },
-            { "Base.Parcel_Medium", 1 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "front",
-        x = 0,
-        z = -0.12,
-        length = 0.52,
-        depth = 0.52,
-        default = "metalcase",
-        factory = true,
-        pieces = { "metalcase" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVan"] = fitted
-    MELens.Profiles["Base.85chevyStepVanUsLogistics"] = fitted
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "front",
+            x = 0,
+            z = -0.12,
+            length = 0.52,
+            depth = 0.52,
+            default = "metalcase",
+            factory = true,
+            pieces = { "metalcase" },
+        },
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVan"] = fitted
+        MELens.Profiles["Base.85chevyStepVanUsLogistics"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "blacksmith"
-    fitted.factoryUse = {
-    loot = { parcels = "CrateBlacksmithing", equipmentrack = "CrateBlacksmithing", metalcase = "CrateBlacksmithing", medlocker = "CrateBlacksmithing", workbench = "CrateBlacksmithing" },
-    stock = {
-        parcels = {
-            { "Base.Hammer", 1 },
-            { "Base.Tongs", 1 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "blacksmith"
+        fitted.factoryUse = {
+        loot = { parcels = "CrateBlacksmithing", equipmentrack = "CrateBlacksmithing", metalcase = "CrateBlacksmithing", medlocker = "CrateBlacksmithing", workbench = "CrateBlacksmithing" },
+        stock = {
+            parcels = {
+                { "Base.Hammer", 1 },
+                { "Base.Tongs", 1 },
+            },
+            equipmentrack = {
+                { "Base.Hammer", 1 },
+                { "Base.Tongs", 1 },
+            },
+            metalcase = {
+                { "Base.Hammer", 1 },
+                { "Base.Tongs", 1 },
+            },
+            medlocker = {
+                { "Base.Hammer", 1 },
+                { "Base.Tongs", 1 },
+            },
+            workbench = {
+                { "Base.Hammer", 1 },
+                { "Base.Tongs", 1 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.Hammer", 1 },
-            { "Base.Tongs", 1 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.62,
+            length = 0.9,
+            depth = 0.4,
+            default = "workbench",
+            factory = true,
+            pieces = { "workbench" },
         },
-        metalcase = {
-            { "Base.Hammer", 1 },
-            { "Base.Tongs", 1 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -2.198,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        medlocker = {
-            { "Base.Hammer", 1 },
-            { "Base.Tongs", 1 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        workbench = {
-            { "Base.Hammer", 1 },
-            { "Base.Tongs", 1 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.888,
+            length = 1.1,
+            depth = 0.4,
+            default = "medbench",
+            factory = true,
+            pieces = { "medbench" },
+            seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.62,
-        length = 0.9,
-        depth = 0.4,
-        default = "workbench",
-        factory = true,
-        pieces = { "workbench" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -2.198,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.888,
-        length = 1.1,
-        depth = 0.4,
-        default = "medbench",
-        factory = true,
-        pieces = { "medbench" },
-        seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanBlacksmith"] = fitted
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanBlacksmith"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "coldfood"
-    fitted.factoryUse = {
-    loot = { parcels = "ButcherFreezer", medlocker = "ButcherFreezer", workbench = "ButcherFreezer", fridge = "ButcherFreezer" },
-    stock = {
-        parcels = {
-            { "Base.Steak", 2 },
-            { "Base.Chicken", 1 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "coldfood"
+        fitted.factoryUse = {
+        loot = { parcels = "ButcherFreezer", medlocker = "ButcherFreezer", workbench = "ButcherFreezer", fridge = "ButcherFreezer" },
+        stock = {
+            parcels = {
+                { "Base.Steak", 2 },
+                { "Base.Chicken", 1 },
+            },
+            equipmentrack = {
+                { "Base.PaperBag", 3 },
+                { "Base.Twine", 1 },
+            },
+            metalcase = {
+                { "Base.PaperBag", 3 },
+                { "Base.Twine", 1 },
+            },
+            medlocker = {
+                { "Base.Steak", 2 },
+                { "Base.Chicken", 1 },
+            },
+            workbench = {
+                { "Base.Steak", 2 },
+                { "Base.Chicken", 1 },
+            },
+            medbench = {  },
+            fridge = {
+                { "Base.Steak", 2 },
+                { "Base.Chicken", 1 },
+            },
         },
-        equipmentrack = {
-            { "Base.PaperBag", 3 },
-            { "Base.Twine", 1 },
+    }
+        fitted.aisleX = -0.1
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.44,
+            length = 0.52,
+            depth = 0.52,
+            default = "fridge",
+            factory = true,
+            pieces = { "fridge" },
         },
-        metalcase = {
-            { "Base.PaperBag", 3 },
-            { "Base.Twine", 1 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -2.178,
+            length = 0.52,
+            depth = 0.52,
+            default = "fridge",
+            factory = true,
+            pieces = { "fridge" },
         },
-        medlocker = {
-            { "Base.Steak", 2 },
-            { "Base.Chicken", 1 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        workbench = {
-            { "Base.Steak", 2 },
-            { "Base.Chicken", 1 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -2.178,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        medbench = {  },
-        fridge = {
-            { "Base.Steak", 2 },
-            { "Base.Chicken", 1 },
-        },
-    },
-}
-    fitted.aisleX = -0.1
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.44,
-        length = 0.52,
-        depth = 0.52,
-        default = "fridge",
-        factory = true,
-        pieces = { "fridge" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -2.178,
-        length = 0.52,
-        depth = 0.52,
-        default = "fridge",
-        factory = true,
-        pieces = { "fridge" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -2.178,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanButchers"] = fitted
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanButchers"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "softdrinks"
-    fitted.factoryUse = {
-    loot = { parcels = "CrateSodaBottles", equipmentrack = "CrateSodaBottles", metalcase = "CrateSodaBottles", medlocker = "CrateSodaBottles", workbench = "CrateSodaBottles" },
-    stock = {
-        parcels = {
-            { "Base.PopBottle", 4 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "softdrinks"
+        fitted.factoryUse = {
+        loot = { parcels = "CrateSodaBottles", equipmentrack = "CrateSodaBottles", metalcase = "CrateSodaBottles", medlocker = "CrateSodaBottles", workbench = "CrateSodaBottles" },
+        stock = {
+            parcels = {
+                { "Base.PopBottle", 4 },
+            },
+            equipmentrack = {
+                { "Base.PopBottle", 4 },
+            },
+            metalcase = {
+                { "Base.PopBottle", 4 },
+            },
+            medlocker = {
+                { "Base.PopBottle", 4 },
+            },
+            workbench = {
+                { "Base.PopBottle", 4 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.PopBottle", 4 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        metalcase = {
-            { "Base.PopBottle", 4 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medlocker = {
-            { "Base.PopBottle", 4 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        workbench = {
-            { "Base.PopBottle", 4 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "front",
-        x = 0,
-        z = -0.12,
-        length = 0.52,
-        depth = 0.52,
-        default = "metalcase",
-        factory = true,
-        pieces = { "metalcase" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanCitrusWave"] = fitted
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "front",
+            x = 0,
+            z = -0.12,
+            length = 0.52,
+            depth = 0.52,
+            default = "metalcase",
+            factory = true,
+            pieces = { "metalcase" },
+        },
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanCitrusWave"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "food"
-    fitted.factoryUse = {
-    loot = { parcels = "CrateCannedFood", equipmentrack = "CrateCannedFood", metalcase = "CrateCannedFood", medlocker = "CrateCannedFood", workbench = "CrateCannedFood" },
-    stock = {
-        parcels = {
-            { "Base.TinnedBeans", 2 },
-            { "Base.CannedCorn", 2 },
-            { "Base.Crisps", 2 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "food"
+        fitted.factoryUse = {
+        loot = { parcels = "CrateCannedFood", equipmentrack = "CrateCannedFood", metalcase = "CrateCannedFood", medlocker = "CrateCannedFood", workbench = "CrateCannedFood" },
+        stock = {
+            parcels = {
+                { "Base.TinnedBeans", 2 },
+                { "Base.CannedCorn", 2 },
+                { "Base.Crisps", 2 },
+            },
+            equipmentrack = {
+                { "Base.TinnedBeans", 2 },
+                { "Base.CannedCorn", 2 },
+                { "Base.Crisps", 2 },
+            },
+            metalcase = {
+                { "Base.TinnedBeans", 2 },
+                { "Base.CannedCorn", 2 },
+                { "Base.Crisps", 2 },
+            },
+            medlocker = {
+                { "Base.TinnedBeans", 2 },
+                { "Base.CannedCorn", 2 },
+                { "Base.Crisps", 2 },
+            },
+            workbench = {
+                { "Base.TinnedBeans", 2 },
+                { "Base.CannedCorn", 2 },
+                { "Base.Crisps", 2 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.TinnedBeans", 2 },
-            { "Base.CannedCorn", 2 },
-            { "Base.Crisps", 2 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        metalcase = {
-            { "Base.TinnedBeans", 2 },
-            { "Base.CannedCorn", 2 },
-            { "Base.Crisps", 2 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medlocker = {
-            { "Base.TinnedBeans", 2 },
-            { "Base.CannedCorn", 2 },
-            { "Base.Crisps", 2 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        workbench = {
-            { "Base.TinnedBeans", 2 },
-            { "Base.CannedCorn", 2 },
-            { "Base.Crisps", 2 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "front",
-        x = 0,
-        z = -0.12,
-        length = 0.52,
-        depth = 0.52,
-        default = "metalcase",
-        factory = true,
-        pieces = { "metalcase" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanDelirosPlonkies"] = fitted
-    MELens.Profiles["Base.85chevyStepVanZippeeMarket"] = fitted
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "front",
+            x = 0,
+            z = -0.12,
+            length = 0.52,
+            depth = 0.52,
+            default = "metalcase",
+            factory = true,
+            pieces = { "metalcase" },
+        },
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanDelirosPlonkies"] = fitted
+        MELens.Profiles["Base.85chevyStepVanZippeeMarket"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "florist"
-    fitted.factoryUse = {
-    loot = { parcels = "GardenStoreMisc", equipmentrack = "GardenStoreMisc", metalcase = "GardenStoreMisc", medlocker = "GardenStoreMisc", workbench = "GardenStoreMisc" },
-    stock = {
-        parcels = {
-            { "Base.RoseBagSeed", 2 },
-            { "Base.MarigoldBagSeed", 2 },
-            { "Base.WateredCan", 1 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "florist"
+        fitted.factoryUse = {
+        loot = { parcels = "GardenStoreMisc", equipmentrack = "GardenStoreMisc", metalcase = "GardenStoreMisc", medlocker = "GardenStoreMisc", workbench = "GardenStoreMisc" },
+        stock = {
+            parcels = {
+                { "Base.RoseBagSeed", 2 },
+                { "Base.MarigoldBagSeed", 2 },
+                { "Base.WateredCan", 1 },
+            },
+            equipmentrack = {
+                { "Base.RoseBagSeed", 2 },
+                { "Base.MarigoldBagSeed", 2 },
+                { "Base.WateredCan", 1 },
+            },
+            metalcase = {
+                { "Base.RoseBagSeed", 2 },
+                { "Base.MarigoldBagSeed", 2 },
+                { "Base.WateredCan", 1 },
+            },
+            medlocker = {
+                { "Base.RoseBagSeed", 2 },
+                { "Base.MarigoldBagSeed", 2 },
+                { "Base.WateredCan", 1 },
+            },
+            workbench = {
+                { "Base.RoseBagSeed", 2 },
+                { "Base.MarigoldBagSeed", 2 },
+                { "Base.WateredCan", 1 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.RoseBagSeed", 2 },
-            { "Base.MarigoldBagSeed", 2 },
-            { "Base.WateredCan", 1 },
+    }
+        fitted.aisleX = -0.09
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        metalcase = {
-            { "Base.RoseBagSeed", 2 },
-            { "Base.MarigoldBagSeed", 2 },
-            { "Base.WateredCan", 1 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medlocker = {
-            { "Base.RoseBagSeed", 2 },
-            { "Base.MarigoldBagSeed", 2 },
-            { "Base.WateredCan", 1 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        workbench = {
-            { "Base.RoseBagSeed", 2 },
-            { "Base.MarigoldBagSeed", 2 },
-            { "Base.WateredCan", 1 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = -0.09
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "front",
-        x = 0,
-        z = -0.12,
-        length = 0.52,
-        depth = 0.52,
-        default = "metalcase",
-        factory = true,
-        pieces = { "metalcase" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanFlorist"] = fitted
-    MELens.Profiles["Base.85chevyStepVanRandys"] = fitted
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
+        },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
+        },
+        {
+            wall = "front",
+            x = 0,
+            z = -0.12,
+            length = 0.52,
+            depth = 0.52,
+            default = "metalcase",
+            factory = true,
+            pieces = { "metalcase" },
+        },
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanFlorist"] = fitted
+        MELens.Profiles["Base.85chevyStepVanRandys"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "beer"
-    fitted.factoryUse = {
-    loot = { parcels = "CrateBeer", equipmentrack = "CrateBeer", metalcase = "CrateBeer", medlocker = "CrateBeer", workbench = "CrateBeer" },
-    stock = {
-        parcels = {
-            { "Base.BeerCan", 4 },
-            { "Base.BeerBottle", 2 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "beer"
+        fitted.factoryUse = {
+        loot = { parcels = "CrateBeer", equipmentrack = "CrateBeer", metalcase = "CrateBeer", medlocker = "CrateBeer", workbench = "CrateBeer" },
+        stock = {
+            parcels = {
+                { "Base.BeerCan", 4 },
+                { "Base.BeerBottle", 2 },
+            },
+            equipmentrack = {
+                { "Base.BeerCan", 4 },
+                { "Base.BeerBottle", 2 },
+            },
+            metalcase = {
+                { "Base.BeerCan", 4 },
+                { "Base.BeerBottle", 2 },
+            },
+            medlocker = {
+                { "Base.BeerCan", 4 },
+                { "Base.BeerBottle", 2 },
+            },
+            workbench = {
+                { "Base.BeerCan", 4 },
+                { "Base.BeerBottle", 2 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.BeerCan", 4 },
-            { "Base.BeerBottle", 2 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        metalcase = {
-            { "Base.BeerCan", 4 },
-            { "Base.BeerBottle", 2 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medlocker = {
-            { "Base.BeerCan", 4 },
-            { "Base.BeerBottle", 2 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        workbench = {
-            { "Base.BeerCan", 4 },
-            { "Base.BeerBottle", 2 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "front",
-        x = 0,
-        z = -0.12,
-        length = 0.52,
-        depth = 0.52,
-        default = "metalcase",
-        factory = true,
-        pieces = { "metalcase" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanGenuine"] = fitted
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "front",
+            x = 0,
+            z = -0.12,
+            length = 0.52,
+            depth = 0.52,
+            default = "metalcase",
+            factory = true,
+            pieces = { "metalcase" },
+        },
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanGenuine"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "newspaper"
-    fitted.factoryUse = {
-    loot = { parcels = "PostOfficeNewspapers", equipmentrack = "PostOfficeNewspapers", metalcase = "PostOfficeNewspapers", medlocker = "PostOfficeNewspapers", workbench = "PostOfficeNewspapers" },
-    stock = {
-        parcels = {
-            { "Base.Newspaper_New", 6 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "newspaper"
+        fitted.factoryUse = {
+        loot = { parcels = "PostOfficeNewspapers", equipmentrack = "PostOfficeNewspapers", metalcase = "PostOfficeNewspapers", medlocker = "PostOfficeNewspapers", workbench = "PostOfficeNewspapers" },
+        stock = {
+            parcels = {
+                { "Base.Newspaper_New", 6 },
+            },
+            equipmentrack = {
+                { "Base.Newspaper_New", 6 },
+            },
+            metalcase = {
+                { "Base.Newspaper_New", 6 },
+            },
+            medlocker = {
+                { "Base.Newspaper_New", 6 },
+            },
+            workbench = {
+                { "Base.Newspaper_New", 6 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.Newspaper_New", 6 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        metalcase = {
-            { "Base.Newspaper_New", 6 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medlocker = {
-            { "Base.Newspaper_New", 6 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        workbench = {
-            { "Base.Newspaper_New", 6 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "front",
-        x = 0,
-        z = -0.12,
-        length = 0.52,
-        depth = 0.52,
-        default = "metalcase",
-        factory = true,
-        pieces = { "metalcase" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanHerald"] = fitted
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "front",
+            x = 0,
+            z = -0.12,
+            length = 0.52,
+            depth = 0.52,
+            default = "metalcase",
+            factory = true,
+            pieces = { "metalcase" },
+        },
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanHerald"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "carpentry"
-    fitted.factoryUse = {
-    loot = { parcels = "CrateCarpentry", equipmentrack = "CrateCarpentry", metalcase = "CrateCarpentry", medlocker = "CrateCarpentry", workbench = "CrateCarpentry" },
-    stock = {
-        parcels = {
-            { "Base.Hammer", 1 },
-            { "Base.Saw", 1 },
-            { "Base.NailsBox", 1 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "carpentry"
+        fitted.factoryUse = {
+        loot = { parcels = "CrateCarpentry", equipmentrack = "CrateCarpentry", metalcase = "CrateCarpentry", medlocker = "CrateCarpentry", workbench = "CrateCarpentry" },
+        stock = {
+            parcels = {
+                { "Base.Hammer", 1 },
+                { "Base.Saw", 1 },
+                { "Base.NailsBox", 1 },
+            },
+            equipmentrack = {
+                { "Base.Hammer", 1 },
+                { "Base.Saw", 1 },
+                { "Base.NailsBox", 1 },
+            },
+            metalcase = {
+                { "Base.Hammer", 1 },
+                { "Base.Saw", 1 },
+                { "Base.NailsBox", 1 },
+            },
+            medlocker = {
+                { "Base.Hammer", 1 },
+                { "Base.Saw", 1 },
+                { "Base.NailsBox", 1 },
+            },
+            workbench = {
+                { "Base.Hammer", 1 },
+                { "Base.Saw", 1 },
+                { "Base.NailsBox", 1 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.Hammer", 1 },
-            { "Base.Saw", 1 },
-            { "Base.NailsBox", 1 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.62,
+            length = 0.9,
+            depth = 0.4,
+            default = "workbench",
+            factory = true,
+            pieces = { "workbench" },
         },
-        metalcase = {
-            { "Base.Hammer", 1 },
-            { "Base.Saw", 1 },
-            { "Base.NailsBox", 1 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -2.198,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        medlocker = {
-            { "Base.Hammer", 1 },
-            { "Base.Saw", 1 },
-            { "Base.NailsBox", 1 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        workbench = {
-            { "Base.Hammer", 1 },
-            { "Base.Saw", 1 },
-            { "Base.NailsBox", 1 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.888,
+            length = 1.1,
+            depth = 0.4,
+            default = "medbench",
+            factory = true,
+            pieces = { "medbench" },
+            seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.62,
-        length = 0.9,
-        depth = 0.4,
-        default = "workbench",
-        factory = true,
-        pieces = { "workbench" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -2.198,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.888,
-        length = 1.1,
-        depth = 0.4,
-        default = "medbench",
-        factory = true,
-        pieces = { "medbench" },
-        seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanJorgensen"] = fitted
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanJorgensen"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "library"
-    fitted.factoryUse = {
-    loot = { parcels = "LibraryBooks", equipmentrack = "LibraryBooks", metalcase = "LibraryBooks", medlocker = "LibraryBooks", workbench = "LibraryBooks" },
-    stock = {
-        parcels = {
-            { "Base.Book", 6 },
-            { "Base.BookCarpentry1", 1 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "library"
+        fitted.factoryUse = {
+        loot = { parcels = "LibraryBooks", equipmentrack = "LibraryBooks", metalcase = "LibraryBooks", medlocker = "LibraryBooks", workbench = "LibraryBooks" },
+        stock = {
+            parcels = {
+                { "Base.Book", 6 },
+                { "Base.BookCarpentry1", 1 },
+            },
+            equipmentrack = {
+                { "Base.Book", 6 },
+                { "Base.BookCarpentry1", 1 },
+            },
+            metalcase = {
+                { "Base.Book", 6 },
+                { "Base.BookCarpentry1", 1 },
+            },
+            medlocker = {
+                { "Base.Book", 6 },
+                { "Base.BookCarpentry1", 1 },
+            },
+            workbench = {
+                { "Base.Book", 6 },
+                { "Base.BookCarpentry1", 1 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.Book", 6 },
-            { "Base.BookCarpentry1", 1 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        metalcase = {
-            { "Base.Book", 6 },
-            { "Base.BookCarpentry1", 1 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        medlocker = {
-            { "Base.Book", 6 },
-            { "Base.BookCarpentry1", 1 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        workbench = {
-            { "Base.Book", 6 },
-            { "Base.BookCarpentry1", 1 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanLibrary"] = fitted
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
+        },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
+        },
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanLibrary"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "catering"
-    fitted.factoryUse = {
-    loot = { parcels = "KitchenDishes", equipmentrack = "KitchenDishes", metalcase = "KitchenDishes", medlocker = "KitchenDishes", workbench = "KitchenDishes", kitchen = "KitchenPots", fridge = "FridgeGeneric" },
-    stock = {
-        parcels = {
-            { "Base.Bowl", 2 },
-            { "Base.Plate", 2 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "catering"
+        fitted.factoryUse = {
+        loot = { parcels = "KitchenDishes", equipmentrack = "KitchenDishes", metalcase = "KitchenDishes", medlocker = "KitchenDishes", workbench = "KitchenDishes", kitchen = "KitchenPots", fridge = "FridgeGeneric" },
+        stock = {
+            parcels = {
+                { "Base.Bowl", 2 },
+                { "Base.Plate", 2 },
+            },
+            equipmentrack = {
+                { "Base.Bowl", 2 },
+                { "Base.Plate", 2 },
+            },
+            metalcase = {
+                { "Base.Bowl", 2 },
+                { "Base.Plate", 2 },
+            },
+            medlocker = {
+                { "Base.Bowl", 2 },
+                { "Base.Plate", 2 },
+            },
+            workbench = {
+                { "Base.Bowl", 2 },
+                { "Base.Plate", 2 },
+            },
+            medbench = {  },
+            kitchen = {
+                { "Base.Saucepan", 1 },
+                { "Base.KitchenKnife", 1 },
+                { "Base.Plate", 2 },
+            },
+            fridge = {
+                { "Base.Butter", 1 },
+                { "Base.Milk", 1 },
+                { "Base.EggCarton", 1 },
+            },
         },
-        equipmentrack = {
-            { "Base.Bowl", 2 },
-            { "Base.Plate", 2 },
+    }
+        fitted.aisleX = -0.1
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.66,
+            length = 1,
+            depth = 0.52,
+            default = "kitchen",
+            factory = true,
+            pieces = { "kitchen" },
         },
-        metalcase = {
-            { "Base.Bowl", 2 },
-            { "Base.Plate", 2 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -2.178,
+            length = 0.52,
+            depth = 0.52,
+            default = "fridge",
+            factory = true,
+            pieces = { "fridge" },
         },
-        medlocker = {
-            { "Base.Bowl", 2 },
-            { "Base.Plate", 2 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        workbench = {
-            { "Base.Bowl", 2 },
-            { "Base.Plate", 2 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -2.178,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        medbench = {  },
-        kitchen = {
-            { "Base.Saucepan", 1 },
-            { "Base.KitchenKnife", 1 },
-            { "Base.Plate", 2 },
-        },
-        fridge = {
-            { "Base.Butter", 1 },
-            { "Base.Milk", 1 },
-            { "Base.EggCarton", 1 },
-        },
-    },
-}
-    fitted.aisleX = -0.1
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.66,
-        length = 1,
-        depth = 0.52,
-        default = "kitchen",
-        factory = true,
-        pieces = { "kitchen" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -2.178,
-        length = 0.52,
-        depth = 0.52,
-        default = "fridge",
-        factory = true,
-        pieces = { "fridge" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -2.178,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanLvAirportCatering"] = fitted
-    MELens.Profiles["Base.85chevyStepVanSeHospitality"] = fitted
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanLvAirportCatering"] = fitted
+        MELens.Profiles["Base.85chevyStepVanSeHospitality"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "mechanic"
-    fitted.factoryUse = {
-    loot = { parcels = "CrateMechanics", equipmentrack = "CrateMechanics", metalcase = "CrateMechanics", medlocker = "CrateMechanics", workbench = "CrateMechanics" },
-    stock = {
-        parcels = {
-            { "Base.Wrench", 1 },
-            { "Base.Screwdriver", 1 },
-            { "Base.LugWrench", 1 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "mechanic"
+        fitted.factoryUse = {
+        loot = { parcels = "CrateMechanics", equipmentrack = "CrateMechanics", metalcase = "CrateMechanics", medlocker = "CrateMechanics", workbench = "CrateMechanics" },
+        stock = {
+            parcels = {
+                { "Base.Wrench", 1 },
+                { "Base.Screwdriver", 1 },
+                { "Base.LugWrench", 1 },
+            },
+            equipmentrack = {
+                { "Base.Wrench", 1 },
+                { "Base.Screwdriver", 1 },
+                { "Base.LugWrench", 1 },
+            },
+            metalcase = {
+                { "Base.Wrench", 1 },
+                { "Base.Screwdriver", 1 },
+                { "Base.LugWrench", 1 },
+            },
+            medlocker = {
+                { "Base.Wrench", 1 },
+                { "Base.Screwdriver", 1 },
+                { "Base.LugWrench", 1 },
+            },
+            workbench = {
+                { "Base.Wrench", 1 },
+                { "Base.Screwdriver", 1 },
+                { "Base.LugWrench", 1 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.Wrench", 1 },
-            { "Base.Screwdriver", 1 },
-            { "Base.LugWrench", 1 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.62,
+            length = 0.9,
+            depth = 0.4,
+            default = "workbench",
+            factory = true,
+            pieces = { "workbench" },
         },
-        metalcase = {
-            { "Base.Wrench", 1 },
-            { "Base.Screwdriver", 1 },
-            { "Base.LugWrench", 1 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -2.198,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        medlocker = {
-            { "Base.Wrench", 1 },
-            { "Base.Screwdriver", 1 },
-            { "Base.LugWrench", 1 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        workbench = {
-            { "Base.Wrench", 1 },
-            { "Base.Screwdriver", 1 },
-            { "Base.LugWrench", 1 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.888,
+            length = 1.1,
+            depth = 0.4,
+            default = "medbench",
+            factory = true,
+            pieces = { "medbench" },
+            seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.62,
-        length = 0.9,
-        depth = 0.4,
-        default = "workbench",
-        factory = true,
-        pieces = { "workbench" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -2.198,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.888,
-        length = 1.1,
-        depth = 0.4,
-        default = "medbench",
-        factory = true,
-        pieces = { "medbench" },
-        seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanLvMotorshop"] = fitted
-    MELens.Profiles["Base.85chevyStepVanTheCompleteRepair"] = fitted
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanLvMotorshop"] = fitted
+        MELens.Profiles["Base.85chevyStepVanTheCompleteRepair"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "seafood"
-    fitted.factoryUse = {
-    loot = { parcels = "ButcherFish", medlocker = "ButcherFish", workbench = "ButcherFish", fridge = "ButcherFish" },
-    stock = {
-        parcels = {
-            { "Base.Shrimp", 4 },
-            { "Base.Salmon", 2 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "seafood"
+        fitted.factoryUse = {
+        loot = { parcels = "ButcherFish", medlocker = "ButcherFish", workbench = "ButcherFish", fridge = "ButcherFish" },
+        stock = {
+            parcels = {
+                { "Base.Shrimp", 4 },
+                { "Base.Salmon", 2 },
+            },
+            equipmentrack = {
+                { "Base.PaperBag", 3 },
+                { "Base.Twine", 1 },
+            },
+            metalcase = {
+                { "Base.PaperBag", 3 },
+                { "Base.Twine", 1 },
+            },
+            medlocker = {
+                { "Base.Shrimp", 4 },
+                { "Base.Salmon", 2 },
+            },
+            workbench = {
+                { "Base.Shrimp", 4 },
+                { "Base.Salmon", 2 },
+            },
+            medbench = {  },
+            fridge = {
+                { "Base.Shrimp", 4 },
+                { "Base.Salmon", 2 },
+            },
         },
-        equipmentrack = {
-            { "Base.PaperBag", 3 },
-            { "Base.Twine", 1 },
+    }
+        fitted.aisleX = -0.1
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.44,
+            length = 0.52,
+            depth = 0.52,
+            default = "fridge",
+            factory = true,
+            pieces = { "fridge" },
         },
-        metalcase = {
-            { "Base.PaperBag", 3 },
-            { "Base.Twine", 1 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -2.178,
+            length = 0.52,
+            depth = 0.52,
+            default = "fridge",
+            factory = true,
+            pieces = { "fridge" },
         },
-        medlocker = {
-            { "Base.Shrimp", 4 },
-            { "Base.Salmon", 2 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        workbench = {
-            { "Base.Shrimp", 4 },
-            { "Base.Salmon", 2 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -2.178,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        medbench = {  },
-        fridge = {
-            { "Base.Shrimp", 4 },
-            { "Base.Salmon", 2 },
-        },
-    },
-}
-    fitted.aisleX = -0.1
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.44,
-        length = 0.52,
-        depth = 0.52,
-        default = "fridge",
-        factory = true,
-        pieces = { "fridge" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -2.178,
-        length = 0.52,
-        depth = 0.52,
-        default = "fridge",
-        factory = true,
-        pieces = { "fridge" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -2.178,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanMarineBites"] = fitted
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanMarineBites"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "masonry"
-    fitted.factoryUse = {
-    loot = { parcels = "CrateMasonry", equipmentrack = "CrateMasonry", metalcase = "CrateMasonry", medlocker = "CrateMasonry", workbench = "CrateMasonry" },
-    stock = {
-        parcels = {
-            { "Base.HandShovel", 1 },
-            { "Base.Bucket", 1 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "masonry"
+        fitted.factoryUse = {
+        loot = { parcels = "CrateMasonry", equipmentrack = "CrateMasonry", metalcase = "CrateMasonry", medlocker = "CrateMasonry", workbench = "CrateMasonry" },
+        stock = {
+            parcels = {
+                { "Base.HandShovel", 1 },
+                { "Base.Bucket", 1 },
+            },
+            equipmentrack = {
+                { "Base.HandShovel", 1 },
+                { "Base.Bucket", 1 },
+            },
+            metalcase = {
+                { "Base.HandShovel", 1 },
+                { "Base.Bucket", 1 },
+            },
+            medlocker = {
+                { "Base.HandShovel", 1 },
+                { "Base.Bucket", 1 },
+            },
+            workbench = {
+                { "Base.HandShovel", 1 },
+                { "Base.Bucket", 1 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.HandShovel", 1 },
-            { "Base.Bucket", 1 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.62,
+            length = 0.9,
+            depth = 0.4,
+            default = "workbench",
+            factory = true,
+            pieces = { "workbench" },
         },
-        metalcase = {
-            { "Base.HandShovel", 1 },
-            { "Base.Bucket", 1 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -2.198,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        medlocker = {
-            { "Base.HandShovel", 1 },
-            { "Base.Bucket", 1 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        workbench = {
-            { "Base.HandShovel", 1 },
-            { "Base.Bucket", 1 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.888,
+            length = 1.1,
+            depth = 0.4,
+            default = "medbench",
+            factory = true,
+            pieces = { "medbench" },
+            seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.62,
-        length = 0.9,
-        depth = 0.4,
-        default = "workbench",
-        factory = true,
-        pieces = { "workbench" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -2.198,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.888,
-        length = 1.1,
-        depth = 0.4,
-        default = "medbench",
-        factory = true,
-        pieces = { "medbench" },
-        seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanMasonry"] = fitted
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanMasonry"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "laundry"
-    fitted.factoryUse = {
-    loot = { parcels = "CrateLinens", equipmentrack = "CrateLinens", metalcase = "CrateLinens", medlocker = "CrateLinens", workbench = "CrateLinens" },
-    stock = {
-        parcels = {
-            { "Base.Sheet", 3 },
-            { "Base.BathTowel", 3 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "laundry"
+        fitted.factoryUse = {
+        loot = { parcels = "CrateLinens", equipmentrack = "CrateLinens", metalcase = "CrateLinens", medlocker = "CrateLinens", workbench = "CrateLinens" },
+        stock = {
+            parcels = {
+                { "Base.Sheet", 3 },
+                { "Base.BathTowel", 3 },
+            },
+            equipmentrack = {
+                { "Base.Sheet", 3 },
+                { "Base.BathTowel", 3 },
+            },
+            metalcase = {
+                { "Base.Sheet", 3 },
+                { "Base.BathTowel", 3 },
+            },
+            medlocker = {
+                { "Base.Sheet", 3 },
+                { "Base.BathTowel", 3 },
+            },
+            workbench = {
+                { "Base.Sheet", 3 },
+                { "Base.BathTowel", 3 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.Sheet", 3 },
-            { "Base.BathTowel", 3 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        metalcase = {
-            { "Base.Sheet", 3 },
-            { "Base.BathTowel", 3 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medlocker = {
-            { "Base.Sheet", 3 },
-            { "Base.BathTowel", 3 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        workbench = {
-            { "Base.Sheet", 3 },
-            { "Base.BathTowel", 3 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "front",
-        x = 0,
-        z = -0.12,
-        length = 0.52,
-        depth = 0.52,
-        default = "metalcase",
-        factory = true,
-        pieces = { "metalcase" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanMrHuangsLaundry"] = fitted
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "front",
+            x = 0,
+            z = -0.12,
+            length = 0.52,
+            depth = 0.52,
+            default = "metalcase",
+            factory = true,
+            pieces = { "metalcase" },
+        },
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanMrHuangsLaundry"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "postal"
-    fitted.factoryUse = {
-    loot = { parcels = "PostOfficeParcels", equipmentrack = "PostOfficeParcels", metalcase = "PostOfficeParcels", medlocker = "PostOfficeParcels", workbench = "PostOfficeParcels" },
-    stock = {
-        parcels = {
-            { "Base.Parcel_Small", 2 },
-            { "Base.Parcel_Medium", 1 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "postal"
+        fitted.factoryUse = {
+        loot = { parcels = "PostOfficeParcels", equipmentrack = "PostOfficeParcels", metalcase = "PostOfficeParcels", medlocker = "PostOfficeParcels", workbench = "PostOfficeParcels" },
+        stock = {
+            parcels = {
+                { "Base.Parcel_Small", 2 },
+                { "Base.Parcel_Medium", 1 },
+            },
+            equipmentrack = {
+                { "Base.Parcel_Small", 2 },
+                { "Base.Parcel_Medium", 1 },
+            },
+            metalcase = {
+                { "Base.Parcel_Small", 2 },
+                { "Base.Parcel_Medium", 1 },
+            },
+            medlocker = {
+                { "Base.Parcel_Small", 2 },
+                { "Base.Parcel_Medium", 1 },
+            },
+            workbench = {
+                { "Base.Parcel_Small", 2 },
+                { "Base.Parcel_Medium", 1 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.Parcel_Small", 2 },
-            { "Base.Parcel_Medium", 1 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        metalcase = {
-            { "Base.Parcel_Small", 2 },
-            { "Base.Parcel_Medium", 1 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medlocker = {
-            { "Base.Parcel_Small", 2 },
-            { "Base.Parcel_Medium", 1 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        workbench = {
-            { "Base.Parcel_Small", 2 },
-            { "Base.Parcel_Medium", 1 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "front",
-        x = 0,
-        z = -0.12,
-        length = 0.52,
-        depth = 0.52,
-        default = "metalcase",
-        factory = true,
-        pieces = { "metalcase" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanPostal"] = fitted
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "front",
+            x = 0,
+            z = -0.12,
+            length = 0.52,
+            depth = 0.52,
+            default = "metalcase",
+            factory = true,
+            pieces = { "metalcase" },
+        },
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanPostal"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "propane"
-    fitted.factoryUse = {
-    loot = {  },
-    stock = {
-        parcels = {
-            { "Base.Wrench", 1 },
-            { "Base.Gloves_LeatherGloves", 1 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "propane"
+        fitted.factoryUse = {
+        loot = {  },
+        stock = {
+            parcels = {
+                { "Base.Wrench", 1 },
+                { "Base.Gloves_LeatherGloves", 1 },
+            },
+            equipmentrack = {
+                { "Base.Wrench", 1 },
+                { "Base.Gloves_LeatherGloves", 1 },
+            },
+            metalcase = {
+                { "Base.Wrench", 1 },
+                { "Base.Gloves_LeatherGloves", 1 },
+            },
+            medlocker = {
+                { "Base.Wrench", 1 },
+                { "Base.Gloves_LeatherGloves", 1 },
+            },
+            workbench = {
+                { "Base.Wrench", 1 },
+                { "Base.Gloves_LeatherGloves", 1 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.Wrench", 1 },
-            { "Base.Gloves_LeatherGloves", 1 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "front",
+            x = 0,
+            z = -0.12,
+            length = 0.52,
+            depth = 0.52,
+            default = "metalcase",
+            factory = true,
+            pieces = { "metalcase" },
         },
-        metalcase = {
-            { "Base.Wrench", 1 },
-            { "Base.Gloves_LeatherGloves", 1 },
-        },
-        medlocker = {
-            { "Base.Wrench", 1 },
-            { "Base.Gloves_LeatherGloves", 1 },
-        },
-        workbench = {
-            { "Base.Wrench", 1 },
-            { "Base.Gloves_LeatherGloves", 1 },
-        },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "front",
-        x = 0,
-        z = -0.12,
-        length = 0.52,
-        depth = 0.52,
-        default = "metalcase",
-        factory = true,
-        pieces = { "metalcase" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    fitted.factoryFloor = {
-    { t = "Base.PropaneTank", x = -0.653, z = -0.728, r = 0, hx = 0.17, hz = 0.17 },
-    { t = "Base.PropaneTank", x = -0.653, z = -0.347, r = 0, hx = 0.17, hz = 0.17 },
-    { t = "Base.PropaneTank", x = -0.653, z = -2.202, r = 0, hx = 0.17, hz = 0.17 },
-    { t = "Base.PropaneTank", x = 0.653, z = -0.728, r = 0, hx = 0.17, hz = 0.17 },
-    { t = "Base.PropaneTank", x = 0.653, z = -0.347, r = 0, hx = 0.17, hz = 0.17 },
-    { t = "Base.PropaneTank", x = 0.653, z = -2.202, r = 0, hx = 0.17, hz = 0.17 },
-}
-    MELens.Profiles["Base.85chevyStepVanPropane"] = fitted
+    }) do fitted.spots[#fitted.spots+1]=s end
+        fitted.factoryFloor = {
+        { t = "Base.PropaneTank", x = -0.653, z = -0.728, r = 0, hx = 0.17, hz = 0.17 },
+        { t = "Base.PropaneTank", x = -0.653, z = -0.347, r = 0, hx = 0.17, hz = 0.17 },
+        { t = "Base.PropaneTank", x = -0.653, z = -2.202, r = 0, hx = 0.17, hz = 0.17 },
+        { t = "Base.PropaneTank", x = 0.653, z = -0.728, r = 0, hx = 0.17, hz = 0.17 },
+        { t = "Base.PropaneTank", x = 0.653, z = -0.347, r = 0, hx = 0.17, hz = 0.17 },
+        { t = "Base.PropaneTank", x = 0.653, z = -2.202, r = 0, hx = 0.17, hz = 0.17 },
+    }
+        MELens.Profiles["Base.85chevyStepVanPropane"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "swat"
-    fitted.factoryUse = {
-    loot = { parcels = "ArmyStorageElectronics", equipmentrack = "ArmyStorageElectronics", metalcase = "ArmyStorageElectronics", medlocker = "ArmyStorageElectronics", workbench = "ArmyStorageElectronics" },
-    stock = {
-        parcels = {
-            { "Base.WalkieTalkie4", 1 },
-            { "Base.Torch", 1 },
-            { "Base.Battery", 2 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "swat"
+        fitted.factoryUse = {
+        loot = { parcels = "ArmyStorageElectronics", equipmentrack = "ArmyStorageElectronics", metalcase = "ArmyStorageElectronics", medlocker = "ArmyStorageElectronics", workbench = "ArmyStorageElectronics" },
+        stock = {
+            parcels = {
+                { "Base.WalkieTalkie4", 1 },
+                { "Base.Torch", 1 },
+                { "Base.Battery", 2 },
+            },
+            equipmentrack = {
+                { "Base.WalkieTalkie4", 1 },
+                { "Base.Torch", 1 },
+                { "Base.Battery", 2 },
+            },
+            metalcase = {
+                { "Base.WalkieTalkie4", 1 },
+                { "Base.Torch", 1 },
+                { "Base.Battery", 2 },
+            },
+            medlocker = {
+                { "Base.WalkieTalkie4", 1 },
+                { "Base.Torch", 1 },
+                { "Base.Battery", 2 },
+            },
+            workbench = {
+                { "Base.WalkieTalkie4", 1 },
+                { "Base.Torch", 1 },
+                { "Base.Battery", 2 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.WalkieTalkie4", 1 },
-            { "Base.Torch", 1 },
-            { "Base.Battery", 2 },
+    }
+        fitted.aisleX = -0.06
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.888,
+            length = 1.1,
+            depth = 0.4,
+            default = "medbench",
+            factory = true,
+            pieces = { "medbench" },
+            seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
         },
-        metalcase = {
-            { "Base.WalkieTalkie4", 1 },
-            { "Base.Torch", 1 },
-            { "Base.Battery", 2 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.888,
+            length = 1.1,
+            depth = 0.4,
+            default = "medbench",
+            factory = true,
+            pieces = { "medbench" },
+            seats = { "MELensFurnitureRight1", "MELensFurnitureRight2" },
         },
-        medlocker = {
-            { "Base.WalkieTalkie4", 1 },
-            { "Base.Torch", 1 },
-            { "Base.Battery", 2 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.48,
+            length = 0.52,
+            depth = 0.52,
+            default = "metalcase",
+            factory = true,
+            pieces = { "metalcase" },
         },
-        workbench = {
-            { "Base.WalkieTalkie4", 1 },
-            { "Base.Torch", 1 },
-            { "Base.Battery", 2 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = -0.06
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.888,
-        length = 1.1,
-        depth = 0.4,
-        default = "medbench",
-        factory = true,
-        pieces = { "medbench" },
-        seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.888,
-        length = 1.1,
-        depth = 0.4,
-        default = "medbench",
-        factory = true,
-        pieces = { "medbench" },
-        seats = { "MELensFurnitureRight1", "MELensFurnitureRight2" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.48,
-        length = 0.52,
-        depth = 0.52,
-        default = "metalcase",
-        factory = true,
-        pieces = { "metalcase" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanSWAT"] = fitted
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanSWAT"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "liquor"
-    fitted.factoryUse = {
-    loot = { parcels = "CrateLiquor", equipmentrack = "CrateLiquor", metalcase = "CrateLiquor", medlocker = "CrateLiquor", workbench = "CrateLiquor" },
-    stock = {
-        parcels = {
-            { "Base.Whiskey", 2 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "liquor"
+        fitted.factoryUse = {
+        loot = { parcels = "CrateLiquor", equipmentrack = "CrateLiquor", metalcase = "CrateLiquor", medlocker = "CrateLiquor", workbench = "CrateLiquor" },
+        stock = {
+            parcels = {
+                { "Base.Whiskey", 2 },
+            },
+            equipmentrack = {
+                { "Base.Whiskey", 2 },
+            },
+            metalcase = {
+                { "Base.Whiskey", 2 },
+            },
+            medlocker = {
+                { "Base.Whiskey", 2 },
+            },
+            workbench = {
+                { "Base.Whiskey", 2 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.Whiskey", 2 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        metalcase = {
-            { "Base.Whiskey", 2 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medlocker = {
-            { "Base.Whiskey", 2 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        workbench = {
-            { "Base.Whiskey", 2 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "front",
-        x = 0,
-        z = -0.12,
-        length = 0.52,
-        depth = 0.52,
-        default = "metalcase",
-        factory = true,
-        pieces = { "metalcase" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanScarletOak"] = fitted
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "front",
+            x = 0,
+            z = -0.12,
+            length = 0.52,
+            depth = 0.52,
+            default = "metalcase",
+            factory = true,
+            pieces = { "metalcase" },
+        },
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanScarletOak"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "painting"
-    fitted.factoryUse = {
-    loot = { parcels = "CratePaint", equipmentrack = "CratePaint", metalcase = "CratePaint", medlocker = "CratePaint", workbench = "CratePaint" },
-    stock = {
-        parcels = {
-            { "Base.Paintbrush", 1 },
-            { "Base.PaintWhite", 1 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "painting"
+        fitted.factoryUse = {
+        loot = { parcels = "CratePaint", equipmentrack = "CratePaint", metalcase = "CratePaint", medlocker = "CratePaint", workbench = "CratePaint" },
+        stock = {
+            parcels = {
+                { "Base.Paintbrush", 1 },
+                { "Base.PaintWhite", 1 },
+            },
+            equipmentrack = {
+                { "Base.Paintbrush", 1 },
+                { "Base.PaintWhite", 1 },
+            },
+            metalcase = {
+                { "Base.Paintbrush", 1 },
+                { "Base.PaintWhite", 1 },
+            },
+            medlocker = {
+                { "Base.Paintbrush", 1 },
+                { "Base.PaintWhite", 1 },
+            },
+            workbench = {
+                { "Base.Paintbrush", 1 },
+                { "Base.PaintWhite", 1 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.Paintbrush", 1 },
-            { "Base.PaintWhite", 1 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.62,
+            length = 0.9,
+            depth = 0.4,
+            default = "workbench",
+            factory = true,
+            pieces = { "workbench" },
         },
-        metalcase = {
-            { "Base.Paintbrush", 1 },
-            { "Base.PaintWhite", 1 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -2.198,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        medlocker = {
-            { "Base.Paintbrush", 1 },
-            { "Base.PaintWhite", 1 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        workbench = {
-            { "Base.Paintbrush", 1 },
-            { "Base.PaintWhite", 1 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.888,
+            length = 1.1,
+            depth = 0.4,
+            default = "medbench",
+            factory = true,
+            pieces = { "medbench" },
+            seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.62,
-        length = 0.9,
-        depth = 0.4,
-        default = "workbench",
-        factory = true,
-        pieces = { "workbench" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -2.198,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.888,
-        length = 1.1,
-        depth = 0.4,
-        default = "medbench",
-        factory = true,
-        pieces = { "medbench" },
-        seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanSePaintingServices"] = fitted
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanSePaintingServices"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "tailoring"
-    fitted.factoryUse = {
-    loot = { parcels = "CrateTailoring", equipmentrack = "CrateTailoring", metalcase = "CrateTailoring", medlocker = "CrateTailoring", workbench = "CrateTailoring" },
-    stock = {
-        parcels = {
-            { "Base.SewingKit", 1 },
-            { "Base.Thread", 2 },
-            { "Base.Scissors", 1 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "tailoring"
+        fitted.factoryUse = {
+        loot = { parcels = "CrateTailoring", equipmentrack = "CrateTailoring", metalcase = "CrateTailoring", medlocker = "CrateTailoring", workbench = "CrateTailoring" },
+        stock = {
+            parcels = {
+                { "Base.SewingKit", 1 },
+                { "Base.Thread", 2 },
+                { "Base.Scissors", 1 },
+            },
+            equipmentrack = {
+                { "Base.SewingKit", 1 },
+                { "Base.Thread", 2 },
+                { "Base.Scissors", 1 },
+            },
+            metalcase = {
+                { "Base.SewingKit", 1 },
+                { "Base.Thread", 2 },
+                { "Base.Scissors", 1 },
+            },
+            medlocker = {
+                { "Base.SewingKit", 1 },
+                { "Base.Thread", 2 },
+                { "Base.Scissors", 1 },
+            },
+            workbench = {
+                { "Base.SewingKit", 1 },
+                { "Base.Thread", 2 },
+                { "Base.Scissors", 1 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.SewingKit", 1 },
-            { "Base.Thread", 2 },
-            { "Base.Scissors", 1 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        metalcase = {
-            { "Base.SewingKit", 1 },
-            { "Base.Thread", 2 },
-            { "Base.Scissors", 1 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medlocker = {
-            { "Base.SewingKit", 1 },
-            { "Base.Thread", 2 },
-            { "Base.Scissors", 1 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        workbench = {
-            { "Base.SewingKit", 1 },
-            { "Base.Thread", 2 },
-            { "Base.Scissors", 1 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "front",
-        x = 0,
-        z = -0.12,
-        length = 0.52,
-        depth = 0.52,
-        default = "metalcase",
-        factory = true,
-        pieces = { "metalcase" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanSmartCut"] = fitted
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "front",
+            x = 0,
+            z = -0.12,
+            length = 0.52,
+            depth = 0.52,
+            default = "metalcase",
+            factory = true,
+            pieces = { "metalcase" },
+        },
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanSmartCut"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "cereal"
-    fitted.factoryUse = {
-    loot = { parcels = "CrateCereal", equipmentrack = "CrateCereal", metalcase = "CrateCereal", medlocker = "CrateCereal", workbench = "CrateCereal" },
-    stock = {
-        parcels = {
-            { "Base.Cereal", 3 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "cereal"
+        fitted.factoryUse = {
+        loot = { parcels = "CrateCereal", equipmentrack = "CrateCereal", metalcase = "CrateCereal", medlocker = "CrateCereal", workbench = "CrateCereal" },
+        stock = {
+            parcels = {
+                { "Base.Cereal", 3 },
+            },
+            equipmentrack = {
+                { "Base.Cereal", 3 },
+            },
+            metalcase = {
+                { "Base.Cereal", 3 },
+            },
+            medlocker = {
+                { "Base.Cereal", 3 },
+            },
+            workbench = {
+                { "Base.Cereal", 3 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.Cereal", 3 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        metalcase = {
-            { "Base.Cereal", 3 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medlocker = {
-            { "Base.Cereal", 3 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        workbench = {
-            { "Base.Cereal", 3 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.16,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.84,
-        length = 0.6,
-        depth = 0.5,
-        default = "parcels",
-        factory = true,
-        pieces = { "parcels" },
-    },
-    {
-        wall = "front",
-        x = 0,
-        z = -0.12,
-        length = 0.52,
-        depth = 0.52,
-        default = "metalcase",
-        factory = true,
-        pieces = { "metalcase" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanSunBallz"] = fitted
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.16,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.84,
+            length = 0.6,
+            depth = 0.5,
+            default = "parcels",
+            factory = true,
+            pieces = { "parcels" },
+        },
+        {
+            wall = "front",
+            x = 0,
+            z = -0.12,
+            length = 0.52,
+            depth = 0.52,
+            default = "metalcase",
+            factory = true,
+            pieces = { "metalcase" },
+        },
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanSunBallz"] = fitted
+    end
+    installProfile()
 end
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "glasswork"
-    fitted.factoryUse = {
-    loot = { parcels = "GlassWorkshopTools", equipmentrack = "GlassWorkshopTools", metalcase = "GlassWorkshopTools", medlocker = "GlassWorkshopTools", workbench = "GlassWorkshopTools" },
-    stock = {
-        parcels = {
-            { "Base.GlassBlowingPipe", 1 },
-            { "Base.CeramicCrucibleSmall", 1 },
-            { "Base.Glasses_SafetyGoggles", 1 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "glasswork"
+        fitted.factoryUse = {
+        loot = { parcels = "GlassWorkshopTools", equipmentrack = "GlassWorkshopTools", metalcase = "GlassWorkshopTools", medlocker = "GlassWorkshopTools", workbench = "GlassWorkshopTools" },
+        stock = {
+            parcels = {
+                { "Base.GlassBlowingPipe", 1 },
+                { "Base.CeramicCrucibleSmall", 1 },
+                { "Base.Glasses_SafetyGoggles", 1 },
+            },
+            equipmentrack = {
+                { "Base.GlassBlowingPipe", 1 },
+                { "Base.CeramicCrucibleSmall", 1 },
+                { "Base.Glasses_SafetyGoggles", 1 },
+            },
+            metalcase = {
+                { "Base.GlassBlowingPipe", 1 },
+                { "Base.CeramicCrucibleSmall", 1 },
+                { "Base.Glasses_SafetyGoggles", 1 },
+            },
+            medlocker = {
+                { "Base.GlassBlowingPipe", 1 },
+                { "Base.CeramicCrucibleSmall", 1 },
+                { "Base.Glasses_SafetyGoggles", 1 },
+            },
+            workbench = {
+                { "Base.GlassBlowingPipe", 1 },
+                { "Base.CeramicCrucibleSmall", 1 },
+                { "Base.Glasses_SafetyGoggles", 1 },
+            },
+            medbench = {  },
         },
-        equipmentrack = {
-            { "Base.GlassBlowingPipe", 1 },
-            { "Base.CeramicCrucibleSmall", 1 },
-            { "Base.Glasses_SafetyGoggles", 1 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.848,
+            z = -0.62,
+            length = 0.9,
+            depth = 0.4,
+            default = "workbench",
+            factory = true,
+            pieces = { "workbench" },
         },
-        metalcase = {
-            { "Base.GlassBlowingPipe", 1 },
-            { "Base.CeramicCrucibleSmall", 1 },
-            { "Base.Glasses_SafetyGoggles", 1 },
+        {
+            wall = "left",
+            x = 0.848,
+            z = -2.198,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        medlocker = {
-            { "Base.GlassBlowingPipe", 1 },
-            { "Base.CeramicCrucibleSmall", 1 },
-            { "Base.Glasses_SafetyGoggles", 1 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -0.48,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        workbench = {
-            { "Base.GlassBlowingPipe", 1 },
-            { "Base.CeramicCrucibleSmall", 1 },
-            { "Base.Glasses_SafetyGoggles", 1 },
+        {
+            wall = "right",
+            x = -0.848,
+            z = -1.888,
+            length = 1.1,
+            depth = 0.4,
+            default = "medbench",
+            factory = true,
+            pieces = { "medbench" },
+            seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.848,
-        z = -0.62,
-        length = 0.9,
-        depth = 0.4,
-        default = "workbench",
-        factory = true,
-        pieces = { "workbench" },
-    },
-    {
-        wall = "left",
-        x = 0.848,
-        z = -2.198,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -0.48,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.848,
-        z = -1.888,
-        length = 1.1,
-        depth = 0.4,
-        default = "medbench",
-        factory = true,
-        pieces = { "medbench" },
-        seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.85chevyStepVanTimelessGlass"] = fitted
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.85chevyStepVanTimelessGlass"] = fitted
+    end
+    installProfile()
 end

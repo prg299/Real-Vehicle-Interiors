@@ -18,7 +18,7 @@ import zombie.scripting.objects.VehicleScript;
  */
 @Exposer.LuaClass(name = "MELensRV")
 public final class RV {
-    public static final String VERSION = "2.0.15";
+    public static final String VERSION = "2.0.16";
 
     static volatile BaseVehicle cutVehicle;
     /** Plane in the vehicle body's raw mesh space; fragments with a*x+b*y+c*z+d > 0 are discarded. */

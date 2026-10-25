@@ -111,89 +111,92 @@ MELens.Profiles["Base.VanRadio"] = profile
 MELens.Profiles["Base.VanRadio_3N"] = profile
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "radio"
-    fitted.factoryUse = {
-    loot = { parcels = "CrateElectronics", equipmentrack = "CrateElectronics", metalcase = "CrateElectronics", medlocker = "CrateElectronics" },
-    stock = {
-        parcels = {
-            { "Base.ElectricWire", 1 },
-            { "Base.Battery", 2 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "radio"
+        fitted.factoryUse = {
+        loot = { parcels = "CrateElectronics", equipmentrack = "CrateElectronics", metalcase = "CrateElectronics", medlocker = "CrateElectronics" },
+        stock = {
+            parcels = {
+                { "Base.ElectricWire", 1 },
+                { "Base.Battery", 2 },
+            },
+            equipmentrack = {
+                { "Base.ElectricWire", 1 },
+                { "Base.Battery", 2 },
+            },
+            metalcase = {
+                { "Base.ElectricWire", 1 },
+                { "Base.Battery", 2 },
+            },
+            medlocker = {
+                { "Base.ElectricWire", 1 },
+                { "Base.Battery", 2 },
+            },
+            workbench = {
+                { "Base.HamRadio1", 1 },
+                { "Base.Headphones", 1 },
+                { "Base.Battery", 2 },
+            },
+            medbench = {
+                { "Base.Notebook", 1 },
+                { "Base.Pen", 1 },
+            },
         },
-        equipmentrack = {
-            { "Base.ElectricWire", 1 },
-            { "Base.Battery", 2 },
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.654,
+            z = -0.21,
+            length = 0.9,
+            depth = 0.4,
+            default = "workbench",
+            factory = true,
+            pieces = { "workbench" },
         },
-        metalcase = {
-            { "Base.ElectricWire", 1 },
-            { "Base.Battery", 2 },
+        {
+            wall = "left",
+            x = 0.654,
+            z = -1.525,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        medlocker = {
-            { "Base.ElectricWire", 1 },
-            { "Base.Battery", 2 },
+        {
+            wall = "right",
+            x = -0.654,
+            z = -0.07,
+            length = 0.6,
+            depth = 0.32,
+            default = "equipmentrack",
+            factory = true,
+            pieces = { "equipmentrack" },
         },
-        workbench = {
-            { "Base.HamRadio1", 1 },
-            { "Base.Headphones", 1 },
-            { "Base.Battery", 2 },
+        {
+            wall = "right",
+            x = -0.654,
+            z = -1.215,
+            length = 1.1,
+            depth = 0.4,
+            default = "medbench",
+            factory = true,
+            pieces = { "medbench" },
+            seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
         },
-        medbench = {
-            { "Base.Notebook", 1 },
-            { "Base.Pen", 1 },
-        },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.654,
-        z = -0.21,
-        length = 0.9,
-        depth = 0.4,
-        default = "workbench",
-        factory = true,
-        pieces = { "workbench" },
-    },
-    {
-        wall = "left",
-        x = 0.654,
-        z = -1.525,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.654,
-        z = -0.07,
-        length = 0.6,
-        depth = 0.32,
-        default = "equipmentrack",
-        factory = true,
-        pieces = { "equipmentrack" },
-    },
-    {
-        wall = "right",
-        x = -0.654,
-        z = -1.215,
-        length = 1.1,
-        depth = 0.4,
-        default = "medbench",
-        factory = true,
-        pieces = { "medbench" },
-        seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.VanRadio"] = fitted
-    MELens.Profiles["Base.VanRadio_3N"] = fitted
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.VanRadio"] = fitted
+        MELens.Profiles["Base.VanRadio_3N"] = fitted
+    end
+    installProfile()
 end

@@ -298,15 +298,18 @@ def append_profiles(spec, base, lines):
         assert 2*half-depths['left']-depths['right']>=.35,(spec['key'],role,'aisle narrower than grid-safe clearance')
         # Shallow copy immutable geometry, copy arrays we extend. The released slots
         # retain both IDs and coordinates, so a loaded player's furnishings stay put.
-        lines += ['', 'do', '    local fitted = {}', '    for k,v in pairs(profile) do fitted[k]=v end',
-                  '    fitted.legacySpotCount = #profile.spots',
-                  '    fitted.spots = {}', '    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end',
-                  '    fitted.extraSeats = {}', '    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end',
-                  '    fitted.factoryLayout = "cargo-service-1"',
-                  '    fitted.factoryRole = '+mv.lua(role),
-                  '    fitted.factoryUse = '+mv.lua(use_for(role)),
-                  '    fitted.aisleX = '+str(aisle),
-                  '    for _,s in ipairs('+mv.lua(spots)+') do fitted.spots[#fitted.spots+1]=s end']
-        if cargo:lines.append('    fitted.factoryFloor = '+mv.lua(cargo))
-        for name in names:lines.append('    MELens.Profiles['+mv.lua(name)+'] = fitted')
-        lines.append('end')
+        # Kahlua debug mode indexes its fixed local-line array by cumulative
+        # declarations, even across do blocks. Give each role its own function.
+        lines += ['', 'do', '    local function installProfile()',
+                  '        local fitted = {}', '        for k,v in pairs(profile) do fitted[k]=v end',
+                  '        fitted.legacySpotCount = #profile.spots',
+                  '        fitted.spots = {}', '        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end',
+                  '        fitted.extraSeats = {}', '        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end',
+                  '        fitted.factoryLayout = "cargo-service-1"',
+                  '        fitted.factoryRole = '+mv.lua(role),
+                  '        fitted.factoryUse = '+mv.lua(use_for(role)),
+                  '        fitted.aisleX = '+str(aisle),
+                  '        for _,s in ipairs('+mv.lua(spots)+') do fitted.spots[#fitted.spots+1]=s end']
+        if cargo:lines.append('        fitted.factoryFloor = '+mv.lua(cargo))
+        for name in names:lines.append('        MELens.Profiles['+mv.lua(name)+'] = fitted')
+        lines += ['    end', '    installProfile()', 'end']

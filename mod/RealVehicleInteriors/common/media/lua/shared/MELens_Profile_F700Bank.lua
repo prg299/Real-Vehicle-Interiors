@@ -144,87 +144,90 @@ local profile = {
 MELens.Profiles["Base.87fordF700bank"] = profile
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "bank"
-    fitted.factoryUse = {
-    loot = { safe = "BankDeposit" },
-    stock = {
-        safe = {
-            { "Base.MoneyBundle", 6 },
-            { "Base.Money", 10 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "bank"
+        fitted.factoryUse = {
+        loot = { safe = "BankDeposit" },
+        stock = {
+            safe = {
+                { "Base.MoneyBundle", 6 },
+                { "Base.Money", 10 },
+            },
+            medbench = {  },
         },
-        medbench = {  },
-    },
-}
-    fitted.aisleX = 0.0
-    for _,s in ipairs({
-    {
-        wall = "left",
-        x = 0.825,
-        z = 0.61,
-        length = 0.6,
-        depth = 0.52,
-        default = "safe",
-        factory = true,
-        pieces = { "safe" },
-    },
-    {
-        wall = "left",
-        x = 0.825,
-        z = -0.07,
-        length = 0.6,
-        depth = 0.52,
-        default = "safe",
-        factory = true,
-        pieces = { "safe" },
-    },
-    {
-        wall = "left",
-        x = 0.825,
-        z = -0.75,
-        length = 0.6,
-        depth = 0.52,
-        default = "safe",
-        factory = true,
-        pieces = { "safe" },
-    },
-    {
-        wall = "right",
-        x = -0.825,
-        z = 0.61,
-        length = 0.6,
-        depth = 0.52,
-        default = "safe",
-        factory = true,
-        pieces = { "safe" },
-    },
-    {
-        wall = "right",
-        x = -0.825,
-        z = -0.07,
-        length = 0.6,
-        depth = 0.52,
-        default = "safe",
-        factory = true,
-        pieces = { "safe" },
-    },
-    {
-        wall = "right",
-        x = -0.825,
-        z = -0.75,
-        length = 0.6,
-        depth = 0.52,
-        default = "safe",
-        factory = true,
-        pieces = { "safe" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.87fordF700bank"] = fitted
+    }
+        fitted.aisleX = 0.0
+        for _,s in ipairs({
+        {
+            wall = "left",
+            x = 0.825,
+            z = 0.61,
+            length = 0.6,
+            depth = 0.52,
+            default = "safe",
+            factory = true,
+            pieces = { "safe" },
+        },
+        {
+            wall = "left",
+            x = 0.825,
+            z = -0.07,
+            length = 0.6,
+            depth = 0.52,
+            default = "safe",
+            factory = true,
+            pieces = { "safe" },
+        },
+        {
+            wall = "left",
+            x = 0.825,
+            z = -0.75,
+            length = 0.6,
+            depth = 0.52,
+            default = "safe",
+            factory = true,
+            pieces = { "safe" },
+        },
+        {
+            wall = "right",
+            x = -0.825,
+            z = 0.61,
+            length = 0.6,
+            depth = 0.52,
+            default = "safe",
+            factory = true,
+            pieces = { "safe" },
+        },
+        {
+            wall = "right",
+            x = -0.825,
+            z = -0.07,
+            length = 0.6,
+            depth = 0.52,
+            default = "safe",
+            factory = true,
+            pieces = { "safe" },
+        },
+        {
+            wall = "right",
+            x = -0.825,
+            z = -0.75,
+            length = 0.6,
+            depth = 0.52,
+            default = "safe",
+            factory = true,
+            pieces = { "safe" },
+        },
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.87fordF700bank"] = fitted
+    end
+    installProfile()
 end

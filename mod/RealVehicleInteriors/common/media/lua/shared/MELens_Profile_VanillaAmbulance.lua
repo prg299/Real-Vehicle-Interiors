@@ -111,93 +111,96 @@ local profile = {
 MELens.Profiles["Base.VanAmbulance"] = profile
 
 do
-    local fitted = {}
-    for k,v in pairs(profile) do fitted[k]=v end
-    fitted.legacySpotCount = #profile.spots
-    fitted.spots = {}
-    for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
-    fitted.extraSeats = {}
-    for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
-    fitted.factoryLayout = "cargo-service-1"
-    fitted.factoryRole = "medical"
-    fitted.factoryUse = {
-    loot = { parcels = "MedicalStorageTools", equipmentrack = "MedicalStorageTools", metalcase = "MedicalStorageTools", medlocker = "MedicalStorageTools", workbench = "MedicalStorageTools" },
-    stock = {
-        parcels = {
-            { "Base.Bandage", 6 },
-            { "Base.Disinfectant", 1 },
-            { "Base.AlcoholWipes", 3 },
+    local function installProfile()
+        local fitted = {}
+        for k,v in pairs(profile) do fitted[k]=v end
+        fitted.legacySpotCount = #profile.spots
+        fitted.spots = {}
+        for i,s in ipairs(profile.spots) do fitted.spots[i]=s end
+        fitted.extraSeats = {}
+        for i,s in ipairs(profile.extraSeats or {}) do fitted.extraSeats[i]=s end
+        fitted.factoryLayout = "cargo-service-1"
+        fitted.factoryRole = "medical"
+        fitted.factoryUse = {
+        loot = { parcels = "MedicalStorageTools", equipmentrack = "MedicalStorageTools", metalcase = "MedicalStorageTools", medlocker = "MedicalStorageTools", workbench = "MedicalStorageTools" },
+        stock = {
+            parcels = {
+                { "Base.Bandage", 6 },
+                { "Base.Disinfectant", 1 },
+                { "Base.AlcoholWipes", 3 },
+            },
+            equipmentrack = {
+                { "Base.Bandage", 6 },
+                { "Base.Disinfectant", 1 },
+                { "Base.AlcoholWipes", 3 },
+            },
+            metalcase = {
+                { "Base.Bandage", 6 },
+                { "Base.Disinfectant", 1 },
+                { "Base.AlcoholWipes", 3 },
+            },
+            medlocker = {
+                { "Base.Bandage", 6 },
+                { "Base.Disinfectant", 1 },
+                { "Base.AlcoholWipes", 3 },
+            },
+            workbench = {
+                { "Base.Bandage", 6 },
+                { "Base.Disinfectant", 1 },
+                { "Base.AlcoholWipes", 3 },
+            },
+            medbench = {
+                { "Base.Sheet", 1 },
+                { "Base.Bandage", 2 },
+            },
         },
-        equipmentrack = {
-            { "Base.Bandage", 6 },
-            { "Base.Disinfectant", 1 },
-            { "Base.AlcoholWipes", 3 },
+    }
+        fitted.aisleX = 0.075
+        for _,s in ipairs({
+        {
+            wall = "right",
+            x = -0.654,
+            z = -1.075,
+            length = 1.5,
+            depth = 0.55,
+            default = "stretcher",
+            factory = true,
+            pieces = { "stretcher" },
+            seats = { "MELensFurnitureLeft1" },
         },
-        metalcase = {
-            { "Base.Bandage", 6 },
-            { "Base.Disinfectant", 1 },
-            { "Base.AlcoholWipes", 3 },
+        {
+            wall = "left",
+            x = 0.654,
+            z = -1.045,
+            length = 1.1,
+            depth = 0.4,
+            default = "medbench",
+            factory = true,
+            pieces = { "medbench" },
+            seats = { "MELensFurnitureLeft2" },
         },
-        medlocker = {
-            { "Base.Bandage", 6 },
-            { "Base.Disinfectant", 1 },
-            { "Base.AlcoholWipes", 3 },
+        {
+            wall = "front",
+            x = -0.27,
+            z = 0.29,
+            length = 0.5,
+            depth = 0.32,
+            default = "medlocker",
+            factory = true,
+            pieces = { "medlocker" },
         },
-        workbench = {
-            { "Base.Bandage", 6 },
-            { "Base.Disinfectant", 1 },
-            { "Base.AlcoholWipes", 3 },
+        {
+            wall = "front",
+            x = 0.27,
+            z = 0.29,
+            length = 0.5,
+            depth = 0.32,
+            default = "medlocker",
+            factory = true,
+            pieces = { "medlocker" },
         },
-        medbench = {
-            { "Base.Sheet", 1 },
-            { "Base.Bandage", 2 },
-        },
-    },
-}
-    fitted.aisleX = 0.075
-    for _,s in ipairs({
-    {
-        wall = "right",
-        x = -0.654,
-        z = -1.075,
-        length = 1.5,
-        depth = 0.55,
-        default = "stretcher",
-        factory = true,
-        pieces = { "stretcher" },
-        seats = { "MELensFurnitureLeft1" },
-    },
-    {
-        wall = "left",
-        x = 0.654,
-        z = -1.045,
-        length = 1.1,
-        depth = 0.4,
-        default = "medbench",
-        factory = true,
-        pieces = { "medbench" },
-        seats = { "MELensFurnitureLeft2" },
-    },
-    {
-        wall = "front",
-        x = -0.27,
-        z = 0.29,
-        length = 0.5,
-        depth = 0.32,
-        default = "medlocker",
-        factory = true,
-        pieces = { "medlocker" },
-    },
-    {
-        wall = "front",
-        x = 0.27,
-        z = 0.29,
-        length = 0.5,
-        depth = 0.32,
-        default = "medlocker",
-        factory = true,
-        pieces = { "medlocker" },
-    },
-}) do fitted.spots[#fitted.spots+1]=s end
-    MELens.Profiles["Base.VanAmbulance"] = fitted
+    }) do fitted.spots[#fitted.spots+1]=s end
+        MELens.Profiles["Base.VanAmbulance"] = fitted
+    end
+    installProfile()
 end
