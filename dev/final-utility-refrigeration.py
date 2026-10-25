@@ -11,7 +11,7 @@ def load(name):
     s=importlib.util.spec_from_file_location(name.replace('-','_'),ROOT/'dev'/(name+'.py'))
     m=importlib.util.module_from_spec(s);s.loader.exec_module(m);return m
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--session',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--verify-source',type=Path)
+    p=argparse.ArgumentParser();p.add_argument('--session',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--verify-source',type=Path);p.add_argument('--finish-source',type=Path)
     args=p.parse_args();d=load('final-mp-interior-tests');lab=d.InteriorLab(args.session,args.output);h=lab.h
     h.REPORT.update(scope=__doc__,inputCoverage=[],fixtures=['admin spawn/repair/furniture','fresh identical native apples','one bounded game-hour advance','native climate override restored'],lootNativeMouseInput=False,lootUsesProductionTransferAction=False)
     def server(code):return json.loads(lab.server(d.JSON_ENCODER+'local r=(function() '+code+' end)();return enc(r)'))
@@ -25,8 +25,32 @@ def main():
         c=lab.wait(control,lambda c:c and c['enabled'],'native generator button')
         lab.input('A',x=c['x'],y=c['y'])
         result=lab.wait(peers,lambda s:all(v['on']==on and abs(v['temperature']-(.2 if on else 1))<.001 for v in s.values()),'power/temperature on both clients and server')
+        title=h.lua('return getText("'+('ContextMenu_Turn_Off' if on else 'ContextMenu_Turn_On')+'")')
+        lab.wait(lambda:h.lua('local w=MELens.Dashboard.instance;for _,c in ipairs(w.controls) do if c.fn==w.onGenerator then return c.nativeButton and c.nativeButton.title or (c.button and c.button.text) end end'),lambda value:value==title,'rendered generator control reflects committed state')
+        time.sleep(.2)
         h.REPORT.setdefault('switches',[]).append(result);return result
+    def finish():
+        h.lua('if MELens.Dashboard.instance then MELens.Dashboard.instance:close() end;local page=getPlayerLoot(0);page:setVisible(true);page:refreshBackpacks();return true')
+        point=h.lua('local p=getPlayerLoot(0);return {x=p:getAbsoluteX()+80,y=p:getAbsoluteY()+8}')
+        lab.input('A',x=point['x'],y=point['y']);time.sleep(.6)
+        pin=h.lua('local b=getPlayerLoot(0).pinButton;return b:isVisible() and {x=b:getAbsoluteX()+b:getWidth()/2,y=b:getAbsoluteY()+b:getHeight()/2}')
+        if pin:lab.input('A',x=pin['x'],y=pin['y']);time.sleep(.6)
+        def fridge_button():return h.lua('local page=getPlayerLoot(0);local c=MELens.Parts.spotPart(MELensTest.vehicle,4):getItemContainer();for _,b in ipairs(page.backpacks) do if b.inventory==c then return {x=b:getAbsoluteX()+b:getWidth()/2,y=b:getAbsoluteY()+b:getHeight()/2} end end')
+        button=lab.wait(fridge_button,lambda b:b is not None,'actual fridge inventory button')
+        lab.input('A',x=button['x'],y=button['y']);time.sleep(.6)
+        def cold_inventory():return h.lua('local c=MELens.Parts.spotPart(MELensTest.vehicle,4):getItemContainer();local page=getPlayerLoot(0);local heats={};for i=0,c:getItems():size()-1 do local item=c:getItems():get(i);if instanceof(item,"Food") then heats[#heats+1]=item:getHeat() end end;return {selected=page.inventoryPane.inventory==c,heats=heats}')
+        shown=lab.wait(cold_inventory,lambda s:s['selected'] and h._sequence(s['heats']) and max(h._sequence(s['heats']))<.3,'native cold-food inventory')
+        h.REPORT['nativeFridgeInventory']=shown;lab.capture('A','step-van-cold-food-inventory')
+        overlap=server('return MELensUtilityProbe.overlap()');h.check(abs(overlap['after']-overlap['before'])<.005,'overlapping callbacks double bill time');h.REPORT['overlap']=overlap
+        rain=server('return MELensUtilityProbe.rain()');h.check(rain['water']==20 and not rain['tainted'],'rain taints potable storage');h.REPORT['rain']=rain
+        switch(False);switch(True)
+        lab.capture('A','step-van-fridge-running');h.REPORT['saved']=snap();h.REPORT['status']='passed'
     try:
+        if args.finish_source:
+            previous=json.loads(args.finish_source.read_text());h.REPORT=previous
+            h.REPORT.pop('error',None);h.REPORT.pop('traceback',None);h.REPORT['status']='running'
+            h.REPORT['continuedFrom']=str(args.finish_source)
+            lab.vid=previous['nativeFoodAging']['after']['id'];finish();return
         for api in (h,lab.b):
             api.lua('if MELens.Dashboard.instance then MELens.Dashboard.instance:close() end;ISUIHandler.setVisibleAllUI(false);local p=getPlayer();if p:getVehicle() then MELens.leave(p) end;return true')
         lab.wait(lambda:h.lua('return getPlayer():getVehicle()==nil') and lab.b.lua('return getPlayer():getVehicle()==nil'),bool,'both players outside prior vehicle')
@@ -70,18 +94,7 @@ def main():
         elapsed=after['hours']-before['hours'];used=before['fuel']-after['fuel']
         h.check(abs(used-elapsed*before['rate'])<.015,'native elapsed-time fuel use differs from actual appliance rate')
         h.REPORT['nativeFoodAging']={'before':before,'after':after,'coldAgeDelta':cd,'warmAgeDelta':wd,'fuelUsed':used,'elapsedHours':elapsed}
-        h.lua('if MELens.Dashboard.instance then MELens.Dashboard.instance:close() end;local page=getPlayerLoot(0);page:setVisible(true);page:refreshBackpacks();return true')
-        def fridge_button():return h.lua('local page=getPlayerLoot(0);local c=MELens.Parts.spotPart(MELensTest.vehicle,4):getItemContainer();for _,b in ipairs(page.backpacks) do if b.inventory==c then return {x=b:getAbsoluteX()+b:getWidth()/2,y=b:getAbsoluteY()+b:getHeight()/2} end end')
-        button=lab.wait(fridge_button,lambda b:b is not None,'actual fridge inventory button')
-        lab.input('A',x=button['x'],y=button['y'])
-        def cold_inventory():return h.lua('local c=MELens.Parts.spotPart(MELensTest.vehicle,4):getItemContainer();local page=getPlayerLoot(0);local heats={};for i=0,c:getItems():size()-1 do local item=c:getItems():get(i);if instanceof(item,"Food") then heats[#heats+1]=item:getHeat() end end;return {selected=page.inventoryPane.inventory==c,heats=heats}')
-        shown=lab.wait(cold_inventory,lambda s:s['selected'] and h._sequence(s['heats']) and max(h._sequence(s['heats']))<.3,'native cold-food inventory')
-        h.REPORT['nativeFridgeInventory']=shown;lab.capture('A','step-van-cold-food-inventory')
-        overlap=server('return MELensUtilityProbe.overlap()');h.check(abs(overlap['after']-overlap['before'])<.003,'overlapping callbacks double bill time');h.REPORT['overlap']=overlap
-        rain=server('return MELensUtilityProbe.rain()');h.check(rain['water']==20 and not rain['tainted'],'rain taints potable storage');h.REPORT['rain']=rain
-        switch(False);switch(True)
-        lab.capture('A','step-van-fridge-running');h.REPORT['saved']=snap()
-        h.REPORT['status']='passed'
+        finish()
     except BaseException as e:
         h.REPORT.update(status='failed',error=str(e),traceback=traceback.format_exc());raise
     finally:
