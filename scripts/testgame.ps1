@@ -5,10 +5,11 @@
 #   .\scripts\testgame.ps1 -Instance 2 -AllowOtherGames    a second game (build\rv\testhome2, Lua on 18472), for two
 #                                           players on the test server (dev\second_client.ps1)
 #
-# The profile has its own Zomboid folder (-cachedir), its own ZombieBuddy config and
-# only ZombieBuddy, damnlib, KI5 Campers, the B700 bus, ME: LENS and the developer-only RealVehicleInteriors_Dev
-# endpoint mod (dev\RealVehicleInteriors_Dev, Lua on 127.0.0.1 for scripts\lua.ps1), and KI5 Trailers, whose
-# cargo trailers ME: LENS leaves as KI5 made them (too small to walk into): loaded to check that. Your real
+# The profile has its own Zomboid folder (-cachedir) and ZombieBuddy config. In
+# RVI_TEST_CORE_ONLY=1 mode it enables only ZombieBuddy, Real Vehicle Interiors and
+# the developer-only RealVehicleInteriors_Dev endpoint (Lua on 127.0.0.1). The
+# default fleet profile also enables damnlib, KI5 Campers, the B700 bus and KI5 Trailers, whose
+# cargo trailers Real Vehicle Interiors leaves as KI5 made them (too small to walk into): loaded to check that. Your real
 # saves, mod list and ZombieBuddy approvals are never read or written. Because the
 # profile is isolated, ZombieBuddy runs with policy=allow-all here.
 param(
@@ -113,7 +114,8 @@ function Initialize-TestHome {
         [IO.File]::WriteAllText($resetMarker, 'If this file does not exist, default.txt will be reset to empty (no mods active).', [Text.UTF8Encoding]::new($false))
     }
     $extraLines = ($extraMods | ForEach-Object { "    mod = $_,`n" }) -join ''
-    $modList = "VERSION = 1,`nmods`n{`n    mod = ZombieBuddy,`n    mod = damnlib,`n    mod = KI5campers,`n    mod = 87fordB700,`n    mod = KI5trailers,`n    mod = RealVehicleInteriors,`n$extraLines    mod = RealVehicleInteriors_Dev,`n}`nmaps`n{`n}`n"
+    $dependencyLines = ($Lens.Dependencies | ForEach-Object { "    mod = $($_.Id),`n" }) -join ''
+    $modList = "VERSION = 1,`nmods`n{`n${dependencyLines}    mod = RealVehicleInteriors,`n$extraLines    mod = RealVehicleInteriors_Dev,`n}`nmaps`n{`n}`n"
     [IO.File]::WriteAllText((Join-Path $mods 'default.txt'), $modList, [Text.UTF8Encoding]::new($false))
 
     # Start from the user's graphics options (read-only copy), but windowed.

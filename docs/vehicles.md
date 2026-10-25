@@ -21,7 +21,7 @@ The expansion adds 193 vehicle definitions to the 10 already supported: **203 to
 | F700 SWAT truck | 1 | Same B700/F700 mod |
 | Ford F350 ambulance and SWAT | 2 | ['90 Ford F350 Ambulance](https://steamcommunity.com/sharedfiles/filedetails/?id=2952802178) |
 
-Install the vehicle packs you want and enable them before Real Vehicle Interiors. The new packs are optional; they are not bundled or added as mandatory dependencies. The full script-ID list is in [coverage.json](../tools-src/vehicles/coverage.json).
+ZombieBuddy is the only required mod. Supported vanilla vehicles work without car mods or damnlib. Install any combination of supported vehicle packs, with each pack's own dependencies, and enable them before Real Vehicle Interiors. Missing packs are skipped. The full script-ID list is in [coverage.json](../tools-src/vehicles/coverage.json).
 
 Enter at the rear door using the normal interact key. Cargo conversions retain their original cargo containers, loot and capacities. The programme assigns the 193 expansion variants to 43 roles, with furniture and supplies chosen for the named business or passenger use.
 

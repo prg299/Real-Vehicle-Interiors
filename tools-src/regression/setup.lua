@@ -18,6 +18,7 @@ end
 function getScriptManager() return nil end
 function isClient() return true end
 function isServer() return true end
+function getOnlinePlayers() return { size = function() return 0 end } end
 CharacterStat = { PANIC = "Panic" }
 CharacterTrait = { AGORAPHOBIC = "Agoraphobic", CLAUSTROPHOBIC = "Claustrophobic" }
 now = 1000

@@ -272,6 +272,43 @@ class InteriorLab:
             return values[0] == values[1] == values[2] and (expected is None or values[0] == expected)
         return self.wait(self.all_states, same, "identical exact box inventory-item IDs on A/B/server")
 
+    def position_players_at_field(self):
+        """Setup fixture: native admin teleports with explicit destinations.
+
+        Client teleport receipt precedes server position replication. Do not
+        derive the guest destination from an admin position that may be stale.
+        Read actual coordinates/squares on both clients and the server before
+        allowing vehicle/input checks to begin.
+        """
+        local = 'local p=getPlayer();return {x=p:getX(),y=p:getY(),z=p:getZ(),square=p:getCurrentSquare()~=nil,outside=p:getVehicle()==nil}'
+        remote = JSON_ENCODER + '''local r={};local ps=getOnlinePlayers()
+for i=0,ps:size()-1 do local p=ps:get(i);local n=p:getUsername()
+if n=="MELensAdmin" or n=="MELensGuest" then
+r[n]={x=p:getX(),y=p:getY(),z=p:getZ(),square=p:getCurrentSquare()~=nil,outside=p:getVehicle()==nil} end end
+return enc(r)'''
+        fixture = {"commands": ['/teleportto 10813,10140,0', '/teleportto "MELensGuest" 10813,10140,0']}
+        self.h.REPORT.setdefault('positionFixtures', []).append(fixture)
+
+        def positions():
+            value = {'A': self.h.lua(local), 'B': self.b.lua(local), 'server': json.loads(self.server(remote))}
+            fixture['last'] = value
+            return value
+
+        fixture['before'] = positions()
+        self.h.check(fixture['before']['A']['outside'] and fixture['before']['B']['outside'],
+                     'field setup must not eject either player')
+        self.h.lua("SendCommandToServer('/teleportto 10813,10140,0');return true")
+        self.h.lua('SendCommandToServer(\'/teleportto "MELensGuest" 10813,10140,0\');return true')
+
+        def ready(states):
+            rows = [states['A'], states['B'], states['server'].get('MELensAdmin', {}),
+                    states['server'].get('MELensGuest', {})]
+            return all(row.get('square') and row.get('outside') and abs(row.get('x', 0)-10813)<4
+                       and abs(row.get('y', 0)-10140)<4 and abs(row.get('z', 9))<.1 for row in rows)
+
+        fixture['after'] = self.wait(positions, ready, 'both clients and server at explicit field coordinates', timeout=30)
+        return fixture['after']
+
     def enter_e(self, side):
         api = self.h if side == "A" else self.b
         diagnostic = {"client": side, "vehicleId": self.vid}

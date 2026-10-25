@@ -352,11 +352,24 @@ end
 -- Beds use the game's get-in, awake, asleep and get-out clips. Their mattress
 -- contact is near 0.30 above the origin; the engine draws vehicle occupants at
 -- 1.5 scale. Align the support surface (not the pelvis) with the mattress.
--- damnlib's facingLeft remains for benches and bus seats. Clip placement is measured
--- from the original animation bones with dev/xpose.py.
+-- Benches retain damnlib's pose when it is enabled. Otherwise use the vanilla
+-- Bob_SatChair clip. Clip placement is measured with dev/xpose.py.
 ------------------------------------------------------------------------------------
 
 local HEAD = { front = { 0, 1 }, back = { 0, -1 }, left = { 1, 0 }, right = { -1, 0 } }
+
+function P.hasDamnSeats()
+    local mods = getActivatedMods and getActivatedMods()
+    return mods and mods:contains("damnlib") or false
+end
+
+local function benchPose(x, y, z, turn)
+    if P.hasDamnSeats() then return { pose = "facingLeft", x = x, y = y, z = z, turn = turn } end
+    -- Vanilla's pelvis starts 0.3154 above its origin, and its feet face -Z.
+    -- The old pose's pelvis is at the origin with feet facing +X. Vehicle
+    -- occupants render at 1.5 scale; compensate without moving saved furniture.
+    return { pose = "MELensSeat", x = x, y = y - 0.3154 * 1.5, z = z, turn = turn - math.pi / 2 }
+end
 
 -- Which seat of a spot a KI5 seat id is (1, 2, ...), and the spot.
 local function seatInSpot(vehicle, profile, id)
@@ -395,15 +408,15 @@ function P.seatPose(vehicle, profile, id)
         local sign = k == 1 and 1 or -1
         local x, z = P.spotPoint(spot, sign * 0.34, 0.27)
         local fx, fz = -sign * w.along[1], -sign * w.along[2]
-        return { pose = "facingLeft", x = x, y = floor + 0.395, z = z, turn = math.atan2(fz, fx) }
+        return benchPose(x, floor + 0.395, z, math.atan2(fz, fx))
     elseif piece == "medbench" and k <= 2 then
         local x,z = P.spotPoint(spot, (k - 1.5) * .52, .22)
         local out = P.WALLS[spot.wall].out
-        return { pose = "facingLeft", x = x, y = floor + .395, z = z, turn = math.atan2(out[2], out[1]) }
+        return benchPose(x, floor + .395, z, math.atan2(out[2], out[1]))
     elseif (piece == "busseat" and k == 1) or (piece == "busseat2" and k <= 2) then
         local middle = piece == "busseat" and 0 or (k - 1.5) * 0.75
         local x, z = P.spotPoint(spot, middle, 0.40)
-        return { pose = "facingLeft", x = x, y = floor + 0.415, z = z - 0.155, turn = math.pi / 2 }
+        return benchPose(x, floor + 0.415, z - 0.155, math.pi / 2)
     end
     return nil
 end

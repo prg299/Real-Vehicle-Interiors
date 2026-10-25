@@ -1,27 +1,40 @@
-Walk around inside KI5 campers, B700 buses and F700 box trucks. Your interior and supplies travel with the vehicle.
+[h1]Real Vehicle Interiors[/h1]
+Turn supported vanilla vehicles and optional KI5 campers, buses and trucks into a home on the road. Walk around inside and take your interior and supplies with you.
 
+[hr][/hr]
 [h2]How it works[/h2]
-The roof and upper walls hide while you're inside. Move normally and right-click furniture to use it.
+The roof and upper walls hide when you enter. Move normally and right-click furniture to use it.
 [list]
-[*] Sleep, cook, wash and manage power, water and heating.
-[*] Store supplies, place items and rearrange custom RV furniture.
-[*] Rename your vehicle and paint its interior.
+[*] [b]Custom furniture.[/b] Right now the interiors only support custom RV furniture.
+[*] [b]Live inside.[/b] Sleep, cook, wash and manage power, water and heating.
+[*] [b]Set up your space.[/b] Store supplies, place items and rearrange custom RV furniture.
+[*] [b]Make it yours.[/b] Rename your vehicle and paint its interior.
 [/list]
 
+[hr][/hr]
 [h2]Requirements[/h2]
-[b]Build 42.21[/b], KI5 Campers, '87 Ford B700, ZombieBuddy and damnlib.
+[b]Build 42.21[/b] and [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3619862853]ZombieBuddy[/url]. No vehicle mods are required.
 
-ZombieBuddy loads the Java code for roof cutaways and normal standing/walking animations. Approve the Java file when prompted.
-MP trait effects also require ZombieBuddy to load this mod's Java code on the server.
+Supported KI5 vehicle packs are optional. Install only the vehicles you want, together with their own dependencies.
 
-[h2]Incompatibilities[/h2]
-Not compatible with [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3809306528]Project Viewpoint[/url].
+ZombieBuddy loads the Java component for roof cutaways and normal standing and walking animations. [b]Approve it when prompted.[/b]
 
-[h2]Beta & saves[/h2]
-Multiplayer is experimental. MP removal is untested.
+[hr][/hr]
+[h2]Compatibility & saves[/h2]
+Should now be compatible with [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3809306528]Project Viewpoint![/url]. BUT the interiors still only work in the isometric view.
 
-Should be safe to add to and remove from existing saves. [b]Back up first[/b]; custom furniture and stored items may disappear.
+Should be safe to add to or remove from existing saves. [b]Back up first[/b]; custom furniture and stored items may disappear.
 
-AI was used to make this mod. If you have a problem with that, don't download it.
+[hr][/hr]
+[h2]Info[/h2]
+AI was used in the process to make this mod. If you have a problem with that, don't download it.
 
-[i]Submods supporting other vehicle mods are welcome.[/i]
+I don't have super much time to test everything, so except some bugs while the mod is in BETA.
+
+[url=https://github.com/prg299/Real-Vehicle-Interiors]Source code on GitHub[/url]
+
+[hr][/hr]
+[h2]Support development[/h2]
+If you enjoy my work, you can support me by leaving a like!
+
+Want to follow my projects? You can check me out on [url=https://ko-fi.com/bearski]Ko-fi[/url]

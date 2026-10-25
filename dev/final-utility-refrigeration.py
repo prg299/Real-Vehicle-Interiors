@@ -55,9 +55,7 @@ def main():
         for api in (h,lab.b):
             api.lua('if MELens.Dashboard.instance then MELens.Dashboard.instance:close() end;ISUIHandler.setVisibleAllUI(false);local p=getPlayer();if p:getVehicle() then MELens.leave(p) end;return true')
         lab.wait(lambda:h.lua('return getPlayer():getVehicle()==nil') and lab.b.lua('return getPlayer():getVehicle()==nil'),bool,'both players outside prior vehicle')
-        h.lua("SendCommandToServer('/teleportto 10813,10140,0');return true")
-        lab.wait(lambda:h.lua('local p=getPlayer();return math.abs(p:getX()-10813)<2 and math.abs(p:getY()-10140)<2'),bool,'owned field')
-        h.lua('SendCommandToServer(\'/teleportplayer "MELensGuest" "MELensAdmin"\');return true')
+        lab.position_players_at_field()
         if args.verify_source:
             old=json.loads(args.verify_source.read_text());expected=old['saved']
             lab.vid=lab.wait(lambda:int(lab.server('local it=getCell():getVehicles():iterator();while it:hasNext() do local v=it:next();if v:getSqlId()=='+str(expected['sqlId'])+' then return tostring(v:getId()) end end;return "-1"')),lambda n:n>=0,'saved Step Van')
@@ -72,11 +70,20 @@ def main():
         lab.server((ROOT/'dev/lua/utility-refrigeration.lua').read_text()+f';MELensUtilityProbe.bind(getVehicleById({lab.vid}));return "probe ready"')
         h.REPORT['phantomStove']=server('return MELensUtilityProbe.phantomStove()')
         if args.verify_source:
-            actual=snap();h.check(actual['sqlId']==expected['sqlId'] and actual['fridgeId']==expected['fridgeId'] and actual['parts']==expected['parts'],'restart changed vehicle/furniture/part identifiers')
+            actual=snap();h.REPORT['restart']={'expected':expected,'actual':actual}
+            h.check(actual['sqlId']==expected['sqlId'] and actual['fridgeId']==expected['fridgeId'] and actual['parts']==expected['parts'],'restart changed vehicle/furniture/part identifiers')
             h.check(actual['on']==expected['on'] and actual['water']==expected['water'] and actual['tainted']==expected['tainted'],'restart changed utility state')
             h.check([f['id'] for f in h._sequence(actual['foods'])]==[f['id'] for f in h._sequence(expected['foods'])],'restart changed food identity')
-            h.check(abs(actual['fuel']-expected['fuel'])<.08,'restart unexpected fuel debit')
-            h.REPORT['restart']={'expected':expected,'actual':actual}
+            # The dedicated world advances while the second client joins.
+            # Compare the two accounted generator clocks, not a fixed debit
+            # allowance that mistakes normal elapsed play time for a reload bug.
+            elapsed=actual['clock']-expected['clock']
+            used=expected['fuel']-actual['fuel']
+            debit=elapsed*expected['rate']
+            h.REPORT['restart']['fuelAccounting']={'elapsedHours':elapsed,'used':used,'expectedDebit':debit,'toleranceLitres':.005}
+            h.check(elapsed>=0 and actual['clock']<=actual['hours']+.001,'restart generator clock is invalid')
+            h.check(actual['hours']-actual['clock']<.05,'restart generator accounting is stale')
+            h.check(actual['rate']==expected['rate'] and abs(used-debit)<.005,'restart fuel debit differs from accounted appliance time')
         lab.enter_e('A');h.REPORT['inputCoverage'].append('native Interact entry into KI5 Step Van')
         if snap()['on']:switch(False)
         switch(True);lab.capture('A','step-van-generator-powered')

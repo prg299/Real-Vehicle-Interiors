@@ -23,13 +23,17 @@ $Lens.Out = Join-Path $root 'build\rv'
 $Lens.Package = Join-Path $Lens.Out 'package\RealVehicleInteriors'
 $Lens.TestHome = Join-Path $Lens.Out 'testhome'
 $Lens.Dependencies = @(
-    @{ Id = 'ZombieBuddy'; Item = '3619862853'; Folder = 'ZombieBuddy' },
+    @{ Id = 'ZombieBuddy'; Item = '3619862853'; Folder = 'ZombieBuddy' }
+)
+# Existing regression labs use the original fleet by default. A new disposable
+# profile can explicitly test the core mod without any vehicle packs or damnlib.
+if ($env:RVI_TEST_CORE_ONLY -ne '1') { $Lens.Dependencies += @(
     @{ Id = 'damnlib'; Item = '3171167894'; Folder = 'damnlib' },
     @{ Id = 'KI5campers'; Item = '3670064951'; Folder = 'KI5campers' },
     @{ Id = '87fordB700'; Item = '3110911330'; Folder = '87fordB700' },
     # Test-only: unsupported small trailers must keep their original behavior.
     @{ Id = 'KI5trailers'; Item = '3330403100'; Folder = 'KI5trailers' }
-)
+) }
 function Get-LensGameProcesses {
     Get-CimInstance Win32_Process | Where-Object {
         $_.Name -eq 'ProjectZomboid64.exe' -or

@@ -22,7 +22,7 @@ local P = M.Parts
 require "MELens_Bed"
 local B = M.Bed
 
-M.VERSION = "2.0.17"
+M.VERSION = "2.0.18"
 
 local CABIN_VAR = "MELensCabin"      -- "Idle" / "Walk": the standing poses
 local SEAT_VAR = "MELensCabinSeat"   -- "true" while entering, standing in or leaving
@@ -820,10 +820,18 @@ end
 -- Standing session
 ------------------------------------------------------------------------------------
 
+local function clearIndependentSeatPose(player)
+    if not player then return end
+    if player:getVariableString("damnPosition") ~= "MELensSeat" then return end
+    player:clearVariable("damnPosition")
+    if java() and java().clearFacingOf then java().clearFacingOf(player) end
+end
+
 local function setPoseVars(player, pose)
+    clearIndependentSeatPose(player)
     player:setVariable(SEAT_VAR, "true")
     player:setVariable(CABIN_VAR, pose)
-    -- damnlib's seat poses (used when you sit or lie down) need its vehicle flag.
+    -- Retain the existing variable contract for optional damnlib seat adapters.
     player:setVariable("damnVehicle", "True")
 end
 
@@ -1120,6 +1128,7 @@ local function standUpOnMove(player, now)
 end
 
 local function update()
+    if M.updateIndependentSeatObservers then M.updateIndependentSeatObservers() end
     local now = getTimestampMs()
     local dt = lastMs and math.min(0.1, math.max(0, (now - lastMs) / 1000)) or 0
     lastMs = now
@@ -1253,14 +1262,17 @@ end
 -- (where the piece standing at its spot has you lie or sit, MELens.Parts.seatPose) and
 -- turn the pose where it needs turning.
 local seatVec = nil
-function M.placeSeated(player, vehicle, profile)
+function M.placeSeated(player, vehicle, profile, remote)
     local seat = vehicle:getSeat(player)
-    if seat < 0 or M.isStandingSeat(vehicle, profile, seat) or M.isVanillaSeat(vehicle, profile, seat) then return end
+    if seat < 0 or M.isStandingSeat(vehicle, profile, seat) or M.isVanillaSeat(vehicle, profile, seat) then
+        clearIndependentSeatPose(player)
+        return
+    end
     -- damnlib's seat poses (lying in a bed, sitting on a bench) need its vehicle flag,
     -- which it only sets when you get in by the game's own enter action.
     if player:getVariableString("damnVehicle") ~= "True" then
         player:setVariable("damnVehicle", "True")
-        if DAMN and DAMN.EnterAnimations and DAMN.EnterAnimations.checkSeatPositionVar then
+        if not remote and DAMN and DAMN.EnterAnimations and DAMN.EnterAnimations.checkSeatPositionVar then
             DAMN.EnterAnimations:checkSeatPositionVar(player, vehicle, seat)
         end
     end
@@ -1268,6 +1280,7 @@ function M.placeSeated(player, vehicle, profile)
     local id = script:getPassenger(seat):getId()
     local place = P.seatPose(vehicle, profile, id)
     if not place then return end
+    if remote and place.pose ~= "MELensSeat" then return end
     if place.kind == "bed" then place = B.placement(player, vehicle, seat, place) end
     -- our pose, over the one KI5 registered for its own furniture
     if place.pose and player:getVariableString("damnPosition") ~= place.pose then
@@ -1280,9 +1293,9 @@ function M.placeSeated(player, vehicle, profile)
     if java() then
         if place.turn then
             java().setFacing(player, place.turn)
-            M.seatedFacing = true
+            if not remote then M.seatedFacing = true end
         else
-            java().clearFacing()
+            java().clearFacingOf(player)
         end
     end
 end
@@ -2013,9 +2026,38 @@ function M.debugState()
 end
 
 local function onExitVehicle(player)
+    clearIndependentSeatPose(player)
     if player == getSpecificPlayer(0) then
         armCutaway(nil)
     end
+end
+
+-- Without damnlib, observers derive the bench pose from the replicated seat and
+-- furniture. No extra network/save identifiers or authority-changing packets.
+local independentSeatPlayers = {}
+function M.updateIndependentSeatObservers()
+    local seen = {}
+    if isClient() and not P.hasDamnSeats() then
+        local players = getOnlinePlayers()
+        for index = 0, (players and players:size() or 0) - 1 do
+            local player = players:get(index)
+            local vehicle = player:getVehicle()
+            local profile = vehicle and M.profileFor(vehicle)
+            local seat = vehicle and vehicle:getSeat(player) or -1
+            if not player:isLocalPlayer() and profile and seat >= 0 then
+                local passenger = vehicle:getScript():getPassenger(seat)
+                local place = passenger and P.seatPose(vehicle, profile, passenger:getId())
+                if place and place.pose == "MELensSeat" then
+                    M.placeSeated(player, vehicle, profile, true)
+                    seen[player] = true
+                end
+            end
+        end
+    end
+    for player in pairs(independentSeatPlayers) do
+        if not seen[player] then clearIndependentSeatPose(player) end
+    end
+    independentSeatPlayers = seen
 end
 
 Events.OnGameStart.Add(onGameStart)
