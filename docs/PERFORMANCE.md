@@ -1,4 +1,4 @@
-# Performance investigation — 2.0.19 candidate
+# Performance investigation — 2.0.19
 
 ## Reproduction and changes
 
@@ -31,6 +31,8 @@ The final 2.0.19 package also passes `performance-2019-final-20261026-c`: 60 FPS
 The 25-second JFR samples support the diagnosis: main-thread samples containing Kahlua fall from 2,346 to 122, and GC pause events from 28 to zero in these recordings. Sampling weights are not retained heap measurements. An earlier final-package startup exposed an access modifier error in the new frame hook; that failed run remains in `performance-2019-final-20261026-b`. The hook target is now public and the fresh C startup/gameplay run passes.
 
 `performance-2019-dogs-20261026-a` adds only Companion Dogs: the dense fixture stays at 60 FPS (p95 17.80 ms). Two hen and two dog model cycles verify advancing native clips and zero cached/retiring models after removal. Inventory transfers, native panic and normal exit pass again with the same final JAR. Both final runs exit zero, with 6.24/6.33 GiB peak child-tree memory. Focused checks pass 7,684 Lua, 31 cutaway-state and 22 vision assertions; 128 normal/debug Lua compilations have zero errors. Fresh multiplayer and long-duration server performance are not qualified by these single-player runs.
+
+Published on 26 October 2026 to Workshop item `3811728541`, manifest `2163081680558740587`. SteamCMD timed out before submission; the signed-in owner's SteamUGC client uploaded the same frozen package successfully. Steam's official download matches all 219 qualified files. Fresh SteamUGC queries confirm unchanged description, title, visibility, cover, gallery order and dependencies; the public API and cover-byte comparison also pass. Receipts are in `build/rv/release-2.0.19.desktop.json` and `release-2.0.19.published.json`. Distribution verification does not establish the version loaded by an already-running game or server.
 
 ## Repeatable check
 
