@@ -3,6 +3,7 @@ param([string]$Run = 'workshop-20261017', [switch]$GroundOnly, [string]$Scenario
     [switch]$FreshProfile, [ValidateRange(1,60)][int]$ReviewMinutes = 30,
     [switch]$LowMemory, [string]$ProfilePath, [switch]$PreserveClock,
     [string]$Driver, [string[]]$DriverArguments = @(),
+    [switch]$Uncapped, [switch]$StopAfterDriver,
     [switch]$AllowOtherGames) # this game/input/capture stay on a separate inactive desktop
 . (Join-Path $PSScriptRoot '..\scripts\common.ps1')
 if ($ProfilePath) {
@@ -39,6 +40,14 @@ $text = [regex]::Replace($text, '(?m)^textureCompression=.*$', 'textureCompressi
 $texture2x = if ($LowMemory) { 'false' } else { 'true' }
 $text = [regex]::Replace($text, '(?m)^texture2x=.*$', "texture2x=$texture2x")
 [IO.File]::WriteAllText($options, $text)
+if ($Uncapped) {
+    foreach ($setting in @('uncappedFPS=true', 'frameRate=240', 'vsync=false')) {
+        $key = $setting.Split('=')[0]
+        if ($text -match "(?m)^$key=.*$") { $text = [regex]::Replace($text, "(?m)^$key=.*$", $setting) }
+        else { $text += "`n$setting`n" }
+    }
+    [IO.File]::WriteAllText($options, $text)
+}
 $zbConfig = Join-Path $homeDir 'zombie_buddy'
 $java = Join-Path $Lens.GameRoot 'jre64\bin\java.exe'
 $heap = if ($LowMemory) { '-Xmx2048m' } else { '-Xmx3072m' }
@@ -192,6 +201,7 @@ try {
     }
     # Bounded review window. Only commands written by this task are evaluated in this owned profile.
     $deadline = [DateTime]::UtcNow.AddMinutes($ReviewMinutes)
+    if ($StopAfterDriver -and $Driver) { $deadline = [DateTime]::UtcNow }
     Write-Host "REVIEW_READY $runPath"
     while ([DateTime]::UtcNow -lt $deadline) {
         if (-not (OwnedGameAlive)) { break }

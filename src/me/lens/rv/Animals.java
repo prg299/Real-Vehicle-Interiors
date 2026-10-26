@@ -2,7 +2,8 @@ package me.lens.rv;
 
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.joml.Vector3f;
 import zombie.characters.animals.IsoAnimal;
 import zombie.core.SpriteRenderer;
@@ -47,22 +48,26 @@ public final class Animals {
         final Drawer[] drawers = new Drawer[3];
         IsoAnimal lookOf;
         long lookAt;
+        long published;
+        final AtomicInteger inFlight = new AtomicInteger();
 
         Slot() {
             for (int i = 0; i < drawers.length; i++) {
-                drawers[i] = new Drawer(model);
+                drawers[i] = new Drawer(this);
             }
         }
     }
 
     private static final class Drawer extends TextureDraw.GenericDrawer {
         private final AnimatedModel model;
+        private final Slot slot;
         private float x, y, z, angle;
         private Object vehicle;
         private boolean rendered;
 
-        Drawer(AnimatedModel model) {
-            this.model = model;
+        Drawer(Slot slot) {
+            this.slot = slot;
+            this.model = slot.model;
         }
 
         void init(Object vehicle, float x, float y, float z) {
@@ -73,6 +78,7 @@ public final class Animals {
             this.rendered = false;
             model.renderMain();
             angle = model.getAnimationPlayer().getRenderedAngle();
+            slot.inFlight.incrementAndGet();
         }
 
         @Override
@@ -98,6 +104,8 @@ public final class Animals {
                 model.postRender(rendered);
             } catch (Throwable t) {
                 fail("postRender", t);
+            } finally {
+                slot.inFlight.decrementAndGet();
             }
         }
     }
@@ -128,7 +136,11 @@ public final class Animals {
     private static final ArrayList<Entry> pending = new ArrayList<>();
     private static Object pendingOwner;
     private static float pendingFloorY;
-    private static final Map<IsoAnimal, Slot> slots = new WeakHashMap<>();
+    // An AnimatedModel retains its character, so a weak-key map cannot release
+    // these values. Own only published animals and retire their queued drawers.
+    private static final Map<IsoAnimal, Slot> slots = new HashMap<>();
+    private static final ArrayList<Slot> retired = new ArrayList<>();
+    private static long publication;
     private static final Vector3f base = new Vector3f();
     private static final Vector3f at = new Vector3f();
     private static final Vector3f ahead = new Vector3f();
@@ -155,15 +167,41 @@ public final class Animals {
         entries = pending.toArray(NONE);
         owner = pendingOwner;
         pending.clear();
+        pendingOwner = null;
+        long current = ++publication;
+        for (Entry entry : entries) {
+            Slot slot = slots.get(entry.animal);
+            if (slot != null) slot.published = current;
+        }
+        slots.values().removeIf(slot -> {
+            if (slot.published == current) return false;
+            retired.add(slot);
+            return true;
+        });
+        releaseRetired();
     }
 
     public static void clear() {
         entries = NONE;
         owner = null;
+        pending.clear();
+        pendingOwner = null;
+        retired.addAll(slots.values());
+        slots.clear();
+        releaseRetired();
+    }
+
+    public static void releaseRetired() {
+        if (retired.isEmpty()) return;
+        retired.removeIf(slot -> {
+            if (slot.inFlight.get() != 0) return false;
+            slot.model.releaseAnimationPlayer();
+            return true;
+        });
     }
 
     public static String status() {
-        return "animals=" + entries.length + " calls=" + calls + " matched=" + matched + " queued=" + queued + " drawn=" + drawn.get() + " disabled=" + disabled + (depthOn ? "" : " depth=off")
+        return "animals=" + entries.length + " cached=" + slots.size() + " retiring=" + retired.size() + " calls=" + calls + " matched=" + matched + " queued=" + queued + " drawn=" + drawn.get() + " disabled=" + disabled + (depthOn ? "" : " depth=off")
                 + String.format(java.util.Locale.ROOT, " last=%.2f,%.2f,%.3f", lastX, lastY, lastZ) + " state=" + lastState
                 + (lastError == null ? "" : " error=" + lastError);
     }
@@ -177,6 +215,7 @@ public final class Animals {
 
     /** After a vehicle queued its own draw: the animals inside the one you are in, queued right after it. */
     public static void afterVehicleRender(BaseVehicle vehicle) {
+        releaseRetired();
         calls++;
         if (vehicle != null && vehicle == owner) {
             matched++;
@@ -198,6 +237,7 @@ public final class Animals {
                 Slot slot = slots.get(e.animal);
                 if (slot == null) {
                     slot = new Slot();
+                    slot.published = publication;
                     slots.put(e.animal, slot);
                 }
                 AnimatedModel model = slot.model;
@@ -258,7 +298,12 @@ public final class Animals {
                 lastX = at.x();
                 lastY = at.y();
                 lastZ = level;
-                SpriteRenderer.instance.drawGeneric(drawer);
+                try {
+                    SpriteRenderer.instance.drawGeneric(drawer);
+                } catch (Throwable failure) {
+                    slot.inFlight.decrementAndGet();
+                    throw failure;
+                }
                 queued++;
             }
         } catch (Throwable t) {

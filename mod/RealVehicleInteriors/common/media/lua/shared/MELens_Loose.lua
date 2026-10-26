@@ -682,13 +682,13 @@ end
 -- One look at a vehicle's speed (ms: the time; pace: how many times faster than real time the game runs). Returns
 -- whether things were thrown down.
 function L.look(id, vehicle, ms, mode, pace)
-    local speed = vehicle:getCurrentAbsoluteSpeedKmHour()
     local seen = speeds[id]
-    if seen == nil or ms - seen.t > 1000 then
+    if seen and ms >= seen.t and ms - seen.t < SAMPLE_MS then return false end
+    local speed = vehicle:getCurrentAbsoluteSpeedKmHour()
+    if seen == nil or ms < seen.t or ms - seen.t > 1000 then
         speeds[id] = { t = ms, v = speed }                       -- a first look (or a pause): nothing to compare
         return false
     end
-    if ms - seen.t < SAMPLE_MS then return false end
     local lost = (seen.v - speed) / pace
     seen.t, seen.v = ms, speed
     if L.throws(lost, mode) and L.tumble(vehicle) then
