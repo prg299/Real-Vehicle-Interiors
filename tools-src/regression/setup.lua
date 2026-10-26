@@ -13,6 +13,7 @@ function completeJava(methods)
     end
     rv.isPartModelVisible=rv.isPartModelVisible or function() return true end
     rv.clearStalePartModels=rv.clearStalePartModels or function() return false end
+    rv.nativeMovementDistance=rv.nativeMovementDistance or function() return 0 end
     return rv
 end
 function getScriptManager() return nil end

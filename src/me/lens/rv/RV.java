@@ -725,6 +725,11 @@ public final class RV {
         Standing.standing.clear();
     }
 
+    /** Native animation travel for the local standing passenger's current update. */
+    public static float nativeMovementDistance(IsoGameCharacter character) {
+        return character instanceof zombie.characters.IsoPlayer player ? Standing.movementDistance(player) : 0f;
+    }
+
     /** Native clip progress keeps vehicle-relative bed motion in step with the animation. */
     public static float animationProgress(IsoGameCharacter character, String clip) {
         if (character == null || character.getAnimationPlayer() == null) return 0f;

@@ -22,6 +22,11 @@ do
         check(#declarations>0,"partial Java skipped safe script registration")
     end
     local binds,planes=0,0
+    local legacy=completeJava({});legacy.nativeMovementDistance=nil
+    MELensRV=legacy
+    check(M.java()==nil,"old approved Java accepted without native locomotion support")
+    legacy.nativeMovementDistance=function() return 0 end
+    check(M.java()==legacy,"updated locomotion bridge did not recover")
     MELensRV=completeJava({bindSeatContainer=function() binds=binds+1 end,setKeepPlane=function() planes=planes+1 end})
     check(M.java()==MELensRV,"complete bridge rejected after partial bridge")
     M.addStandingPositions()

@@ -206,6 +206,22 @@ public final class Hooks {
         }
     }
 
+    @Patch(className = "zombie.characters.IsoPlayer", methodName = "isPlayerMoving", strictMatch = true)
+    public static final class CabinMovement {
+        @Patch.OnExit
+        public static void exit(@Patch.This IsoPlayer player, @Patch.Return(readOnly = false) boolean moving) {
+            moving = Standing.movingFor(player, moving);
+        }
+    }
+
+    @Patch(className = "zombie.characters.IsoGameCharacter", methodName = "isRunning", strictMatch = true)
+    public static final class CabinRunning {
+        @Patch.OnExit
+        public static void exit(@Patch.This IsoGameCharacter character, @Patch.Return(readOnly = false) boolean running) {
+            running = Standing.runningFor(character, running);
+        }
+    }
+
     @Patch(className = "zombie.characters.IsoPlayer", methodName = "checkActionGroup", strictMatch = true)
     public static final class CheckActionGroup {
         @Patch.OnEnter

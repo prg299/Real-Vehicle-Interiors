@@ -27,8 +27,6 @@ M.VERSION = "2.0.19"
 local CABIN_VAR = "MELensCabin"      -- "Idle" / "Walk": the standing poses
 local SEAT_VAR = "MELensCabinSeat"   -- "true" while entering, standing in or leaving
 local POSITION_KEY = "MELensCabin"   -- vehicle modData: where you were standing
-local IDLE_DELAY = 0.15             -- seconds without movement before the idle pose
-local RUN_SPEED_MULTIPLIER = 2.8    -- ~3.78 tiles/s at the default walk speed, matching steady vanilla Run
 local MAX_MOVE_STEP = 0.05          -- small collision steps also when running or after a slow frame
 
 local TURN_SPEED = 18.0              -- radians per second
@@ -844,7 +842,7 @@ local function beginSession(player, vehicle, profile, seat)
     local s = {
         player = player, vehicle = vehicle, profile = profile, seat = seat,
         x = profile.door.x, z = profile.door.z, facing = 0, targetFacing = 0,
-        moving = false, running = false, pose = "Idle", stillTime = IDLE_DELAY,
+        moving = false, running = false, pose = "Idle",
         path = nil, onArrive = nil, saveTimer = 0,
     }
     -- The floor as this camper is furnished, before choosing where you stand.
@@ -1039,12 +1037,19 @@ local function step(s, dt)
         -- the spot first, then walk, instead of sliding backwards while you turn.
         s.targetFacing = facingFor(dx, dz)
         if math.abs(angleDiff(s.targetFacing, s.facing)) <= TURN_FIRST or limit then
-            local distance = profile.walkSpeed * (runHeld and RUN_SPEED_MULTIPLIER or 1) * dt
+            -- Vanilla owns the stride, acceleration and gait speed. Input means
+            -- moving even while an idle-to-walk/run transition has zero travel.
+            local probe = MAX_MOVE_STEP
+            local available = walkable(profile, s.x + dx * probe, s.z + dz * probe)
+                or (math.abs(dx) > 1e-6 and walkable(profile, s.x + dx * probe, s.z))
+                or (math.abs(dz) > 1e-6 and walkable(profile, s.x, s.z + dz * probe))
+            local distance = java().nativeMovementDistance(player)
+            moving = available
             if limit then
                 distance = math.min(distance, limit)
             end
             local ox, oz = s.x, s.z
-            local remaining = distance
+            local remaining = available and distance or 0
             while remaining > 1e-6 do
                 local stride = math.min(remaining, MAX_MOVE_STEP)
                 local nx, nz = s.x + dx * stride, s.z + dz * stride
@@ -1060,12 +1065,12 @@ local function step(s, dt)
                 end
                 remaining = remaining - stride
             end
-            moving = s.x ~= ox or s.z ~= oz
+            moving = moving and (distance <= 1e-6 or s.x ~= ox or s.z ~= oz)
             -- Walking into the door from the exit marker takes you out, like a doorway.
             local out = profile.exitMarker and profile.exitMarker.outward
             if out and not limit and markerStrength(s) >= 1 and dx * out[1] + dz * out[2] > 0.6 then
                 local stepped = (s.x - ox) * out[1] + (s.z - oz) * out[2]
-                pushingDoor = stepped < distance * 0.3
+                pushingDoor = not available or stepped < distance * 0.3
             end
         end
     end
@@ -1085,9 +1090,8 @@ local function step(s, dt)
     end
     s.facing = turnTowards(s.facing, s.targetFacing, TURN_SPEED * math.max(dt, 0.001))
 
-    -- A short delay before the idle pose, so stop-and-go at a wall edge doesn't flicker.
-    s.stillTime = moving and 0 or (s.stillTime or 0) + dt
-    local walking = moving or s.stillTime < IDLE_DELAY
+    -- Use vanilla's stop blend instead of holding a forced walking pose.
+    local walking = moving
     s.moving, s.running = walking, moving and runHeld or false
     local pose = s.running and "Run" or walking and "Walk" or "Idle"
     if pose ~= s.pose then
