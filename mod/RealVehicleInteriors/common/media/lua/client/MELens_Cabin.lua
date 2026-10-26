@@ -29,8 +29,6 @@ local SEAT_VAR = "MELensCabinSeat"   -- "true" while entering, standing in or le
 local POSITION_KEY = "MELensCabin"   -- vehicle modData: where you were standing
 local MAX_MOVE_STEP = 0.05          -- small collision steps also when running or after a slow frame
 
-local TURN_SPEED = 18.0              -- radians per second
-local TURN_FIRST = 1.2               -- turn on the spot first when the new direction is further off (radians)
 local PUSH_TO_LEAVE = 0.35           -- seconds of walking into the door that take you out
 local ARRIVE_DISTANCE = 0.04
 
@@ -38,7 +36,7 @@ local session = nil
 local armedVehicle = nil
 local armedProfile = nil
 local lastMs = nil
-local placeVec, localA, localB
+local placeVec
 
 local function java()
     return M.java()
@@ -437,11 +435,8 @@ end
 
 -- World direction (tiles) to a direction in the camper's passenger space.
 local function toCamperDirection(vehicle, px, py, wx, wy)
-    localA = localA or Vector3f.new()
-    localB = localB or Vector3f.new()
-    vehicle:getLocalPos(px, py, 0, localA)
-    vehicle:getLocalPos(px + wx, py + wy, 0, localB)
-    return localB:x() - localA:x(), localB:z() - localA:z()
+    local direction = java().cabinDirection(vehicle, wx, wy)
+    return direction:x(), direction:z()
 end
 
 -- Facing for the render hook: 0 looks towards the hitch, turning towards -x first.
@@ -456,14 +451,6 @@ local function angleDiff(target, current)
     while d > math.pi do d = d - 2 * math.pi end
     while d <= -math.pi do d = d + 2 * math.pi end
     return d
-end
-
-local function turnTowards(current, target, maxStep)
-    local delta = angleDiff(target, current)
-    if math.abs(delta) <= maxStep then
-        return target
-    end
-    return angleDiff(current + (delta > 0 and maxStep or -maxStep), 0)
 end
 
 -- Where you stand, per place to stand (the first keeps the key of single-player saves).
@@ -869,6 +856,7 @@ local function beginSession(player, vehicle, profile, seat)
     if java() then
         java().setFacing(player, s.facing)
         java().setStanding(player, true) -- normal standing animations (aim, eat, read...)
+        java().setNativeFacing(player, s.facing, true) -- restore the saved/entry facing once
         if java().shaderError() and not M.warnedShader then
             M.warnedShader = true
             say(player, "IGUI_MELens_ShaderFailed")
@@ -1033,17 +1021,20 @@ local function step(s, dt)
     local pushingDoor = false
     if len > 1e-6 and dt > 0 then
         dx, dz = dx / len, dz / len
-        -- Face where you steer (steady while sliding along a wall). Turning round: turn on
-        -- the spot first, then walk, instead of sliding backwards while you turn.
+        -- Set the same forward target that ordinary player input sets. The native
+        -- animation player owns turning, twist and the direction of root travel.
         s.targetFacing = facingFor(dx, dz)
-        if math.abs(angleDiff(s.targetFacing, s.facing)) <= TURN_FIRST or limit then
+        do
             -- Vanilla owns the stride, acceleration and gait speed. Input means
             -- moving even while an idle-to-walk/run transition has zero travel.
-            local probe = MAX_MOVE_STEP
+            local probe = math.min(MAX_MOVE_STEP, limit or MAX_MOVE_STEP)
             local available = walkable(profile, s.x + dx * probe, s.z + dz * probe)
                 or (math.abs(dx) > 1e-6 and walkable(profile, s.x + dx * probe, s.z))
                 or (math.abs(dz) > 1e-6 and walkable(profile, s.x, s.z + dz * probe))
-            local distance = java().nativeMovementDistance(player)
+            local travel = java().nativeMovement(player)
+            local mx, mz = travel:x(), travel:z()
+            local distance = math.sqrt(mx * mx + mz * mz)
+            local tx, tz = distance > 1e-6 and mx / distance or dx, distance > 1e-6 and mz / distance or dz
             moving = available
             if limit then
                 distance = math.min(distance, limit)
@@ -1052,7 +1043,7 @@ local function step(s, dt)
             local remaining = available and distance or 0
             while remaining > 1e-6 do
                 local stride = math.min(remaining, MAX_MOVE_STEP)
-                local nx, nz = s.x + dx * stride, s.z + dz * stride
+                local nx, nz = s.x + tx * stride, s.z + tz * stride
                 if walkable(profile, nx, nz) then
                     s.x, s.z = nx, nz
                 elseif walkable(profile, nx, s.z) then
@@ -1088,7 +1079,8 @@ local function step(s, dt)
             s.targetFacing = facingFor(ax, az)
         end
     end
-    s.facing = turnTowards(s.facing, s.targetFacing, TURN_SPEED * math.max(dt, 0.001))
+    java().setNativeFacing(player, s.targetFacing, false)
+    s.facing = java().nativeFacing(player)
 
     -- Use vanilla's stop blend instead of holding a forced walking pose.
     local walking = moving
@@ -1099,7 +1091,7 @@ local function step(s, dt)
         player:setVariable(CABIN_VAR, pose)
     end
     place(s)
-    if java() then java().setFacing(player, s.facing) end
+    -- The post-animation hook publishes the native body angle for this draw.
     if M.Sync then M.Sync.send(s, dt) end
     updateMarker(s)
 

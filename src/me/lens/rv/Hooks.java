@@ -239,12 +239,38 @@ public final class Hooks {
     public static final class UpdateWhileInVehicle {
         @Patch.OnEnter
         public static void enter(@Patch.This IsoPlayer player) {
-            Standing.beginChoosing(player);
+            Standing.beginPassengerUpdate(player);
         }
 
         @Patch.OnExit(onThrowable = Throwable.class)
         public static void exit() {
-            Standing.endChoosing();
+            Standing.endPassengerUpdate();
+        }
+    }
+
+    @Patch(className = "zombie.characters.IsoGameCharacter", methodName = "setForwardDirection", strictMatch = true)
+    public static final class PassengerDirectionReset { // Explicit float arguments select the strict overload.
+        @Patch.OnEnter(skipOn = true)
+        public static boolean enter(@Patch.This IsoGameCharacter character,
+                @Patch.Argument(0) float x, @Patch.Argument(1) float y) {
+            return Standing.skipPassengerDirection(character);
+        }
+    }
+
+    @Patch(className = "zombie.core.skinnedmodel.animation.AnimationPlayer", methodName = "setTargetAndCurrentDirection", strictMatch = true)
+    public static final class PassengerAngleReset { // The Vector2 overload delegates to this float overload.
+        @Patch.OnEnter(skipOn = true)
+        public static boolean enter(@Patch.This zombie.core.skinnedmodel.animation.AnimationPlayer animation,
+                @Patch.Argument(0) float x, @Patch.Argument(1) float y) {
+            return Standing.skipPassengerAngle(animation);
+        }
+    }
+
+    @Patch(className = "zombie.characters.IsoGameCharacter", methodName = "postUpdateAnimating", strictMatch = true)
+    public static final class CabinNativeFacing {
+        @Patch.OnExit
+        public static void exit(@Patch.This IsoGameCharacter character) {
+            Standing.publishFacing(character);
         }
     }
 

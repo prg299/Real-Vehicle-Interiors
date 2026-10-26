@@ -730,6 +730,22 @@ public final class RV {
         return character instanceof zombie.characters.IsoPlayer player ? Standing.movementDistance(player) : 0f;
     }
 
+    public static org.joml.Vector3f nativeMovement(IsoGameCharacter character) {
+        return Standing.movement(character instanceof zombie.characters.IsoPlayer player ? player : null);
+    }
+
+    public static void setNativeFacing(IsoGameCharacter character, double radians, boolean immediate) {
+        if (character instanceof zombie.characters.IsoPlayer player) Standing.targetFacing(player, radians, immediate);
+    }
+
+    public static float nativeFacing(IsoGameCharacter character) {
+        return character instanceof zombie.characters.IsoPlayer player ? Standing.facing(player) : 0f;
+    }
+
+    public static org.joml.Vector3f cabinDirection(BaseVehicle vehicle, double x, double y) {
+        return Standing.direction(vehicle, (float) x, (float) y);
+    }
+
     /** Native clip progress keeps vehicle-relative bed motion in step with the animation. */
     public static float animationProgress(IsoGameCharacter character, String clip) {
         if (character == null || character.getAnimationPlayer() == null) return 0f;

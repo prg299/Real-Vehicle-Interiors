@@ -2,7 +2,8 @@
 -- exist without the API used by the accompanying Lua; truthiness is insufficient.
 MELens = MELens or {}
 local required = { "setKeepPlane", "bindSeatContainer", "setCutaway", "clearCutaway",
-    "isPartModelVisible", "clearStalePartModels", "nativeMovementDistance" }
+    "isPartModelVisible", "clearStalePartModels", "nativeMovementDistance",
+    "nativeMovement", "setNativeFacing", "nativeFacing", "cabinDirection" }
 local warnedBridge, warnedMethod
 
 function MELens.java()

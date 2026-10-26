@@ -5,6 +5,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import zombie.characters.IsoGameCharacter;
 import zombie.characters.IsoPlayer;
 import zombie.characters.action.ActionGroup;
+import zombie.core.skinnedmodel.animation.AnimationPlayer;
+import zombie.core.physics.Transform;
+import zombie.vehicles.BaseVehicle;
 import zombie.iso.Vector2;
 import org.joml.Vector3f;
 
@@ -21,9 +24,11 @@ import org.joml.Vector3f;
 public final class Standing {
     static final Set<IsoGameCharacter> standing = ConcurrentHashMap.newKeySet();
     private static final ThreadLocal<IsoPlayer> choosing = new ThreadLocal<>();
+    private static final ThreadLocal<IsoPlayer> passengerUpdate = new ThreadLocal<>();
     private static final class MotionScratch {
         final Vector2 delta = new Vector2();
-        final Vector3f origin = new Vector3f(), unit = new Vector3f();
+        final Vector3f unit = new Vector3f(), travel = new Vector3f();
+        final Transform transform = new Transform();
     }
     private static final ThreadLocal<MotionScratch> motion = ThreadLocal.withInitial(MotionScratch::new);
 
@@ -53,17 +58,90 @@ public final class Standing {
     /** The exact deferred animation displacement used by ordinary walking,
      * converted from world tiles to this vehicle's passenger-space units. */
     public static float movementDistance(IsoPlayer player) {
+        return movement(player).length();
+    }
+
+    /** Keep the native stride's direction, including a turning clip's root motion. */
+    public static Vector3f movement(IsoPlayer player) {
+        MotionScratch scratch = motion.get();
+        scratch.travel.zero();
+        if (!isStanding(player)) return scratch.travel;
+        player.getDeferredMovement(scratch.delta);
+        if (!Float.isFinite(scratch.delta.x) || !Float.isFinite(scratch.delta.y)) return scratch.travel;
+        localDirection(player, scratch.delta.x, scratch.delta.y, scratch);
+        return scratch.travel;
+    }
+
+    private static void localDirection(IsoPlayer player, float worldX, float worldY, MotionScratch scratch) {
+        direction(player.getVehicle(), worldX, worldY, scratch);
+    }
+
+    private static Vector3f direction(BaseVehicle vehicle, float worldX, float worldY, MotionScratch scratch) {
+        // Transform a vector, not two distant world points. Avoid rounding away
+        // small root steps or introducing facing jitter as the player moves.
+        vehicle.getWorldTransform(scratch.transform);
+        scratch.transform.origin.zero();
+        scratch.transform.inverse();
+        scratch.travel.set(worldX, 0f, worldY);
+        scratch.transform.transform(scratch.travel);
+        scratch.travel.y = 0f;
+        return scratch.travel;
+    }
+
+    public static Vector3f direction(BaseVehicle vehicle, float worldX, float worldY) {
+        return direction(vehicle, worldX, worldY, motion.get());
+    }
+
+    /** The game's animation player owns body rotation, twist and turn animations. */
+    public static void targetFacing(IsoPlayer player, double radians, boolean immediate) {
+        if (!isStanding(player) || !Double.isFinite(radians)) return;
+        MotionScratch scratch = motion.get();
+        var vehicle = player.getVehicle();
+        vehicle.getWorldTransform(scratch.transform);
+        scratch.transform.origin.zero();
+        scratch.unit.set((float) -Math.sin(radians), 0f, (float) Math.cos(radians));
+        scratch.transform.transform(scratch.unit);
+        float x = scratch.unit.x, y = scratch.unit.z;
+        if (x*x + y*y < 1e-8f) return;
+        player.setForwardDirection(x, y);
+        if (immediate && player.hasAnimationPlayer()) {
+            player.getAnimationPlayer().setTargetAndCurrentDirection(x, y);
+        }
+    }
+
+    public static float facing(IsoPlayer player) {
         if (!isStanding(player)) return 0f;
         MotionScratch scratch = motion.get();
-        player.getDeferredMovement(scratch.delta);
-        float distance = scratch.delta.getLength();
-        if (!Float.isFinite(distance) || distance <= 0f) return 0f;
-        var vehicle = player.getVehicle();
-        vehicle.getLocalPos(player.getX(), player.getY(), 0f, scratch.origin);
-        vehicle.getLocalPos(player.getX() + 1f, player.getY(), 0f, scratch.unit);
-        double scale = Math.hypot(scratch.unit.x - scratch.origin.x, scratch.unit.z - scratch.origin.z);
-        double localDistance = distance * scale;
-        return Double.isFinite(localDistance) ? (float) localDistance : 0f;
+        float angle = player.hasAnimationPlayer() ? player.getAnimationPlayer().getAngle()
+                : player.getDirectionAngleRadians();
+        localDirection(player, (float) Math.cos(angle), (float) Math.sin(angle), scratch);
+        return (float) Math.atan2(-scratch.travel.x, scratch.travel.z);
+    }
+
+    public static void publishFacing(IsoGameCharacter character) {
+        if (character instanceof IsoPlayer player && isStanding(player) && player.isLocalPlayer()) {
+            RV.facing.put(player, facing(player));
+        }
+    }
+
+    public static void beginPassengerUpdate(IsoPlayer player) {
+        beginChoosing(player);
+        if (isStanding(player)) passengerUpdate.set(player);
+    }
+
+    public static void endPassengerUpdate() {
+        passengerUpdate.remove();
+        endChoosing();
+    }
+
+    /** Suppress only the seated-passenger resets in updateWhileInVehicle. */
+    public static boolean skipPassengerDirection(IsoGameCharacter character) {
+        return passengerUpdate.get() == character && !character.isAiming();
+    }
+
+    public static boolean skipPassengerAngle(AnimationPlayer animation) {
+        IsoPlayer player = passengerUpdate.get();
+        return player != null && player.getAnimationPlayer() == animation;
     }
 
     public static void beginChoosing(IsoPlayer player) {
