@@ -24,6 +24,21 @@ No vehicle mods or damnlib are required for vanilla vehicles. Install any subset
 
 Clients need the Java component loaded through ZombieBuddy. In multiplayer, the native indoor panic, sight and refrigerator food-preservation adapters also need Java on the server. Other interior features retain their existing support on servers without the Java component.
 
+## Multiplayer setup
+
+For a server using only this mod and its required dependency:
+
+```ini
+WorkshopItems=3619862853;3811728541
+Mods=ZombieBuddy;RealVehicleInteriors
+```
+
+These are additions to an existing server's lists; keep the other entries and separate them with semicolons. The Workshop ID downloads the package; the Mod ID enables it. In Host, add both items under Steam Workshop and enable ZombieBuddy before Real Vehicle Interiors under Mods.
+
+Subscribing does not install ZombieBuddy's Java loader. Each player must follow the [official installation guide](https://github.com/zed-0xff/ZombieBuddy/blob/master/doc/Installation.md), approve this mod's Java component when prompted, and restart after updating it. The server's Java requirements are described above. This mod's Workshop ID is `3811728541`; its Mod ID is `RealVehicleInteriors`.
+
+For a world-loading hang, include the first exception and its full stack trace from the client's `Zomboid/console.txt`, the matching server log, the game/mod versions, and whether this is Host or a dedicated server. The two configuration lines alone do not identify a loading exception. Preserve the save and Lua checksum setting while collecting the error.
+
 ## Build
 
 Requires PowerShell 7, JDK 25, Python 3.10+, and a local Project Zomboid 42.21 installation with ZombieBuddy.
