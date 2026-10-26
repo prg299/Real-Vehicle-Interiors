@@ -10,7 +10,6 @@ import zombie.GameTime;
 import zombie.characters.CharacterStat;
 import zombie.characters.IsoGameCharacter;
 import zombie.characters.IsoPlayer;
-import zombie.characters.Stats;
 import zombie.characters.traits.CharacterTraits;
 import zombie.scripting.objects.CharacterTrait;
 import zombie.vehicles.BaseVehicle;
@@ -27,6 +26,7 @@ public final class Phobia {
     private static final Map<IsoGameCharacter, Receipt> LAST =
             Collections.synchronizedMap(new WeakHashMap<>());
     private static final ThreadLocal<Deque<Context>> CONTEXTS = new ThreadLocal<>();
+    private static final Context OUTSIDE = new Context(null, 0);
     private static final StackWalker WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
     private Phobia() {}
@@ -38,8 +38,9 @@ public final class Phobia {
         VehicleScript script = v == null ? null : v.getScript();
         if (script == null) return false;
         Map<String, Float> seats = ENCLOSURES.get(script.getFullName());
+        if (seats == null || seats.isEmpty()) return false;
         int seat = v.getSeat(character);
-        return seats != null && seat >= 0 && seat < script.getPassengerCount()
+        return seat >= 0 && seat < script.getPassengerCount()
                 && seats.containsKey(script.getPassenger(seat).getId());
     }
 
@@ -57,22 +58,30 @@ public final class Phobia {
     public static void beginUpdate(IsoGameCharacter character) {
         if (!(character instanceof IsoPlayer)) return;
         Deque<Context> stack = CONTEXTS.get();
+        Context context = resolve(character);
+        if (context == null) {
+            // Ordinary outdoor/cab updates do not allocate scopes or receipts.
+            // A nested outside update must still mask an enclosing player's scope.
+            if (stack != null && !stack.isEmpty()) stack.push(OUTSIDE);
+            return;
+        }
         if (stack == null) {
             stack = new ArrayDeque<>();
             CONTEXTS.set(stack);
         }
-        stack.push(resolve(character));
+        stack.push(context);
     }
 
     /** Advice target: always unwind the per-player scope, including exceptional exits. */
     public static void endUpdate(IsoGameCharacter character) {
         if (!(character instanceof IsoPlayer)) return;
         Deque<Context> stack = CONTEXTS.get();
-        if (stack != null && !stack.isEmpty() && stack.peek().character == character) {
+        if (stack != null && !stack.isEmpty()
+                && (stack.peek() == OUTSIDE || stack.peek().character == character)) {
             Context context = stack.pop();
-            if (context != null) finish(context);
+            if (context != OUTSIDE) finish(context);
         }
-        if (stack == null || stack.isEmpty()) CONTEXTS.remove();
+        // Keep the empty per-thread deque for the next interior update.
     }
 
     /** Advice target: this is called after CharacterTraits.get returns. */
@@ -104,31 +113,29 @@ public final class Phobia {
 
     /** Diagnostics consumed by the in-game multiplayer harness. */
     public static String debugState(IsoGameCharacter character) {
+        if (!isEnclosed(character)) return "{}";
         Receipt receipt = LAST.get(character);
         return receipt == null ? "{}" : receipt.json();
     }
 
     private static Context resolve(IsoGameCharacter character) {
-        Context context = new Context(character, nextSequence(character));
-        CharacterTraits traits = character.getCharacterTraits();
-        context.traits = traits;
         BaseVehicle vehicle = character.getVehicle();
-        if (vehicle == null || traits == null) return context;
+        if (vehicle == null) return null;
         VehicleScript script = vehicle.getScript();
-        if (script == null) return context;
+        if (script == null) return null;
         Map<String, Float> seats = ENCLOSURES.get(script.getFullName());
-        if (seats == null || seats.isEmpty()) return context;
+        if (seats == null || seats.isEmpty()) return null;
         int occupiedSeat = vehicle.getSeat(character);
-        if (occupiedSeat < 0) return context;
-        for (Map.Entry<String, Float> entry : seats.entrySet()) {
-            if (script.getPassengerIndex(entry.getKey()) == occupiedSeat) {
-                context.inside = true;
-                context.profile = script.getFullName();
-                context.seat = entry.getKey();
-                context.area = entry.getValue();
-                break;
-            }
-        }
+        if (occupiedSeat < 0 || occupiedSeat >= script.getPassengerCount()) return null;
+        String id = script.getPassenger(occupiedSeat).getId();
+        Float area = seats.get(id);
+        if (area == null || character.getCharacterTraits() == null) return null;
+        Context context = new Context(character, nextSequence(character));
+        context.traits = character.getCharacterTraits();
+        context.inside = true;
+        context.profile = script.getFullName();
+        context.seat = id;
+        context.area = area;
         return context;
     }
 
@@ -150,11 +157,12 @@ public final class Phobia {
     private static boolean nativeTraitCall() {
         try {
             return WALKER.walk(frames -> {
-                var list = frames.toList();
-                for (int i = 0; i + 1 < list.size(); i++) {
-                    var frame = list.get(i);
+                var iterator = frames.iterator();
+                while (iterator.hasNext()) {
+                    var frame = iterator.next();
                     if (frame.getDeclaringClass() == CharacterTraits.class && frame.getMethodName().equals("get")) {
-                        var caller = list.get(i + 1);
+                        if (!iterator.hasNext()) return false;
+                        var caller = iterator.next();
                         return caller.getDeclaringClass() == IsoGameCharacter.class
                                 && caller.getMethodName().equals("updateInternal");
                     }

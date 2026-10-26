@@ -19,6 +19,15 @@ import zombie.vehicles.BaseVehicle;
 public final class Hooks {
     private Hooks() {}
 
+    /** Retired animal drawers may finish after the last vehicle draw, including
+     * while returning to the menu. Release their animation players on the main
+     * thread once the render thread has finished all queued states. */
+    @Patch(className = "zombie.GameWindow", methodName = "frameStep", strictMatch = true)
+    public static final class RetiredAnimalModels {
+        @Patch.OnExit
+        public static void exit() { Animals.releaseRetired(); }
+    }
+
     @Patch(className = "zombie.inventory.ItemContainer", methodName = "isFridge", strictMatch = true)
     public static final class InteriorFridgeType {
         @Patch.OnExit

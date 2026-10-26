@@ -2,7 +2,9 @@
 
 Walk around inside supported vanilla vehicles and optional KI5 vehicle packs in **Project Zomboid Build 42.21**. Furnish your vehicle, sleep, cook, wash, store supplies and take your base with you.
 
-**Version: 2.0.18 (beta candidate, not uploaded).** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541) · [Animals details and testing](docs/ANIMALS.md)
+**Version: 2.0.19 (performance fix candidate; Workshop release: 2.0.18).** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541) · [Animals details and testing](docs/ANIMALS.md)
+
+2.0.19 avoids repeatedly packing unchanged shelf inventories, bounds shelf work by the display limit, retires inactive animal render models and removes outdoor phobia diagnostic allocations. No saved vehicle, furniture, item or utility IDs change. See [performance investigation](docs/PERFORMANCE.md) for measurements and scope.
 
 2.0.18 makes all vehicle packs and damnlib optional. Vanilla benches use the game's chair animation without damnlib; existing enabled damnlib seating stays unchanged. Vehicle, furniture, loot and utility IDs are preserved.
 
@@ -49,7 +51,7 @@ The `MELens` and `me.lens.rv` identifiers remain for save and add-on compatibili
 
 Back up saves before changing mods. Known beta gaps include intermittent multiplayer passenger-position resets and incomplete fresh multiplayer bus/save-reload, trait and loose-item interaction checks. No bulk uninstall migration is provided; empty interior storage and have occupants exit before removal.
 
-The 2.0.18 candidate passes native single-player entry, bench/bed use, get-up, exit and vanilla Dashboard checks with only ZombieBuddy, and with just KI5 Campers plus its own damnlib dependency. The independent multiplayer bench observer has regression coverage; native two-client testing remains pending. The live Workshop release remains 2.0.17.
+The 2.0.18 release passed native single-player entry, bench/bed use, get-up, exit and vanilla Dashboard checks with only ZombieBuddy, and with just KI5 Campers plus its own damnlib dependency. Two-client fallback bench rendering and cold-restart utility checks also passed. These focused checks do not establish exhaustive vehicle or multiplayer compatibility.
 
 Carry small animals inside and use their normal right-click actions. Animals use native animations and eat and drink when supplied. Optional [Companion Dogs](https://steamcommunity.com/sharedfiles/filedetails/?id=3740052292) can follow their owner in and out, Stay, be carried and use Bring from outside. Loaded vehicles continue their care; unloaded time pauses Companion Dogs needs. Breeding, egg collection, milking, shearing and unrestricted interior animal AI are outside this version's scope.
 

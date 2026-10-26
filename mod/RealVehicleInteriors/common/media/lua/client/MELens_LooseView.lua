@@ -30,6 +30,9 @@ local lastMs = nil
 local failures = 0
 local retryAt = 0
 local tumbles = {}           -- vehicle id -> how many times things fell by the last look
+-- Only the current cabin is cached. Leaving/resetting releases its items and
+-- vehicle; no persistent data or engine-owned dirty flags are changed.
+local shelfVehicle, shelfProfile, shelfCache = nil, nil, {}
 
 local function java()
     return M.java()
@@ -77,65 +80,142 @@ end
 -- cabinet, neighboring items or the next board. Floor placement uses the same
 -- measured surfaces and native item-size contract.
 V.OPEN_STORAGE = { shelf = true, medlocker = true, equipmentrack = true, workbench = true }
-function V.shelfItems(vehicle, profile, budget)
-    local groups, pending = {}, false
-    local size = M.LooseUI and M.LooseUI.size
-    if not size then return {}, true end
-    for index, spot in ipairs(profile.spots or {}) do
-        local part = P.spotPart(vehicle, index)
-        local piece = P.pieceAt(part)
-        local container = piece and V.OPEN_STORAGE[piece] and part:getItemContainer()
-        if container then
-            local boards = {}
-            for _, def in ipairs(L.SURFACES[piece]) do
-                boards[#boards + 1] = { def = def, used = {} }
-            end
-            local items, group = {}, {}
-            for i = 0, container:getItems():size() - 1 do items[#items + 1] = container:getItems():get(i) end
-            table.sort(items, function(a,b) return a:getID() < b:getID() end)
-            for _, item in ipairs(items) do
-                local w,h,d = size(item)
-                if not w then pending = true
-                elseif java().canShow(item) then
-                    local placed = false
-                    for _, board in ipairs(boards) do
-                        local b = board.def
-                        if not placed and (not b.head or h + .008 <= b.head) then
-                            for _, turn in ipairs({0,90}) do
-                                local along,deep = w,d
-                                if turn == 90 then along,deep = d,w end
-                                if not placed and along <= b.a1-b.a0 and deep <= b.d1-b.d0 then
-                                    local a = b.a0 + along/2
-                                    while a + along/2 <= b.a1 + .0001 and not placed do
-                                        local dd = b.d0 + deep/2
-                                        while dd + deep/2 <= b.d1 + .0001 and not placed do
-                                            local free = true
-                                            for _, q in ipairs(board.used) do
-                                                if math.abs(a-q.a) < (along+q.w)/2+.008
-                                                    and math.abs(dd-q.d) < (deep+q.depth)/2+.008 then free=false;break end
-                                            end
-                                            if free then
-                                                local x,z = P.spotPoint(spot,a,dd)
-                                                local look = L.lookOf(item) or {}
-                                                local y = profile.floorY+(spot.rise or 0)+b.h
-                                                local entry = { id=item:getID(), t=item:getFullType(), x=x,y=y,z=z,
-                                                    r=(P.WALLS[spot.wall].rotate+turn)%360, s=index,
-                                                    tx=look.tx,tr=look.tr,tg=look.tg,tb=look.tb }
-                                                group[#group+1] = { e=entry,y=y,item=item,board=b.name }
-                                                board.used[#board.used+1] = {a=a,d=dd,w=along,depth=deep}
-                                                placed=true
-                                            end
-                                            dd=dd+.025
+local function packShelf(items, spot, index, profile, piece, budget, size, rv)
+    local group, waiting, failedSizes = {}, {}, {}
+    local boards = {}
+    for _, def in ipairs(L.SURFACES[piece]) do
+        boards[#boards + 1] = { def = def, used = {} }
+    end
+    for _, item in ipairs(items) do
+        if #group >= budget then break end
+        local w,h,d = size(item)
+        if not w then waiting[#waiting + 1] = item
+        elseif rv.canShow(item) then
+            local dimensions = w .. ":" .. h .. ":" .. d
+            if not failedSizes[dimensions] then
+                local placed = false
+                for _, board in ipairs(boards) do
+                    local b = board.def
+                    if not placed and (not b.head or h + .008 <= b.head) then
+                        for _, turn in ipairs({0,90}) do
+                            local along,deep = w,d
+                            if turn == 90 then along,deep = d,w end
+                            if not placed and along <= b.a1-b.a0 and deep <= b.d1-b.d0 then
+                                local a = b.a0 + along/2
+                                while a + along/2 <= b.a1 + .0001 and not placed do
+                                    local dd = b.d0 + deep/2
+                                    while dd + deep/2 <= b.d1 + .0001 and not placed do
+                                        local free = true
+                                        for _, q in ipairs(board.used) do
+                                            if math.abs(a-q.a) < (along+q.w)/2+.008
+                                                and math.abs(dd-q.d) < (deep+q.depth)/2+.008 then free=false;break end
                                         end
-                                        a=a+.025
+                                        if free then
+                                            local x,z = P.spotPoint(spot,a,dd)
+                                            local y = profile.floorY+(spot.rise or 0)+b.h
+                                            local entry = { id=item:getID(), t=item:getFullType(), x=x,y=y,z=z,
+                                                r=(P.WALLS[spot.wall].rotate+turn)%360, s=index }
+                                            group[#group+1] = { e=entry,y=y,item=item,board=b.name }
+                                            board.used[#board.used+1] = {a=a,d=dd,w=along,depth=deep}
+                                            placed=true
+                                        end
+                                        dd=dd+.025
                                     end
+                                    a=a+.025
                                 end
                             end
                         end
                     end
                 end
+                -- Occupancy only grows during this pass. An identical-sized
+                -- item cannot fit where a previous one already failed.
+                if not placed then failedSizes[dimensions] = true end
             end
-            groups[#groups+1] = group
+        end
+    end
+    return group, #waiting > 0, waiting
+end
+
+-- Kahlua's recursive table.sort can exhaust the Lua stack on large inventories
+-- that are already in ID order. Bottom-up merges keep the same stable priority
+-- with bounded stack depth, and run only after contents actually change.
+local function sortItems(items)
+    local work, width, count = {}, 1, #items
+    while width < count do
+        for first = 1, count, width * 2 do
+            local middle, last = math.min(first+width-1,count), math.min(first+width*2-1,count)
+            local left, right = first, middle+1
+            for dest = first, last do
+                if left <= middle and (right > last or items[left]:getID() <= items[right]:getID()) then
+                    work[dest] = items[left]; left = left+1
+                else
+                    work[dest] = items[right]; right = right+1
+                end
+            end
+        end
+        items, work = work, items
+        width = width*2
+    end
+    return items
+end
+
+function V.shelfItems(vehicle, profile, budget)
+    if budget <= 0 then return {}, false end
+    if shelfVehicle ~= vehicle or shelfProfile ~= profile then
+        shelfVehicle, shelfProfile, shelfCache = vehicle, profile, {}
+    end
+    local groups, pending = {}, false
+    local size, rv = M.LooseUI and M.LooseUI.size, java()
+    if not size or not rv then return {}, true end
+    for index, spot in ipairs(profile.spots or {}) do
+        local part = P.spotPart(vehicle, index)
+        local piece = P.pieceAt(part)
+        local container = piece and V.OPEN_STORAGE[piece] and part:getItemContainer()
+        if container then
+            local items = container:getItems()
+            local count = items:size()
+            local cached = shelfCache[index]
+            local installed = part:getInventoryItem()
+            local same = cached and cached.capacity >= budget
+                and cached.part == part and cached.installed == installed and cached.container == container
+                and cached.piece == piece and cached.surface == L.SURFACES[piece] and cached.size == size
+                and cached.floor == profile.floorY and cached.x == spot.x and cached.z == spot.z
+                and cached.wall == spot.wall and cached.rise == spot.rise and #cached.order == count
+            -- Detect native transfers and multiplayer container replacements even
+            -- when the number of items stays the same. No allocations on a hit.
+            if same then
+                for i = 1, count do
+                    local item = items:get(i - 1)
+                    if cached.order[i] ~= item or cached.types[i] ~= item:getFullType()
+                        or cached.ids[i] ~= item:getID() then same = false; break end
+                end
+            end
+            -- A slow/missing model must not make every ready item repeat the
+            -- packing search. Repack only when a waiting size actually resolves.
+            if same and cached.pending then
+                for _, item in ipairs(cached.waiting) do
+                    if size(item) then same = false; break end
+                end
+            end
+            if not same then
+                local order, sorted, types, ids = {}, {}, {}, {}
+                for i = 0, count - 1 do
+                    local item = items:get(i)
+                    order[#order + 1], sorted[#sorted + 1] = item, item
+                    types[i + 1], ids[i + 1] = item:getFullType(), item:getID()
+                end
+                sorted = sortItems(sorted)
+                local group, loading, waiting = packShelf(sorted, spot, index, profile, piece, budget, size, rv)
+                cached = { part=part,installed=installed,container=container,piece=piece,
+                    surface=L.SURFACES[piece],size=size,floor=profile.floorY,x=spot.x,z=spot.z,
+                    wall=spot.wall,rise=spot.rise,order=order,types=types,ids=ids,
+                    capacity=budget,group=group,pending=loading,waiting=waiting }
+                shelfCache[index] = cached
+            end
+            groups[#groups+1] = cached.group
+            pending = pending or cached.pending
+        else
+            shelfCache[index] = nil
         end
     end
     -- Share the existing draw budget across racks, so a full first rack cannot
@@ -144,7 +224,14 @@ function V.shelfItems(vehicle, profile, budget)
     while #out < budget and more do
         more=false
         for _, group in ipairs(groups) do
-            if group[n] and #out < budget then out[#out+1]=group[n];more=true end
+            if group[n] and #out < budget then
+                local row = group[n]
+                -- Appearance may change without an inventory transfer (dye,
+                -- clothing texture/tint). Only displayed items need this query.
+                local look = L.lookOf(row.item) or {}
+                row.e.tx,row.e.tr,row.e.tg,row.e.tb = look.tx,look.tr,look.tg,look.tb
+                out[#out+1]=row;more=true
+            end
         end
         n=n+1
     end
@@ -164,14 +251,14 @@ local function publish(vehicle, profile)
         if #shown >= limit then break end
         if not bad[e.id] then
             local y = heightOf(e, profile, installed)
-            parts[#parts + 1] = string.format("%.0f:%.3f:%.3f:%.3f:%.1f:%s", num(e.id), num(e.x), num(y), num(e.z), num(e.r), tostring(e.tx))
+            parts[#parts + 1] = string.format("%.0f:%.3f:%.3f:%.3f:%.1f:%s:%.4f:%.4f:%.4f", num(e.id), num(e.x), num(y), num(e.z), num(e.r), tostring(e.tx),num(e.tr or 1),num(e.tg or 1),num(e.tb or 1))
             shown[#shown + 1] = { e = e, y = y }
         end
     end
     local shelves, shelfPending = V.shelfItems(vehicle,profile,math.max(0,limit-#shown))
     for _, s in ipairs(shelves) do
         local e=s.e
-        parts[#parts+1]=string.format("s%.0f:%s:%.3f:%.3f:%.3f:%.1f",num(e.id),e.t,e.x,e.y,e.z,e.r)
+        parts[#parts+1]=string.format("s%.0f:%s:%.3f:%.3f:%.3f:%.1f:%s:%.4f:%.4f:%.4f",num(e.id),e.t,e.x,e.y,e.z,e.r,tostring(e.tx),num(e.tr or 1),num(e.tg or 1),num(e.tb or 1))
         shown[#shown+1]=s
     end
     local signature = table.concat(parts, ";")
@@ -249,6 +336,7 @@ local function onTick()
                 failures = failures + 1
                 pcall(rv.clearLoose)
                 published, publishedVehicle, retry = nil, nil, false
+                shelfVehicle, shelfProfile, shelfCache = nil, nil, {}
                 retryAt = now + V.RETRY_MS
                 if failures <= 3 then
                     print("[ME_LENS] loose items are not shown (trying again): " .. tostring(err))
@@ -268,15 +356,17 @@ local function onTick()
                 L.prune(vehicle)
             end
         end
-    elseif publishedVehicle ~= nil or published ~= nil then
+    elseif publishedVehicle ~= nil or published ~= nil or shelfVehicle ~= nil then
         rv.clearLoose()
         published, publishedVehicle, retry, listed = nil, nil, false, nil
+        shelfVehicle, shelfProfile, shelfCache = nil, nil, {}
     end
 end
 
 -- Draws again at once (after an action changed what lies there).
 function V.refresh()
     published = nil
+    shelfCache = {}
 end
 
 function V.reset()
@@ -285,6 +375,7 @@ function V.reset()
     bad = {}
     protos = {}
     tumbles = {}
+    shelfVehicle, shelfProfile, shelfCache = nil, nil, {}
     if java() then
         java().resetLoose()
     end
