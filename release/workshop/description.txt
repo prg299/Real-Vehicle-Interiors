@@ -38,3 +38,12 @@ I don't have super much time to test everything, so except some bugs while the m
 If you enjoy my work, you can support me by leaving a like!
 
 Want to follow my projects? You can check me out on [url=https://ko-fi.com/bearski]Ko-fi[/url]
+
+[hr][/hr]
+[h2]Multiplayer setup[/h2]
+[code]WorkshopItems=3619862853;3811728541
+Mods=ZombieBuddy;RealVehicleInteriors[/code]
+Add these entries to your existing server lists. Each player must [url=https://github.com/zed-0xff/ZombieBuddy/blob/master/doc/Installation.md]install ZombieBuddy's Java loader[/url] and approve this mod's Java component when prompted.
+
+[b]Workshop ID:[/b] 3811728541
+[b]Mod ID:[/b] RealVehicleInteriors
