@@ -1,6 +1,8 @@
-# Prepared update 2.0.21
+# Release 2.0.21
 
-This update brings the approved interior wall, window, floor and cab separation work onto public 2.0.20 (`70137e36301c83a7c392e3007c55538de45f34d9`). It retains that release's native movement, optional vehicle packs, animal support and utility fixes. Source is prepared on `interior-walls-update-2.0.21`; no Workshop upload or main-branch merge is part of this preparation.
+Published on 2026-10-27 to [Workshop item 3811728541](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541), manifest `6220276507904546183`. The official Steam download matches all 219 qualified files. Title, description, cover, ten gallery entries and their order, public visibility and the sole ZombieBuddy dependency remain unchanged. Only content and the version's change note were submitted.
+
+This update brings the approved interior wall, window, floor and cab separation work onto public 2.0.20 (`70137e36301c83a7c392e3007c55538de45f34d9`). It retains that release's native movement, optional vehicle packs, animal support and utility fixes. Qualified source `964ad519db311742c0f038b62b8f48c9cc5d5952` merged through [PR 19](https://github.com/prg299/Real-Vehicle-Interiors/pull/19) as `aa6ca2b3bfac9053f38cd06650325562b9ac70ef` after GitHub checks passed. Publication receipts are `build/rv/release-2.0.21.source.json`, `release-2.0.21.desktop.json` and `release-2.0.21.published.json`. The frozen preparation receipt retains its original pre-publication status and hashes.
 
 ## Saved interiors
 

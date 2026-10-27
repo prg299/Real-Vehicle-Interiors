@@ -2,9 +2,9 @@
 
 Walk around inside supported vanilla vehicles and optional KI5 vehicle packs in **Project Zomboid Build 42.21**. Furnish your vehicle, sleep, cook, wash, store supplies and take your base with you.
 
-**Prepared update: 2.0.21.** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541) · [Animals details and testing](docs/ANIMALS.md)
+**Current release: 2.0.21.** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541) · [Animals details and testing](docs/ANIMALS.md)
 
-2.0.21 updates native interior walls, window surrounds, cab separation and floor coverage. The E150 partition clears the side door; vanilla walls follow the vehicle’s painted metal finish. Existing furniture, storage, loose items and utilities retain their save identities. The [save compatibility notes](docs/vehicles.md#save-compatibility) explain the F350 shelf coordinate handling. See the [prepared update and qualification](docs/release-2.0.21.md).
+2.0.21 updates native interior walls, window surrounds, cab separation and floor coverage. The E150 partition clears the side door; vanilla walls follow the vehicle’s painted metal finish. Existing furniture, storage, loose items and utilities retain their save identities. The [save compatibility notes](docs/vehicles.md#save-compatibility) explain the F350 shelf coordinate handling. See the [release qualification](docs/release-2.0.21.md).
 
 2.0.20 uses the game's normal walking, running, turning and stopping animations inside vehicles. It also fixes cancelled approaches at corners, right-click furniture menus over empty ground, and re-entry when already at the door. Existing vehicle, furniture, loot and utility IDs are preserved.
 
