@@ -48,7 +48,7 @@ if v then
         local ok,k=pcall(function() return v:isKeyboardControlled() end); if ok then r.vehicle.keyboardControlled=k end
         local pad,j=pcall(function() return v:getJoypad() end); if pad then r.vehicle.joypad=j end
     end
-    r.partIds={}; r.boxes={}; r.players={}; r.loot={}; r.floor={}
+    r.partIds={}; r.boxes={}; r.players={}; r.loot={}; r.floor={};r.furniture={};r.storage={}
     for i=0,v:getPartCount()-1 do r.partIds[#r.partIds+1]=v:getPartByIndex(i):getId() end
     for i,s in ipairs(MELens.profileFor(v).spots) do
         if s.cargo then local p=MELens.Parts.spotPart(v,i); local it=p and p:getInventoryItem()
@@ -58,6 +58,11 @@ if v then
     local function ids(c)
         local a={}; if c then for i=0,c:getItems():size()-1 do a[#a+1]=c:getItems():get(i):getID() end end
         table.sort(a); return a
+    end
+    for i,s in ipairs(MELens.profileFor(v).spots) do
+        local part=MELens.Parts.spotPart(v,i);local item=part and part:getInventoryItem()
+        r.furniture[i]=item and item:getID() or -1
+        r.storage[i]=ids(part and part:getItemContainer())
     end
     local chosen=v:getPartById('MELensSpot'..BOX)
     r.loot=ids(chosen and chosen:getItemContainer())
@@ -361,7 +366,7 @@ return false
         menu = self.wait(lambda: self.h.lua(menu_code), lambda s: bool(s) and s["visible"], "box submenu visible")
         self.input("A", x=menu["x"], y=menu["y"])
 
-    def prepare(self, allow_server_java=False):
+    def prepare(self, allow_server_java=False, vehicle_script="Base.87fordF700box"):
         # The phobia checks reuse this fixture on a server that runs the Java part (its trait hook needs it there).
         expected = ("true/true", "true/false") if allow_server_java else ("true/true",)
         self.h.check(self.server('return tostring(isServer()).."/"..tostring(MELensRV==nil)') in expected, "server must have no MELensRV Java")
@@ -375,7 +380,7 @@ return false
         self.wait(lambda: self.h.lua('local p=getPlayer(); return p:getCurrentSquare()~=nil and math.abs(p:getX()-10813)<2 and math.abs(p:getY()-10140)<2'), bool, "admin at owned open test field")
         self.h.lua('SendCommandToServer(\'/teleportplayer "MELensGuest" "MELensAdmin"\'); return true')
         self.wait(lambda: self.b.lua('local p=getPlayer(); return p:getCurrentSquare()~=nil and math.abs(p:getX()-10813)<4 and math.abs(p:getY()-10140)<4'), bool, "guest teleported by admin to test field")
-        find = 'local p=getPlayer(); local a={}; local it=getCell():getVehicles():iterator(); while it:hasNext() do local v=it:next(); if v:getScript():getFullName()=="Base.87fordF700box" and p:DistToSquared(v:getX(),v:getY())<6400 then a[#a+1]=v:getId() end end; return a'
+        find = 'local p=getPlayer(); local a={}; local it=getCell():getVehicles():iterator(); while it:hasNext() do local v=it:next(); if v:getScript():getFullName()==' + json.dumps(vehicle_script) + ' and p:DistToSquared(v:getX(),v:getY())<6400 then a[#a+1]=v:getId() end end; return a'
         old = set(self.h._sequence(self.h.lua(find)))
         loaded = json.loads(self.server(JSON_ENCODER + 'local a={}; local it=getCell():getVehicles():iterator(); '
                                         'while it:hasNext() do local v=it:next(); a[#a+1]={id=v:getId(),x=v:getX(),y=v:getY()} end; return enc(a)'))
@@ -393,7 +398,7 @@ return false
                 self.h.check(len(new) == 1, f"ambiguous late F700 spawn: {new}")
                 self.vid = int(next(iter(new)))
                 break
-            self.h.lua(f"SendCommandToServer('/addvehicle Base.87fordF700box {x},{y},0'); return true")
+            self.h.lua(f"SendCommandToServer('/addvehicle {vehicle_script} {x},{y},0'); return true")
             self.h.REPORT["spawn"]["attempts"].append({"x": x, "y": y})
             try:
                 new = self.wait(lambda: set(self.h._sequence(self.h.lua(find))) - old, bool, "fresh F700 replication", timeout=18)
@@ -407,9 +412,11 @@ return false
                                            'local it=getCell():getVehicles():iterator(); while it:hasNext() do local a=it:next(); '
                                            'if a~=v then local d=math.sqrt((a:getX()-v:getX())^2+(a:getY()-v:getY())^2); '
                                            'if d<r.minimum then r.minimum=d; r.nearestVehicleId=a:getId() end end end; return enc(r)'))
-        self.h.REPORT["spawn"].update(vehicleId=self.vid, actualClearance=clearance)
+        self.h.REPORT["spawn"].update(vehicleId=self.vid, actualClearance=clearance,script=vehicle_script)
         self.h.check(clearance["minimum"] >= 12, "native spawn shifted within 12 tiles of another vehicle")
-        self.server(f'local v=getVehicleById({self.vid}); assert(v); v:repair(); '
+        # The native /addvehicle command already repairs the fresh vehicle.
+        # A second immediate repair races initial container replication.
+        self.server(f'local v=getVehicleById({self.vid}); assert(v); '
                     'for i,s in ipairs(MELens.profileFor(v).spots) do if s.empty then '
                     'local p=MELens.Parts.spotPart(v,i); assert(not p:getItemContainer() or p:getItemContainer():isEmpty(),"fresh bare spot unexpectedly holds cargo"); '
                     'p:setInventoryItem(nil); MELens.Parts.applyPiece(v,p); v:transmitPartItem(p) end end; '

@@ -61,6 +61,11 @@ def main():
         trial(scope+'-180',['Forward'],['Backward'])
         trial(scope+'-shift-180',['Forward'],['Backward'],True)
     try:
+        # Independent drivers may have left this owned character beside another
+        # test vehicle. Return to the known open field before relative spawns;
+        # otherwise cumulative comparison travel can place a van inside a house.
+        h.lua('local p=getPlayer();p:setX(10813.5);p:setY(10140.5);p:setLastX(p:getX());p:setLastY(p:getY());return true')
+        time.sleep(.6)
         h.lua('''RVI_TurnProbe={rows={},active=false}
 local T=RVI_TurnProbe
 T.tick=function()

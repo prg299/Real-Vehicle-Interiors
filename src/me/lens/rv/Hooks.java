@@ -243,8 +243,9 @@ public final class Hooks {
         }
 
         @Patch.OnExit(onThrowable = Throwable.class)
-        public static void exit() {
+        public static void exit(@Patch.This IsoPlayer player) {
             Standing.endPassengerUpdate();
+            Standing.updateNativeInput(player);
         }
     }
 

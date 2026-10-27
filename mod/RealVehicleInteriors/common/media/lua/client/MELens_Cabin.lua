@@ -982,6 +982,23 @@ local function updateMarker(s)
     rv.setMarker(mx, my, mz, m.halfX / scale, m.halfZ / scale, 0.12 / scale, c:getR(), c:getG(), c:getB(), strength)
 end
 
+local function advance(s, dx, dz, distance)
+    while distance > 1e-6 do
+        local stride = math.min(distance, MAX_MOVE_STEP)
+        local nx, nz = s.x + dx * stride, s.z + dz * stride
+        if walkable(s.profile, nx, nz) then
+            s.x, s.z = nx, nz
+        elseif walkable(s.profile, nx, s.z) then
+            s.x = nx
+        elseif walkable(s.profile, s.x, nz) then
+            s.z = nz
+        else
+            break -- root motion must not skip furniture or walls
+        end
+        distance = distance - stride
+    end
+end
+
 local function step(s, dt)
     local player, vehicle, profile = s.player, s.vehicle, s.profile
     -- Never stuck: if furniture now stands where you are, step onto the nearest free floor.
@@ -995,6 +1012,7 @@ local function step(s, dt)
         local ix, iy = inputAxes()
         if ix ~= 0 or iy ~= 0 then
             s.path, s.onArrive = nil, nil
+            s.manualMovement = true
             -- Walking by hand ends fast-forward, as it does everywhere else (the game checks its own walking,
             -- IsoPlayer isJustMoved, which the cabin's walking never sets). Walking to furniture does not.
             local speed = UIManager.getSpeedControls and UIManager.getSpeedControls()
@@ -1005,6 +1023,7 @@ local function step(s, dt)
             local len = math.sqrt(wx * wx + wy * wy)
             dx, dz = toCamperDirection(vehicle, player:getX(), player:getY(), wx / len, wy / len)
         elseif s.path then
+            s.manualMovement = false
             dx, dz, limit = followPath(s)
             if session ~= s then
                 return -- the arrival action left the standing position
@@ -1031,6 +1050,10 @@ local function step(s, dt)
             local available = walkable(profile, s.x + dx * probe, s.z + dz * probe)
                 or (math.abs(dx) > 1e-6 and walkable(profile, s.x + dx * probe, s.z))
                 or (math.abs(dz) > 1e-6 and walkable(profile, s.x, s.z + dz * probe))
+            -- A native turn can briefly travel toward the old heading and hit
+            -- the wall beside a valid route. Retain that route while turning;
+            -- cancel only when the intended next step itself is obstructed.
+            if not available and s.path then s.path, s.onArrive = nil, nil end
             local travel = java().nativeMovement(player)
             local mx, mz = travel:x(), travel:z()
             local distance = math.sqrt(mx * mx + mz * mz)
@@ -1040,22 +1063,7 @@ local function step(s, dt)
                 distance = math.min(distance, limit)
             end
             local ox, oz = s.x, s.z
-            local remaining = available and distance or 0
-            while remaining > 1e-6 do
-                local stride = math.min(remaining, MAX_MOVE_STEP)
-                local nx, nz = s.x + tx * stride, s.z + tz * stride
-                if walkable(profile, nx, nz) then
-                    s.x, s.z = nx, nz
-                elseif walkable(profile, nx, s.z) then
-                    s.x = nx
-                elseif walkable(profile, s.x, nz) then
-                    s.z = nz
-                else
-                    if s.path then s.path, s.onArrive = nil, nil end
-                    break -- blocked; running must not skip narrow furniture/walls
-                end
-                remaining = remaining - stride
-            end
+            advance(s, tx, tz, available and distance or 0)
             moving = moving and (distance <= 1e-6 or s.x ~= ox or s.z ~= oz)
             -- Walking into the door from the exit marker takes you out, like a doorway.
             local out = profile.exitMarker and profile.exitMarker.outward
@@ -1064,6 +1072,13 @@ local function step(s, dt)
                 pushingDoor = not available or stepped < distance * 0.3
             end
         end
+    elseif s.manualMovement and not busy and dt > 0 then
+        -- Releasing a key selects the normal stop blend. Its remaining native
+        -- travel still moves the passenger, subject to the same collision grid.
+        local travel = java().nativeMovement(player)
+        local mx, mz = travel:x(), travel:z()
+        local distance = math.sqrt(mx * mx + mz * mz)
+        if distance > 1e-6 then advance(s, mx / distance, mz / distance, distance) end
     end
     s.pushTime = pushingDoor and (s.pushTime or 0) + dt or 0
     if s.pushTime > PUSH_TO_LEAVE then
@@ -1201,6 +1216,7 @@ end
 local function walkTo(x, z, onArrive)
     local s = session
     if not s then return end
+    s.manualMovement = false
     s.path = planPath(s.profile, s.x, s.z, x, z)
     s.onArrive = onArrive
 end
@@ -2014,6 +2030,9 @@ function M.debugState()
         standing = session ~= nil,
         x = session and session.x, z = session and session.z,
         facing = session and session.facing,
+        targetFacing = session and session.targetFacing,
+        pathTargetX = session and session.path and session.path[1] and session.path[1].x,
+        pathTargetZ = session and session.path and session.path[1] and session.path[1].z,
         moving = session and session.moving,
         running = session and session.running,
         pose = session and session.pose,

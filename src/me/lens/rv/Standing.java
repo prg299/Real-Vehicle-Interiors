@@ -1,5 +1,8 @@
 package me.lens.rv;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import zombie.characters.IsoGameCharacter;
@@ -25,14 +28,46 @@ public final class Standing {
     static final Set<IsoGameCharacter> standing = ConcurrentHashMap.newKeySet();
     private static final ThreadLocal<IsoPlayer> choosing = new ThreadLocal<>();
     private static final ThreadLocal<IsoPlayer> passengerUpdate = new ThreadLocal<>();
+    private static final MethodHandle movementInput = movementInput();
     private static final class MotionScratch {
         final Vector2 delta = new Vector2();
         final Vector3f unit = new Vector3f(), travel = new Vector3f();
         final Transform transform = new Transform();
+        final IsoPlayer.MoveVars input = new IsoPlayer.MoveVars();
     }
     private static final ThreadLocal<MotionScratch> motion = ThreadLocal.withInitial(MotionScratch::new);
 
     private Standing() {}
+
+    private static MethodHandle movementInput() {
+        try {
+            return MethodHandles.privateLookupIn(IsoPlayer.class, MethodHandles.lookup()).findVirtual(
+                    IsoPlayer.class, "updateMovementFromInput", MethodType.methodType(void.class, IsoPlayer.MoveVars.class));
+        } catch (ReflectiveOperationException error) {
+            throw new ExceptionInInitializerError(error);
+        }
+    }
+
+    /** The normal player branch updates these before animation selection. The
+     * native passenger branch returns early, so standing passengers need the same
+     * input/rate update without applying world-floor movement or losing the seat. */
+    public static void updateNativeInput(IsoPlayer player) {
+        if (!isStanding(player) || !player.isLocalPlayer()) return;
+        MotionScratch scratch = motion.get();
+        player.updateMovementRates();
+        player.setJustMoved(false);
+        scratch.input.strafeX = scratch.input.strafeY = 0f;
+        if (!player.isAsleep() && !player.isPerformingAnAction() && !player.getIgnoreMovement()
+                && !zombie.core.Core.getInstance().isDoingTextEntry()) {
+            try {
+                movementInput.invokeExact(player, scratch.input);
+            } catch (Throwable error) {
+                throw new IllegalStateException("Native standing input update failed", error);
+            }
+        }
+        player.setVariable("DeltaX", scratch.input.strafeX);
+        player.setVariable("DeltaY", scratch.input.strafeY);
+    }
 
     static boolean isStanding(IsoPlayer player) {
         return player != null && standing.contains(player)
