@@ -811,10 +811,95 @@ end
 -- Closed cargo doors need their own inside skin: the native leaf can be single-sided.
 -- Only change the model when the real door state changes; never persist render state.
 P.shellDoorStates = setmetatable({}, { __mode = "k" })
+P.shellWheelStates = setmetatable({}, { __mode = "k" })
 local function shellDoorVisible(vehicle, id)
     local leaf = vehicle:getPartById(id)
     local door = leaf and leaf:getDoor()
     return door ~= nil and leaf:getInventoryItem() ~= nil and not door:isOpen(), leaf
+end
+
+local function flatWheelArchActive(vehicle, profile, rv)
+    local shell = profile.shell
+    return profile.nativeBodyWalls and profile.nativeWheelArch and shell
+        and shell.wheelCoversModel and shell.wheelFloorModel
+        and rv and rv.flatWheelArchActive and rv.getCutawayVehicle
+        and rv.getCutawayVehicle() == vehicle and rv.flatWheelArchActive() or false
+end
+
+-- Model 1 remains the original floor in both paths. Only appended arch surfaces switch.
+local function shellWheelVisible(shell, model, flat)
+    if model == 1 then return nil end
+    if model == shell.wheelCoversModel then return not flat end
+    if model == shell.wheelFloorModel or model == shell.wheelWallModel then return flat end
+    return nil
+end
+
+local function nativePanelActive(vehicle, profile, rv)
+    local shell = profile and profile.shell
+    return profile and profile.nativeBodyWalls and profile.nativePanel and shell
+        and shell.nativePanelModel and shell.legacyPanelModel
+        and rv and rv.nativeBodyWallsActive and rv.getCutawayVehicle
+        and rv.getCutawayVehicle() == vehicle and rv.nativeBodyWallsActive() or false
+end
+
+function P.panelFor(vehicle, profile)
+    return nativePanelActive(vehicle, profile, M.java()) and profile.nativePanel or profile.panel
+end
+
+local function nativeFloorActive(vehicle, profile, rv)
+    return profile and profile.nativeBodyWalls and profile.shell and profile.shell.nativeFloorModel
+        and rv and rv.nativeBodyWallsActive and rv.getCutawayVehicle
+        and rv.getCutawayVehicle() == vehicle and rv.nativeBodyWallsActive() or false
+end
+
+local function nativeWindowReturnsActive(vehicle, rv)
+    return rv and rv.nativeBodyWallsActive and rv.getCutawayVehicle
+        and rv.getCutawayVehicle() == vehicle and rv.nativeBodyWallsActive() or false
+end
+
+local function windowReturnApplies(vehicle, trim)
+    if not trim.scripts then return true end
+    local script = vehicle:getScript()
+    local name = script and script:getFullName()
+    for _, allowed in ipairs(trim.scripts) do
+        if name == allowed then return true end
+    end
+    return false
+end
+
+local function shellVisualVisible(shell, model, flat, nativePanel, nativeFloor)
+    local wheel = shellWheelVisible(shell, model, flat)
+    if wheel ~= nil then return wheel end
+    if model == shell.nativePanelModel then return nativePanel end
+    if model == shell.legacyPanelModel then return not nativePanel end
+    if model == shell.nativeFloorModel then return nativeFloor end
+    return nil
+end
+
+local function shellModelVisible(vehicle, profile, model, flat, nativePanel, nativeFloor)
+    local shell = profile.shell
+    for _, trim in ipairs(shell.windowReturns or {}) do
+        if trim.model == model then
+            if not windowReturnApplies(vehicle, trim) then return false end
+            if not nativeWindowReturnsActive(vehicle, M.java()) then return false end
+            -- Fixed window surrounds remain when their glass is broken or
+            -- lowered. A surround on a moving leaf follows the physical door.
+            if trim.parent then
+                -- A Java call must receive exactly one Boolean; the helper's
+                -- second return is its Lua cache key, never a Java argument.
+                local visible = shellDoorVisible(vehicle, trim.parent)
+                return visible
+            end
+            return true
+        end
+    end
+    local wheel = shellVisualVisible(shell, model, flat, nativePanel, nativeFloor)
+    if wheel ~= nil then return wheel end
+    local doorId = model == shell.entryModel and shell.entryDoor or nil
+    for _, lining in ipairs(shell.extraDoors or {}) do
+        if lining.model == model then doorId = lining.part; break end
+    end
+    return not doorId or shellDoorVisible(vehicle, doorId)
 end
 
 local function syncShellDoor(vehicle, part, model, id, cacheKey, force)
@@ -828,12 +913,37 @@ end
 
 function P.syncShellDoors(vehicle, profile, force)
     local shell = profile and profile.shell
-    if not shell or not shell.entryModel then return end
+    if not shell then return end
     local part = vehicle:getPartById(P.SHELL)
     if not part then return end
-    syncShellDoor(vehicle, part, shell.entryModel, shell.entryDoor, vehicle, force)
+    local rv = M.java()
+    local flat = flatWheelArchActive(vehicle, profile, rv)
+    local nativePanel = nativePanelActive(vehicle, profile, rv)
+    local nativeFloor = nativeFloorActive(vehicle, profile, rv)
+    local state = (flat and 1 or 0) + (nativePanel and 2 or 0) + (nativeFloor and 4 or 0)
+    if force or P.shellWheelStates[part] ~= state then
+        for model = 2, #shell.models do
+            local visible = shellVisualVisible(shell, model, flat, nativePanel, nativeFloor)
+            if visible ~= nil then part:setModelVisible("MELensShell" .. model, visible) end
+        end
+        P.shellWheelStates[part] = state
+    end
+    if shell.entryModel then
+        syncShellDoor(vehicle, part, shell.entryModel, shell.entryDoor, vehicle, force)
+    end
     for _, lining in ipairs(shell.extraDoors or {}) do
         syncShellDoor(vehicle, part, lining.model, lining.part, nil, force)
+    end
+    for _, trim in ipairs(shell.windowReturns or {}) do
+        local native = windowReturnApplies(vehicle, trim) and nativeWindowReturnsActive(vehicle, rv)
+        if trim.parent then
+            local visible = native and shellDoorVisible(vehicle, trim.parent) or false
+            if force or not rv or not rv.isPartModelVisible or rv.isPartModelVisible(part, "MELensShell" .. trim.model) ~= visible then
+                part:setModelVisible("MELensShell" .. trim.model, visible)
+            end
+        elseif force or not rv or not rv.isPartModelVisible or rv.isPartModelVisible(part, "MELensShell" .. trim.model) ~= native then
+            part:setModelVisible("MELensShell" .. trim.model, native)
+        end
     end
 end
 
@@ -843,8 +953,11 @@ function P.initShell(vehicle, part)
     if not rv or not part or vehicle:getPartById(P.SHELL) ~= part then return end
     if rv.clearStalePartModels then rv.clearStalePartModels(part) end
     local profile = M.profileFor(vehicle)
+    local flat = profile and flatWheelArchActive(vehicle, profile, rv) or false
+    local nativePanel = nativePanelActive(vehicle, profile, rv)
+    local nativeFloor = nativeFloorActive(vehicle, profile, rv)
     for i = 1, profile and profile.shell and #profile.shell.models or 0 do
-        part:setModelVisible("MELensShell" .. i, true)
+        part:setModelVisible("MELensShell" .. i, shellModelVisible(vehicle, profile, i, flat, nativePanel, nativeFloor))
     end
     P.syncShellDoors(vehicle, profile, true)
 end
@@ -859,12 +972,11 @@ function P.refreshShell(vehicle, profile)
         P.initShell(vehicle, part)
         return
     end
+    local flat = flatWheelArchActive(vehicle, profile, rv)
+    local nativePanel = nativePanelActive(vehicle, profile, rv)
+    local nativeFloor = nativeFloorActive(vehicle, profile, rv)
     for i = 1, #profile.shell.models do
-        local doorId = i == profile.shell.entryModel and profile.shell.entryDoor or nil
-        for _, lining in ipairs(profile.shell.extraDoors or {}) do
-            if lining.model == i then doorId = lining.part; break end
-        end
-        local visible = not doorId or shellDoorVisible(vehicle, doorId)
+        local visible = shellModelVisible(vehicle, profile, i, flat, nativePanel, nativeFloor)
         if rv.isPartModelVisible(part, "MELensShell" .. i) ~= visible then
             P.initShell(vehicle, part)
             return

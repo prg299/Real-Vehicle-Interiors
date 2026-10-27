@@ -22,29 +22,107 @@ import static org.lwjgl.opengl.GL30.*;
 public final class Media {
     private Media() {}
 
-    private static boolean fixedCamera;
-    private static float cameraX, cameraY, cameraZ;
+    private record Camera(float x, float y, float z, float previousPanX, float previousPanY) { }
+    private static volatile Camera fixedCamera;
+    private static volatile boolean nativePan;
+    private static final Field cameraGoalX = cameraGoal("tOffX");
+    private static final Field cameraGoalY = cameraGoal("tOffY");
+
+    private static Field cameraGoal(String name) {
+        try {
+            Field field = zombie.iso.PlayerCamera.class.getDeclaredField(name);
+            field.setAccessible(true);
+            return field;
+        } catch (ReflectiveOperationException error) {
+            throw new ExceptionInInitializerError(error);
+        }
+    }
 
     /** Capture framing fixture only; input checks run with the ordinary camera. */
     public static void camera(float x, float y, float z) {
-        cameraX = x; cameraY = y; cameraZ = z; fixedCamera = true;
+        Camera previous = fixedCamera;
+        var camera = zombie.iso.IsoCamera.cameras[0];
+        fixedCamera = new Camera(x, y, z, previous == null ? camera.deferedX : previous.previousPanX,
+            previous == null ? camera.deferedY : previous.previousPanY);
     }
-    public static void cameraOff() { fixedCamera = false; }
+    public static void cameraOff() {
+        Camera previous = fixedCamera;
+        fixedCamera = null;
+        if (previous != null) {
+            var camera = zombie.iso.IsoCamera.cameras[0];
+            camera.deferedX = previous.previousPanX; camera.deferedY = previous.previousPanY;
+        }
+    }
 
-    @Patch(className = "zombie.iso.PlayerCamera", methodName = "update")
+    /** Diagnostic switch: preserve the legacy offset path for same-pose controls. */
+    public static void cameraNativePan(boolean enabled) {
+        Camera target = fixedCamera;
+        if (target != null) {
+            var camera = zombie.iso.IsoCamera.cameras[0];
+            camera.deferedX = target.previousPanX; camera.deferedY = target.previousPanY;
+        }
+        nativePan = enabled;
+    }
+
+    // center() also runs independently of update(). Keep both interpolation
+    // endpoints on the requested target instead of drifting back to the player.
+    @Patch(className = "zombie.iso.PlayerCamera", methodName = "center")
     public static final class CaptureCamera {
-        @Patch.OnExit public static void exit() { Media.frameCamera(); }
+        @Patch.OnEnter public static void enter() { Media.panCamera(); }
+        @Patch.OnExit public static void exit() { Media.offsetCamera(); }
     }
 
     public static void frameCamera() {
-        if (!fixedCamera) return;
+        if (fixedCamera == null) return;
+        if (nativePan) zombie.iso.IsoCamera.cameras[0].center();
+        else offsetCamera();
+    }
+
+    /** Native center/MVP share deferedX/Y; direct 2D offsets alone do not pan the 3D origin. */
+    public static void panCamera() {
+        Camera target = fixedCamera;
+        if (target == null || !nativePan) return;
+        var character = zombie.iso.IsoCamera.getCameraCharacter();
+        if (character == null) return;
         var camera = zombie.iso.IsoCamera.cameras[0];
-        camera.offX = zombie.iso.IsoUtils.XToScreen(cameraX, cameraY, cameraZ, 0)
+        float z = zombie.iso.IsoCamera.frameState.calculateCameraZ(character);
+        float sx = zombie.iso.IsoUtils.XToScreen(target.x, target.y, target.z, 0)
+            - zombie.iso.IsoCamera.playerOffsetX;
+        float sy = zombie.iso.IsoUtils.YToScreen(target.x, target.y, target.z, 0)
+            + character.getOffsetY() * 1.5f - zombie.iso.IsoCamera.playerOffsetY;
+        float scale = 64f * zombie.core.Core.tileScale;
+        camera.deferedX = (sx + 2f * sy) / scale + 3f * z - character.getX();
+        camera.deferedY = (sx - 2f * sy) / -scale + 3f * z - character.getY();
+        camera.rightClickX = 0; camera.rightClickY = 0;
+    }
+
+    public static void offsetCamera() {
+        Camera target = fixedCamera;
+        if (target == null || nativePan) return;
+        var camera = zombie.iso.IsoCamera.cameras[0];
+        camera.offX = zombie.iso.IsoUtils.XToScreen(target.x, target.y, target.z, 0)
             - zombie.iso.IsoCamera.getOffscreenWidth(0) / 2f;
-        camera.offY = zombie.iso.IsoUtils.YToScreen(cameraX, cameraY, cameraZ, 0)
+        camera.offY = zombie.iso.IsoUtils.YToScreen(target.x, target.y, target.z, 0)
             - zombie.iso.IsoCamera.getOffscreenHeight(0) / 2f;
         camera.lastOffX = camera.offX; camera.lastOffY = camera.offY;
+        try {
+            cameraGoalX.setFloat(camera, camera.offX);
+            cameraGoalY.setFloat(camera, camera.offY);
+        } catch (IllegalAccessException error) {
+            throw new IllegalStateException("Capture camera target inaccessible", error);
+        }
         camera.rightClickX = 0; camera.rightClickY = 0;
+    }
+
+    public static String cameraInfo() {
+        var camera = zombie.iso.IsoCamera.cameras[0];
+        var frame = zombie.iso.IsoCamera.frameState;
+        return "nativePan=" + nativePan + ";target=" + fixedCamera + ";buffer=" + zombie.iso.IsoCamera.getOffscreenWidth(0)
+            + "x" + zombie.iso.IsoCamera.getOffscreenHeight(0) + ";off=" + camera.offX + "," + camera.offY
+            + ";pan=" + camera.deferedX + "," + camera.deferedY
+            + ";frameOff=" + frame.offX + "," + frame.offY
+            + ";frameCharacter=" + frame.camCharacterX + "," + frame.camCharacterY + "," + frame.camCharacterZ
+            + ";zoom=" + zombie.core.Core.getInstance().getZoom(0);
     }
 
     /** Skip the loading-screen click without interacting with the owner's desktop. */

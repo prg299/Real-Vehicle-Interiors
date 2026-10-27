@@ -157,6 +157,17 @@ public final class Hooks {
         }
     }
 
+    @Patch(className = "zombie.core.skinnedmodel.model.ModelMesh", methodName = "Draw", strictMatch = true)
+    public static final class NativeWallMesh {
+        @Patch.OnEnter
+        public static void enter(@Patch.This zombie.core.skinnedmodel.model.ModelMesh mesh,
+                @Patch.Argument(0) zombie.core.skinnedmodel.shader.Shader shader) {
+            Cutaway.beginMeshDraw(mesh);
+        }
+        @Patch.OnExit(onThrowable = Throwable.class)
+        public static void exit(@Patch.Argument(0) zombie.core.skinnedmodel.shader.Shader shader) { Cutaway.endMeshDraw(); }
+    }
+
     /** After a sub-model of a vehicle is drawn: after the last one of the camper you are in, the loose items. */
     @Patch(className = "zombie.core.skinnedmodel.model.ModelInstanceRenderData", methodName = "RenderVehicle", strictMatch = true)
     public static final class AfterVehicleModel {

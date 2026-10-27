@@ -488,9 +488,117 @@ def measured_cowl_return(measure, request, lining, skin=.002):
             "polygon": [[r(v, 9) for v in point] for point in polygon]}
 
 
+def apply_native_floor(spec):
+    """Complete measured planar or bilateral curves enter the reciprocal mask."""
+    perimeter = load(os.path.join(ROOT, "tools-src", "vehicles", "native-floor-perimeters.json"))["families"].get(spec["key"])
+    if perimeter:
+        spec["nativeFloorPerimeter"] = {key: perimeter[key] for key in ("margins", "polygons") if perimeter.get(key)}
+    returns = load(os.path.join(ROOT, "tools-src", "vehicles", "native-floor-returns.json"))["families"].get(spec["key"])
+    if returns:
+        spec["nativeFloorReturns"] = returns
+    measured = load(os.path.join(ROOT, "tools-src", "vehicles", "native-wheel-floors.json"))["families"].get(spec["key"])
+    if measured:
+        assert spec.get("nativeBodyWalls") and spec.get("separateShellSupports")
+        if measured.get("stockTrim"):
+            assert spec.get("nativePlainFinish"),"stock wheel-well replacement is vanilla-only"
+            spec["nativeWheelWellTrim"] = measured["stockTrim"]
+        if measured.get("sides"):
+            assert len(measured["sides"]) == 2
+            spec["flatWheelFloor"] = True
+            seals = dict(spec.get("nativeSupportSeals", {}))
+            seals["archSides"] = measured["sides"]
+            seals["archWall"] = measured.get("archWall",True)
+            if measured.get("fullMeasuredFloorChain"):
+                seals["fullMeasuredFloorChain"] = True
+            if measured.get("reuseSupportAsCovers"):seals["reuseSupportAsCovers"] = True
+            seals.setdefault("overlap", .002)
+            seals.setdefault("archOnly", True)
+            spec["nativeSupportSeals"] = seals
+            return
+        contour = measured["archContour"]
+        assert 2 <= len(contour) <= 16 and all(a[0] < b[0] for a,b in zip(contour,contour[1:]))
+        spec["flatWheelFloor"] = True
+        # The shared survey owns the qualified arch. A family can add measured
+        # perimeter/threshold seals without silently losing them on generation.
+        seals = dict(spec.get("nativeSupportSeals", {}))
+        for key, value in (("archSideX", measured["archSideX"]), ("archContour", contour)):
+            assert key not in seals or seals[key] == value, (spec["key"], "conflicting measured arch", key)
+            seals[key] = value
+        if measured.get("floorMargins"):seals["floorMargins"] = measured["floorMargins"]
+        seals.setdefault("overlap", .003)
+        seals.setdefault("archOnly", "rearPlane" not in seals)
+        spec["nativeSupportSeals"] = seals
+
+
+def native_window_returns(key):
+    path = os.path.join(ROOT, "tools-src", "vehicles", "native-window-returns.json")
+    return load(path)["families"].get(key, {}).get("panes", []) if os.path.exists(path) else []
+
+
+def native_living_leaves(key):
+    path=os.path.join(ROOT,"tools-src","vehicles","native-living-leaves.json")
+    return load(path)["families"].get(key,{}).get("models",[]) if os.path.exists(path) else []
+
+
+def native_stock_metal(spec):
+    """Existing stock pixels for five vanilla bodies; no generated art or geometry."""
+    assert spec.get("nativeBodyWalls") and spec.get("nativePlainFinish") and spec.get("nativeWallMaterial"), "stock metal needs the measured plain-material classifier"
+    contract = load(os.path.join(ROOT, "tools-src", "vehicles", "native-stock-metal.json"))
+    assert contract["schemaVersion"] == 1
+    assert set(contract["families"]) == {"VanillaVan", "VanillaPassengerVan", "VanillaAmbulance", "VanillaRadioVan", "VanillaStepVan"}, "stock metal scope changed"
+    entry = contract["families"][spec["key"]]
+    texture, paint, panel = contract["texture"], entry["paintUV"], contract["panelUV"]
+    assert re.fullmatch(r"vehicle_[a-z0-9_]+", texture), "stock panel must reference an existing game texture basename"
+    assert len(paint) == 2 and len(panel) == 4
+    assert all(isinstance(v, (int, float)) and math.isfinite(v) and 0 <= v <= 1 for v in paint + panel)
+    assert panel[0] < panel[2] and panel[1] < panel[3]
+    width, height = contract["panelWidth"], contract["panelHeight"]
+    assert all(isinstance(v, (int, float)) and math.isfinite(v) and .05 <= v <= 10 for v in (width, height))
+    return dict(texture=texture, paintUV=paint, panelUV=panel, panelWidth=width, panelHeight=height)
+
+
+def native_wall_finish(spec, measure, shell_cfg, hull_measure):
+    """One physical material scale for the native hull and its authored fittings."""
+    if not spec.get("nativeWallMaterial"):
+        return None
+    import shell_rings
+    floor_measure = load(shell_cfg["floorOutline"]["measure"]) if shell_cfg.get("floorOutline", {}).get("measure") else None
+    lining = shell_rings.build(measure, shell_cfg, floor_measure)
+    ring = lining["rings"][0][1]
+    perimeter = sum(math.hypot(a[0]-b[0], a[1]-b[1]) for a,b in zip(ring, ring[1:]+ring[:1]))
+    height = shell_cfg["top"]-shell_cfg["floorY"]
+    if spec.get("nativePlainFinish") and shell_cfg.get("cabBulkhead"):
+        cap = shell_cfg["cabBulkhead"]
+        height = max([cap["top"]]+[y for segment in cap.get("section", []) for x,y in segment])-shell_cfg["floorY"]
+    room = lining["room_ring"]
+    return dict(texture="MELensShell_%s_walls" % spec["nativeWallMaterial"],
+                height=round(height,6), perimeter=round(perimeter,6),
+                origin=[min(x for x,z in room),min(z for x,z in room)],
+                bodyBounds=hull_measure["body"], continuous=bool(spec.get("nativePlainFinish")))
+
+
+def separate_door_returns(spec):
+    """Register a separate return only when its builder has actual faces.
+
+    Plain curved camper openings and arch-only additions create no reveals.
+    Their empty FBX objects are not loadable game meshes. Threshold jambs and
+    measured rear closures are the two producers in rv_kit.build_shell.
+    """
+    requested = spec.get("separateDoorReturns") or spec.get("nativeSupportSeals")
+    return bool(requested and (spec.get("rearClosure") or spec.get("entryOpening")
+                or any(lining.get("threshold") for lining in spec.get("doorLinings", []))))
+
+
 def build(spec_path):
     spec = load(spec_path)
+    apply_native_floor(spec)
     key = spec["key"]
+    # One owner for source-qualified decorative/fixture cuts. This also keeps
+    # direct profile regeneration consistent with the expansion generator.
+    cuts=load(os.path.join(ROOT,"tools-src","vehicles","native-interior-cuts.json"))["families"].get(key)
+    if cuts:spec["nativeSurfaceCuts"]=cuts["cuts"]
+    near_faces=load(os.path.join(ROOT,"tools-src","vehicles","native-near-faces.json"))["families"].get(key)
+    if near_faces and near_faces.get("faces"):spec["nativeNearFaces"]=near_faces["faces"]
     if spec.get("disabled"):
         remove_generated(spec)
         print("SKIPPED %-12s %s" % (key, spec["disabled"]))
@@ -888,6 +996,39 @@ def build(spec_path):
         shell_cfg["cowlReturn"] = measured_cowl_return(hull_measure, spec["cowlReturn"], lining["room_ring"])
     if spec.get("doorLinings"):
         shell_cfg["doorLinings"] = spec["doorLinings"]
+    if spec.get("separateShellSupports"):
+        shell_cfg["separateShellSupports"] = True
+    if spec.get("separateDoorReturns"):
+        assert shell_cfg.get("separateShellSupports"), "separate doorway returns need separate supports"
+        shell_cfg["separateDoorReturns"] = True
+    if spec.get("nativeSupportSeals"):
+        shell_cfg["nativeSupportSeals"] = spec["nativeSupportSeals"]
+    if spec.get("nativeFloorPerimeter"):
+        assert spec.get("nativeBodyWalls"), "measured perimeter margins require native body walls"
+        shell_cfg["nativeFloorPerimeter"] = spec["nativeFloorPerimeter"]
+    if spec.get("flatWheelFloor"):
+        assert shell_cfg.get("separateShellSupports") and shell_cfg.get("nativeSupportSeals"), "flat wheel floor needs measured separate supports"
+        shell_cfg["flatWheelFloor"] = True
+    if spec.get("nativeWellCapSideX"):
+        shell_cfg["nativeWellCapSideX"] = spec["nativeWellCapSideX"]
+    if spec.get("nativeFloorReturns"):
+        shell_cfg["nativeFloorReturns"] = spec["nativeFloorReturns"]
+    native_panel = load(os.path.join(ROOT, "tools-src", "vehicles", "native-panel-placements.json"))["families"].get(key)
+    if native_panel:
+        assert spec.get("nativeBodyWalls") and spec.get("separateShellSupports")
+        assert native_panel["y"] == panel["y"] and native_panel["z"] == panel["z"], "Measured panel footprint changed"
+        shell_cfg["nativePanel"] = native_panel
+    if spec.get("navigationFront") is not None:
+        # A visual cab closure can extend beyond the original room floor.
+        # Keep its walk-grid erosion on that same original floor boundary.
+        shell_cfg["grid"]["frontLimit"] = spec["navigationFront"]
+    window_returns = native_window_returns(key)
+    if window_returns:
+        assert spec.get("nativeBodyWalls")
+        shell_cfg["nativeWindowReturns"] = window_returns
+    finish = native_wall_finish(spec, measure, shell_cfg, hull_measure)
+    if finish:
+        shell_cfg["nativeWallFinish"] = finish
     with open(os.path.join(CFG, "shell_%s.json" % key), "w", encoding="utf-8", newline="\n") as handle:
         json.dump(shell_cfg, handle, indent=4)
 
@@ -900,6 +1041,63 @@ def build(spec_path):
     entry_model = len(shell_models)
     for lining in shell_cfg.get("doorLinings", []):
         shell_models.append("MELensShell_%s_%s" % (spec["texture"], lining["suffix"]))
+    if shell_cfg.get("separateShellSupports"):
+        # Append only: saved entry/side-door model indices keep their meaning.
+        shell_models.append("MELensShell_%s_support" % spec["texture"])
+    arch_only = shell_cfg.get("nativeSupportSeals", {}).get("archOnly", False)
+    has_door_returns = separate_door_returns(shell_cfg)
+    if shell_cfg.get("nativeSupportSeals") and not arch_only:
+        shell_models.append("MELensShell_%s_support_seals" % spec["texture"])
+    if arch_only and has_door_returns:
+        # Preserve every existing optional native model index as well as the
+        # published prefix; the new arch models are appended after returns.
+        shell_models.append("MELensShell_%s_door_returns" % spec["texture"])
+    wheel_covers_model = wheel_floor_model = wheel_wall_model = None
+    curved_wheels = shell_cfg.get("nativeSupportSeals", {}).get("archSides")
+    if shell_cfg.get("flatWheelFloor") and not curved_wheels:
+        shell_models.append("MELensShell_%s_wheel_covers" % spec["texture"])
+        wheel_covers_model = len(shell_models)
+        shell_models.append("MELensShell_%s_wheel_floor" % spec["texture"])
+        wheel_floor_model = len(shell_models)
+        if shell_cfg["nativeSupportSeals"].get("archWall",True):
+            shell_models.append("MELensShell_%s_wheel_wall" % spec["texture"])
+            wheel_wall_model = len(shell_models)
+    if not arch_only and has_door_returns:
+        shell_models.append("MELensShell_%s_door_returns" % spec["texture"])
+    if native_panel and not spec.get("factoryLayout"):
+        shell_models.append("MELensShell_%s_panel_legacy" % spec["texture"])
+        legacy_panel_model = len(shell_models)
+        shell_models.append("MELensShell_%s_panel_native" % spec["texture"])
+        native_panel_model = len(shell_models)
+    if shell_cfg.get("nativeFloorPerimeter"):
+        shell_models.append("MELensShell_%s_floor_perimeter" % spec["texture"])
+        native_floor_model = len(shell_models)
+    if curved_wheels:
+        # New curved opt-ins append after every existing optional model too.
+        if shell_cfg["nativeSupportSeals"].get("reuseSupportAsCovers"):
+            wheel_covers_model = shell_models.index("MELensShell_%s_support" % spec["texture"])+1
+        else:
+            shell_models.append("MELensShell_%s_wheel_covers" % spec["texture"])
+            wheel_covers_model = len(shell_models)
+        shell_models.append("MELensShell_%s_wheel_floor" % spec["texture"])
+        wheel_floor_model = len(shell_models)
+        if shell_cfg["nativeSupportSeals"].get("archWall",True):
+            shell_models.append("MELensShell_%s_wheel_wall" % spec["texture"])
+            wheel_wall_model = len(shell_models)
+    if native_panel and spec.get("factoryLayout"):
+        # New factory opt-ins append after every already-published native model.
+        shell_models.append("MELensShell_%s_panel_legacy" % spec["texture"])
+        legacy_panel_model = len(shell_models)
+        shell_models.append("MELensShell_%s_panel_native" % spec["texture"])
+        native_panel_model = len(shell_models)
+    if window_returns:
+        window_return_models = []
+        for index, pane in enumerate(window_returns, 1):
+            shell_models.append("MELensShell_%s_window_return_%d" % (spec["texture"], index))
+            trim_entry = dict(model=len(shell_models), part=pane["part"])
+            if pane.get("parent"):trim_entry["parent"] = pane["parent"]
+            if pane.get("scripts"):trim_entry["scripts"] = pane["scripts"]
+            window_return_models.append(trim_entry)
     hide = {}
     for model, keep in spec.get("hide", {}).items():
         if keep is True or isinstance(keep, dict):
@@ -961,9 +1159,27 @@ def build(spec_path):
     if shell_cfg.get("entryOpening"):
         profile["shell"]["entryModel"] = entry_model
         profile["shell"]["entryDoor"] = entry["part"]
+    if shell_cfg.get("nativeFloorPerimeter"):
+        profile["shell"]["nativeFloorModel"] = native_floor_model
+    if native_panel:
+        profile["shell"]["legacyPanelModel"] = legacy_panel_model
+        profile["shell"]["nativePanelModel"] = native_panel_model
+        side = 1 if panel["x"] > 0 else -1
+        centre_x = sum(x for row in native_panel["skinX"] for x in row) / 4 - side * (native_panel["inset"] + shell_cfg["panel"]["depth"] / 2)
+        profile["nativePanel"] = dict(profile["panel"], x=r(centre_x, 6))
     if shell_cfg.get("doorLinings"):
         profile["shell"]["extraDoors"] = [{"model": entry_model+i+1, "part": d["part"]}
                                            for i,d in enumerate(shell_cfg["doorLinings"])]
+    if window_returns:
+        profile["shell"]["windowReturns"] = window_return_models
+    if shell_cfg.get("flatWheelFloor"):
+        profile["shell"]["wheelCoversModel"] = wheel_covers_model
+        profile["shell"]["wheelFloorModel"] = wheel_floor_model
+        if wheel_wall_model is not None:profile["shell"]["wheelWallModel"] = wheel_wall_model
+        seals = shell_cfg["nativeSupportSeals"]
+        profile["nativeWheelArch"] = ({"sides": [{"side": s["side"], "contour": s["contour"]} for s in seals["archSides"]]}
+            if seals.get("archSides") else {"sideX": seals["archSideX"], "contour": seals["archContour"]})
+        if spec.get("nativeWheelWellTrim"):profile["nativeWheelWellTrim"] = spec["nativeWheelWellTrim"]
     if "mesh" in spec:
         # A short cargo body can have its ceiling below the nominal High cut.
         # Keep the cut under that measured ceiling: otherwise its roof flange
@@ -971,9 +1187,14 @@ def build(spec_path):
         cut_tops = [min(h + floor, ceiling - .02) if spec.get("kind") == "cargo" else h + floor
                     for h in CUT_HEIGHTS]
         profile["cutPlanes"] = [[0, 0, -1, r(mesh["lift"] - h / mesh["scale"], 2)] for h in cut_tops]
+    if spec.get("nativeHighCut") is not None:
+        high = spec["nativeHighCut"]
+        assert spec.get("nativeBodyWalls") and floor < high < spec.get("nativeCeiling", ceiling)
+        profile["nativeCutPlanes"] = [list(plane) for plane in profile["cutPlanes"]]
+        profile["nativeCutPlanes"][2] = [0, 0, -1, r(mesh["lift"] - high / mesh["scale"], 6)]
     if abs(scale - 0.9) > 0.00001:
         profile["vehicleScale"] = scale
-    for extra in ("vanillaSeats", "ki5Storage", "loot", "driver", "cutFront", "cutFrontTop", "modelShift", "bodyKeepPlanes"):
+    for extra in ("vanillaSeats", "ki5Storage", "loot", "driver", "cutFront", "cutFrontTop", "nativeCabCutFront", "nativeCabCutFrontTop", "modelShift", "bodyKeepPlanes"):
         if extra in spec:
             profile[extra] = spec[extra]
     # KI5's body carries details inside its hull (a trailer tongue's arm tips at the front corners)
@@ -986,6 +1207,46 @@ def build(spec_path):
         profile["clipBody"] = True
     if spec.get("nativeBodyLining"):
         profile["nativeBodyLining"] = spec["nativeBodyLining"]
+    if spec.get("nativeBodyWalls"):
+        assert shell_cfg.get("separateShellSupports"), "native walls need independent floor supports"
+        profile["nativeBodyWalls"] = True
+        if spec.get("nativeBodyTrim"):
+            profile["nativeBodyTrim"] = spec["nativeBodyTrim"]
+        # The fallback keeps the dependency ceiling above its low wall slice.
+        # Native High retains whole panes and would expose its detached rails.
+        ceiling_models = [model for model, keep in spec.get("hide", {}).items() if keep == "ceiling"]
+        if ceiling_models:
+            profile["nativeBodyKeepPlanes"] = {model: [0, 0, 0, 1] for model in ceiling_models}
+        if spec.get("nativeBodyKeepPlanes"):
+            profile.setdefault("nativeBodyKeepPlanes", {}).update(spec["nativeBodyKeepPlanes"])
+        if spec.get("nativeCabPartition"):
+            assert shell_cfg.get("cabBulkhead"), "native partition needs a measured cab section"
+            profile["nativeCabPartition"] = True
+        if spec.get("nativePlainFinish"):
+            profile["nativePlainFinish"] = True
+        if spec.get("nativeWallMaterial"):
+            profile["nativeWallMaterial"] = {k:finish[k] for k in ("texture","height","perimeter")}
+            if spec.get("nativeWallBoundaryFinish"):
+                profile["nativeWallBoundaryFinish"] = True
+        if spec.get("nativeStockMetal"):
+            profile["nativeStockMetal"] = native_stock_metal(spec)
+        if spec.get("nativeBodyModels"):
+            profile["nativeBodyModels"] = spec["nativeBodyModels"]
+        leaves=native_living_leaves(key)
+        if leaves:
+            profile["nativeLivingLeafModels"]=leaves
+            profile["nativeBodyModels"]=list(dict.fromkeys(profile.get("nativeBodyModels",[])+leaves))
+        for extra in ("nativeCabModels", "nativeArchTrimModels", "nativeCabKeepPlanes", "nativeCabFallbackBodyModels", "nativeRoofCuts", "nativeSurfaceCuts", "nativeNearFaces"):
+            if spec.get(extra):
+                profile[extra] = spec[extra]
+        if spec.get("nativePlainFinish") and spec.get("entryOpening"):
+            profile["nativeEntryOpening"] = spec["entryOpening"]
+            if spec.get("nativeEntryNearBounds"):
+                profile["nativeEntryNearBounds"] = spec["nativeEntryNearBounds"]
+        if spec.get("nativeDoorOpenings"):
+            profile["nativeDoorOpenings"] = spec["nativeDoorOpenings"]
+        profile.setdefault("nativeBodyLining", [.64, .66, .67] if profile["kind"] == "cargo"
+                           else [.78, .76, .70] if profile["kind"] == "bus" else [.80, .76, .66])
     if window_boxes:
         profile["windowBoxes"] = window_boxes
     if jamb_boxes:
@@ -1049,9 +1310,122 @@ def build(spec_path):
     return spec["texture"]
 
 
+def write_factory_models():
+    """Refresh declarations from qualified specs without recreating their geometry decisions."""
+    declarations=["/* Generated from the measured factory specs. Existing authored atlases. */","module Base","{"]
+    for filename in sorted(os.listdir(SPECS)):
+        if not filename.endswith('.json'):continue
+        spec=load(os.path.join(SPECS,filename))
+        if spec.get("disabled") or not spec.get("factoryLayout"):continue
+        apply_native_floor(spec)
+        texture=spec["texture"]
+        suffixes=["floor","walls","bulkhead","entry"]+[d["suffix"] for d in spec.get("doorLinings",[])]
+        if spec.get("separateShellSupports"):suffixes.append("support")
+        if spec.get("nativeSupportSeals") and not spec["nativeSupportSeals"].get("archOnly"):suffixes.append("support_seals")
+        if spec.get("flatWheelFloor"):
+            suffixes += ["wheel_covers","wheel_floor"]
+            if spec["nativeSupportSeals"].get("archWall",True):suffixes.append("wheel_wall")
+        if separate_door_returns(spec):suffixes.append("door_returns")
+        for suffix in suffixes:
+            material="floor" if suffix in ("floor","wheel_floor") else "walls"
+            atlas=spec.get("nativeWallMaterial",spec.get("reuseTexture",texture)) if suffix in ("bulkhead","wheel_wall") else spec.get("reuseTexture",texture)
+            declarations.append("    model MELensShell_%s_%s { mesh = vehicles/MELens_Fleet|shell_%s_%s, texture = Vehicles/MELensShell_%s_%s, shader = vehiclewheel, scale = 0.0111111, }" % (texture,suffix,texture,suffix,atlas,material))
+    declarations.append("}")
+    with open(os.path.join(MEDIA,"scripts","MELens_fleet_models.txt"),"w",encoding="utf-8",newline="\n") as handle:
+        handle.write("\n".join(declarations)+"\n")
+
+
+def write_native_models():
+    """Optional appended models share one declaration owner across both generators."""
+    declarations = ["/* Generated measured native floor additions; existing material assets. */", "module Base", "{"]
+    for filename in sorted(os.listdir(SPECS)):
+        if not filename.endswith('.json'): continue
+        spec = load(os.path.join(SPECS, filename))
+        if spec.get("disabled"): continue
+        apply_native_floor(spec)
+        texture = spec["texture"]
+        suffixes = []
+        if not spec.get("factoryLayout"):
+            suffixes = ["door_returns"] if separate_door_returns(spec) else []
+            if spec.get("flatWheelFloor"):
+                if not spec.get("nativeSupportSeals", {}).get("reuseSupportAsCovers"):suffixes.append("wheel_covers")
+                suffixes.append("wheel_floor")
+                if spec.get("nativeSupportSeals", {}).get("archWall",True):suffixes.append("wheel_wall")
+        native_panels = load(os.path.join(ROOT, "tools-src", "vehicles", "native-panel-placements.json"))["families"]
+        if spec["key"] in native_panels: suffixes += ["panel_legacy", "panel_native"]
+        if spec.get("nativeFloorPerimeter"): suffixes.append("floor_perimeter")
+        suffixes.extend("window_return_%d" % i for i in range(1, len(native_window_returns(spec["key"]))+1))
+        fbx = "MELens_Fleet" if spec.get("factoryLayout") else "MELens_Shells"
+        atlas = spec.get("reuseTexture", texture)
+        for suffix in suffixes:
+            material = "floor" if suffix in ("wheel_floor", "floor_perimeter") else "walls"
+            selected_atlas = spec.get("nativeWallMaterial",atlas) if suffix == "wheel_wall" or suffix.startswith("window_return_") else atlas
+            declarations.append("    model MELensShell_%s_%s { mesh = vehicles/%s|shell_%s_%s, texture = Vehicles/MELensShell_%s_%s, shader = vehiclewheel, scale = 0.0111111, }" % (texture,suffix,fbx,texture,suffix,selected_atlas,material))
+    cloud = load(os.path.join(ROOT, "tools-src", "vehicles", "native-floor-perimeters.json"))["families"].get("FlyingCloud22")
+    if cloud:
+        cfg_path = os.path.join(ROOT, "tools-src", "blender", "cfg", "shell_FlyingCloud22.json")
+        cfg = load(cfg_path)
+        cloud_returns = native_window_returns("FlyingCloud22")
+        cfg["nativeWindowReturns"] = cloud_returns
+        measure=load(os.path.join(ROOT,cfg["measure"]))
+        cloud_finish=native_wall_finish(dict(nativeWallMaterial="cloud22"),measure,cfg,measure)
+        cfg["nativeWallFinish"]=cloud_finish
+        cfg["nativeFloorPerimeter"] = {key: cloud[key] for key in ("margins", "polygons") if cloud.get(key)}
+        cloud_arch = load(os.path.join(ROOT, "tools-src", "vehicles", "native-wheel-floors.json"))["families"].get("FlyingCloud22")
+        if cloud_arch:
+            cfg["flatWheelFloor"] = True
+            cfg["nativeSupportSeals"] = dict(archSides=cloud_arch["sides"],archOnly=True,overlap=.002)
+            arch_profile = {"sides": [{"side": s["side"], "contour": s["contour"]} for s in cloud_arch["sides"]]}
+            manual_path = os.path.join(LUA, "MELens_Profiles.lua")
+            with open(manual_path,encoding="utf-8") as handle:text=handle.read()
+            start,end="-- BEGIN GENERATED CLOUD NATIVE ARCH","-- END GENERATED CLOUD NATIVE ARCH"
+            assert text.count(start)==text.count(end)==1,"manual Cloud data markers missing"
+            prefix,rest=text.split(start);_,suffix=rest.split(end)
+            text=prefix+start+"\nlocal cloudNativeWheelArch = "+lua(arch_profile)+"\n"+end+suffix
+            with open(manual_path,"w",encoding="utf-8",newline="\n") as handle:handle.write(text)
+            for wheel_suffix in ("wheel_covers","wheel_floor","wheel_wall"):
+                material="floor" if wheel_suffix=="wheel_floor" else "walls"
+                declarations.append("    model MELensShell_cloud22_%s { mesh = vehicles/MELens_Shells|shell_cloud22_%s, texture = Vehicles/MELensShell_cloud22_%s, shader = vehiclewheel, scale = 0.0111111, }" % (wheel_suffix,wheel_suffix,material))
+        with open(cfg_path, "w", encoding="utf-8", newline="\n") as handle:
+            json.dump(cfg, handle, indent=4); handle.write("\n")
+        manual_path=os.path.join(LUA,"MELens_Profiles.lua")
+        with open(manual_path,encoding="utf-8") as handle:text=handle.read()
+        start,end="-- BEGIN GENERATED CLOUD WINDOW RETURNS","-- END GENERATED CLOUD WINDOW RETURNS"
+        if start not in text:
+            marker="function MELens.profileFor(vehicle)"
+            assert marker in text,"Cloud profile boundary missing"
+            text=text.replace(marker,start+"\n"+end+"\n\n"+marker)
+        prefix,rest=text.split(start);_,suffix=rest.split(end)
+        models=[];trims=[]
+        for index,pane in enumerate(cloud_returns,1):
+            model="MELensShell_cloud22_window_return_%d" % index
+            models.append(model)
+            trim=dict(model=7+index,part=pane["part"])
+            if pane.get("parent"):trim["parent"]=pane["parent"]
+            if pane.get("scripts"):trim["scripts"]=pane["scripts"]
+            trims.append(trim)
+            declarations.append("    model %s { mesh = vehicles/MELens_Shells|shell_cloud22_window_return_%d, texture = Vehicles/MELensShell_cloud22_walls, shader = vehiclewheel, scale = 0.0111111, }" % (model,index))
+        block=('\nlocal cloudProfile = MELens.Profiles["Base.Trailer54FlyingCloud22"]\n'
+               'for _, model in ipairs('+lua(models)+') do\n'
+               '    table.insert(cloudProfile.shell.models, model)\n'
+               '    table.insert(cloudProfile.light.interiorModels, model)\nend\n'
+               'cloudProfile.shell.windowReturns = '+lua(trims)+'\n')
+        cloud_leaves=native_living_leaves("FlyingCloud22")
+        if cloud_leaves:
+            block+='cloudProfile.nativeBodyModels = '+lua(cloud_leaves)+'\ncloudProfile.nativeLivingLeafModels = '+lua(cloud_leaves)+'\n'
+        text=prefix+start+block+end+suffix
+        with open(manual_path,"w",encoding="utf-8",newline="\n") as handle:handle.write(text)
+        declarations.append("    model MELensShell_cloud22_floor_perimeter { mesh = vehicles/MELens_Shells|shell_cloud22_floor_perimeter, texture = Vehicles/MELensShell_cloud22_floor, shader = vehiclewheel, scale = 0.0111111, }")
+    declarations.append("}")
+    with open(os.path.join(ROOT,"mod/RealVehicleInteriors/common/media/scripts/MELens_native_floor_models.txt"),"w",encoding="utf-8",newline="\n") as handle:
+        handle.write("\n".join(declarations)+"\n")
+
+
 if __name__ == "__main__":
     names = sys.argv[1:] or sorted(f[:-5] for f in os.listdir(SPECS) if f.endswith(".json"))
     textures = [t for t in (build(os.path.join(SPECS, n + ".json")) for n in names) if t]
+    write_native_models()
+    write_factory_models()
     if PROBLEMS:
         print("\nLAYOUT PROBLEMS (fix the spec, then build again):")
         for line in PROBLEMS:

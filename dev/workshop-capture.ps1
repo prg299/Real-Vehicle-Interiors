@@ -4,7 +4,7 @@ param([string]$Run = 'workshop-20261017', [switch]$GroundOnly, [string]$Scenario
     [switch]$LowMemory, [string]$ProfilePath, [switch]$PreserveClock,
     [string]$Driver, [string[]]$DriverArguments = @(),
     [switch]$Uncapped, [switch]$StopAfterDriver,
-    [switch]$AllowOtherGames) # this game/input/capture stay on a separate inactive desktop
+    [switch]$AllowOtherGames, [switch]$SyncOwnedWorldMods) # isolated owned desktop/profile only
 . (Join-Path $PSScriptRoot '..\scripts\common.ps1')
 if ($ProfilePath) {
     $profile = [IO.Path]::GetFullPath($ProfilePath)
@@ -29,6 +29,13 @@ if ($FreshProfile) {
 }
 & (Join-Path $Lens.Root 'scripts\testgame.ps1') -Mode Prepare -ProfilePath $Lens.TestHome
 $homeDir = $Lens.TestHome
+if($SyncOwnedWorldMods){
+    if(-not $ProfilePath -or $LoadWorld -notmatch '^melens-test-[0-9]+$'){throw 'Save mod synchronization requires an explicit owned profile/world'}
+    $worldMods=Join-Path $homeDir "Zomboid\Saves\Sandbox\$LoadWorld\mods.txt"
+    if(-not (Test-Path -LiteralPath $worldMods -PathType Leaf)){throw 'Owned save mod list is missing'}
+    Copy-Item -LiteralPath (Join-Path $homeDir 'Zomboid\mods\default.txt') -Destination $worldMods -Force
+    Write-Host 'OWNED_SAVE_MODS_SYNCED'
+}
 $cache = Join-Path $homeDir 'Zomboid'
 $screens = Join-Path $cache 'Screenshots'
 New-Item -ItemType Directory -Path $screens -Force | Out-Null
@@ -109,6 +116,16 @@ try {
     if (-not (Test-Path -LiteralPath $started)) { throw "No inactive desktop launch: $($stderr.Result)" }
     $gameId = (Get-Content -LiteralPath $started -Raw | ConvertFrom-Json).pid
     $gameStartedAt = (Get-Process -Id $gameId -ErrorAction Stop).StartTime
+    $launchReceipt = Get-Content -LiteralPath $started -Raw | ConvertFrom-Json
+    $ownedIds = @($PID, $keeper.Id, [int]$launchReceipt.keeperPid, [int]$gameId) | Select-Object -Unique
+    $identities = @(foreach ($ownedId in $ownedIds) {
+        $ownedProcess = Get-CimInstance Win32_Process -Filter "ProcessId=$ownedId"
+        if ($ownedProcess) {
+            [ordered]@{pid=$ownedId;name=$ownedProcess.Name;createdUtc=$ownedProcess.CreationDate.ToUniversalTime().ToString('o')}
+        }
+    })
+    [ordered]@{run=$Run;recordedUtc=[DateTime]::UtcNow.ToString('o');processes=$identities} |
+        ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $runPath 'owned-process-identities.json') -Encoding utf8
     Write-Host "Owned game $gameId started on an inactive desktop"
     [void](Wait-Lua 'return MainScreen and MainScreen.instance and "menu" or "waiting"' 'menu')
     Write-Host 'MAIN_MENU_READY'

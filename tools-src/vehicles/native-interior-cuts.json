@@ -1,0 +1,410 @@
+{
+  "schema": 1,
+  "units": "Runtime passenger metres; UV uses native u,1-source-v",
+  "provenance": "2026-10-25 exact vanilla root mesh connected components and conservative joint position/native-UV exclusion; no source geometry exported",
+  "scope": "Occupied native cutaway only; no save/part/inventory mutation. Preserve Scamp camera-boundary trim separately.",
+  "families": {
+    "VanillaPassengerVan": {
+      "sourceModelSha256": "00ddd2276611c41a61fc8485eb2a8134ee2c084d02d5933762a86439ac10f6e4",
+      "qualifiedFaces": 44,
+      "foreignFacesIntersecting": 0,
+      "cuts": [
+        {
+          "models": [
+            "Vehicles_VanSeats",
+            "mesh:Vehicles_VanSeats",
+            "Vehicles_VanSeats_NoRandom"
+          ],
+          "box": {
+            "x": [
+              -0.6508984004999999,
+              0.6508979905
+            ],
+            "y": [
+              -0.5273672819999999,
+              0.20734616490000002
+            ],
+            "z": [
+              -1.2785980191000001,
+              0.19640487750000002
+            ]
+          },
+          "uv": [
+            0.6691381467999999,
+            0.6108631623999999,
+            0.990235375,
+            0.989532748
+          ]
+        }
+      ]
+    },
+    "VanillaAmbulance": {
+      "sourceModelSha256": "9b21de01ef825c6bbfca0b716e3ec350f0ef337eca8d77c3f8682f466872d2e0",
+      "qualifiedFaces": 46,
+      "foreignFacesIntersecting": 0,
+      "cuts": [
+        {
+          "models": [
+            "Vehicles_VanAmbulance",
+            "mesh:Vehicles_VanAmbulance"
+          ],
+          "box": {
+            "x": [
+              -0.7084425837999999,
+              0.7164419837999999
+            ],
+            "y": [
+              -0.5895667289,
+              0.4762487292
+            ],
+            "z": [
+              -1.8076685748,
+              0.4015815809
+            ]
+          },
+          "uv": [
+            0.6484365,
+            0.83203025,
+            0.990235375,
+            0.98828225
+          ]
+        },
+        {
+          "models": [
+            "Vehicles_VanAmbulance",
+            "mesh:Vehicles_VanAmbulance"
+          ],
+          "box": {
+            "x": [
+              0.5824714116,
+              0.7164419837999999
+            ],
+            "y": [
+              -0.5884352521999999,
+              0.4762487292
+            ],
+            "z": [
+              -1.8076684381,
+              0.4015814784
+            ]
+          },
+          "uv": [
+            0.0422909318,
+            0.8415414823999999,
+            0.0653012262,
+            0.8645517842
+          ]
+        }
+      ]
+    },
+    "VanillaRadioVan": {
+      "sourceModelSha256": "0344b6dbf6ab7feb88a7fa174cbf956460b1848e31f25851c100f43b4e8f72f4",
+      "qualifiedFaces": 46,
+      "foreignFacesIntersecting": 0,
+      "cuts": [
+        {
+          "models": [
+            "Vehicles_VanRadio",
+            "mesh:Vehicles_VanRadio"
+          ],
+          "box": {
+            "x": [
+              -0.7084427888,
+              0.7164421205
+            ],
+            "y": [
+              -0.5816415398,
+              0.4764145762
+            ],
+            "z": [
+              -1.8173773534000002,
+              0.4430446558
+            ]
+          },
+          "uv": [
+            0.6484365,
+            0.83203025,
+            0.9973869787,
+            0.9983179306000001
+          ]
+        },
+        {
+          "models": [
+            "Vehicles_VanRadio",
+            "mesh:Vehicles_VanRadio"
+          ],
+          "box": {
+            "x": [
+              0.5824712066000001,
+              0.7164421205
+            ],
+            "y": [
+              -0.5805099264,
+              0.476414337
+            ],
+            "z": [
+              -1.8173772167,
+              0.4430443482
+            ]
+          },
+          "uv": [
+            0.0460232443,
+            0.8371693029,
+            0.0700013058,
+            0.8605452643
+          ]
+        }
+      ]
+    },
+    "Scamp16": {
+      "sourceModelSha256": "6291d55ec7b3681b85d8d8ac582a684065c8a0b3c99e9f949e169ad6434b9090",
+      "qualifiedFaces": 8,
+      "foreignFacesIntersecting": 0,
+      "identity": "Two proven vent tangential edge pairs +fresh decoded inner tail-lamp edge532/533 and source mirrored502/503; all outer lamps/grille/caps preserved",
+      "cuts": [
+        {
+          "models": [
+            "TrailerKI5camperScamp16body",
+            "mesh:scamp16_body"
+          ],
+          "box": {
+            "x": [
+              -0.8947286,
+              -0.8447313
+            ],
+            "y": [
+              -0.0387072,
+              0.3061662
+            ],
+            "z": [
+              0.1732002,
+              0.1732203
+            ]
+          },
+          "uv": [
+            0.7747415,
+            0.1031629,
+            0.8250227,
+            0.1071132
+          ]
+        },
+        {
+          "models": [
+            "TrailerKI5camperScamp16body",
+            "mesh:scamp16_body"
+          ],
+          "box": {
+            "x": [
+              -0.8947287,
+              -0.8447313
+            ],
+            "y": [
+              -0.0387072,
+              0.3061663
+            ],
+            "z": [
+              -0.1704384,
+              -0.1704183
+            ]
+          },
+          "uv": [
+            0.7747415,
+            0.156946,
+            0.8250227,
+            0.1608963
+          ]
+        },
+        {
+          "models": [
+            "TrailerKI5camperScamp16body",
+            "mesh:scamp16_body"
+          ],
+          "box": {
+            "x": [
+              0.4214251,
+              0.430005
+            ],
+            "y": [
+              -0.0469213,
+              0.0388516
+            ],
+            "z": [
+              -1.463508,
+              -1.4076147
+            ]
+          },
+          "uv": [
+            0.3839044,
+            0.7767631,
+            0.3945658,
+            0.7948828
+          ]
+        },
+        {
+          "models": [
+            "TrailerKI5camperScamp16body",
+            "mesh:scamp16_body"
+          ],
+          "box": {
+            "x": [
+              -0.430005,
+              -0.4214251
+            ],
+            "y": [
+              -0.0469213,
+              0.0388516
+            ],
+            "z": [
+              -1.463508,
+              -1.4076147
+            ]
+          },
+          "uv": [
+            0.3696271,
+            0.7769891,
+            0.3802896,
+            0.795109
+          ]
+        }
+      ],
+      "qualification": {
+        "freshDecodedPixel": [
+          1010,
+          229
+        ],
+        "freshDecodeJointBoundsFaces": [
+          532,
+          533
+        ],
+        "sourceSurveySha256": "5489cdf34c18fe6e8ab6776fc558626bc713096c44eba2c8313e4ed499337ec0",
+        "freshDecodeSha256": "abc1c2bba7fcf9257e2f5ac84b5d4d4d8eedcd0d380fda267d88f6af23027c12",
+        "perRuleProof": [
+          {
+            "rule": 1,
+            "expectedSourceFaces": [
+              156,
+              157
+            ],
+            "actualJointBoundHits": [
+              156,
+              157
+            ],
+            "foreignSourceFaceCount": 0
+          },
+          {
+            "rule": 2,
+            "expectedSourceFaces": [
+              160,
+              161
+            ],
+            "actualJointBoundHits": [
+              160,
+              161
+            ],
+            "foreignSourceFaceCount": 0
+          },
+          {
+            "rule": 3,
+            "expectedSourceFaces": [
+              532,
+              533
+            ],
+            "actualJointBoundHits": [
+              532,
+              533
+            ],
+            "foreignSourceFaceCount": 0
+          },
+          {
+            "rule": 4,
+            "expectedSourceFaces": [
+              502,
+              503
+            ],
+            "actualJointBoundHits": [
+              502,
+              503
+            ],
+            "foreignSourceFaceCount": 0
+          }
+        ],
+        "preservedVentFaces": [
+          152,
+          153,
+          154,
+          155,
+          158,
+          159
+        ],
+        "preservedLampFaces": [
+          496,
+          497,
+          498,
+          499,
+          500,
+          501,
+          504,
+          505,
+          506,
+          507,
+          508,
+          509,
+          510,
+          511,
+          512,
+          513,
+          514,
+          515,
+          516,
+          517,
+          518,
+          519,
+          520,
+          521,
+          522,
+          523,
+          524,
+          525,
+          526,
+          527,
+          528,
+          529,
+          530,
+          531,
+          534,
+          535,
+          536,
+          537,
+          538,
+          539,
+          540,
+          541,
+          542,
+          543,
+          544,
+          545,
+          546,
+          547,
+          548,
+          549,
+          550,
+          551,
+          552,
+          553,
+          554,
+          555
+        ],
+        "totalNonTargetSourceFacesExcluded": 1367,
+        "sourceCoordinateContract": "Imported mesh matrix then existing passenger-axis mapping; apply only part-local script offset times vehicleScale. Root body script offset is common vehicle placement and is not added a second time.",
+        "nativeUVContract": "First UV as (u,1-source-v); no UV topology or source vertices exported",
+        "nativeRoofCuts": 0,
+        "nativeSurfaceCuts": 4,
+        "maxMatchedRulesPerActualDraw": 4,
+        "maxDrawSlots": 4,
+        "remainingScampRootBodySlots": 0,
+        "ORmatching": "Exact script model and mesh alias match the same four rules once each; independent door/interior mesh matches0.",
+        "visualGate": "BQ original review must confirm mark removal and outside lamp preservation. Binary match supports source identity, not visual acceptance."
+      }
+    }
+  }
+}

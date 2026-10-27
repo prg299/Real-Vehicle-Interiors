@@ -1,10 +1,7 @@
-2.0.20 - Native interior movement
+2.0.21 — Interior walls, windows and floors
 
-- Walking, running and turning now use the game's normal movement states and animation blending, including native stopping travel and aiming/strafe input.
-- Fixed automatic approaches being cancelled when a turning stride briefly touches a wall.
-- Fixed right-click furniture menus failing when there is no underlying world object to pick.
-- Fixed re-entry being cancelled by a tiny pathfinding step when already standing at the door.
+Refined native interior walls and fitted window surrounds across the supported vehicle bodies. Improved floor coverage, cab separation and bus cabin details. The E150 front partition now clears the side door, and interior lining stays off outward-facing panels.
 
-Existing vehicle, furniture, loot and utility IDs are unchanged. This update does not require starting a new save.
+Preserves saved furniture slots, installed items, storage contents and utility state. Older F350 shelf placements follow their moved cabinets without rewriting saved records. Retains the 2.0.20 movement, optional vehicle-pack support and utility fixes.
 
-Restart the game after updating and approve the updated Java component in ZombieBuddy when prompted.
+Restart the game and approve the updated Java component after updating.

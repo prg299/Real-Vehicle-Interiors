@@ -9,19 +9,30 @@ local profile = {
     floorY = -0.058,
     mesh = { scale = 0.09, lift = 0.6660000337604417 },
     shell = {
-        models = { "MELensShell_fleet_e150windows_floor", "MELensShell_fleet_e150windows_walls", "MELensShell_fleet_e150windows_bulkhead", "MELensShell_fleet_e150windows_entry" },
+        models = { "MELensShell_fleet_e150windows_floor", "MELensShell_fleet_e150windows_walls", "MELensShell_fleet_e150windows_bulkhead", "MELensShell_fleet_e150windows_entry", "MELensShell_fleet_e150windows_support", "MELensShell_fleet_e150windows_door_returns", "MELensShell_fleet_e150windows_wheel_covers", "MELensShell_fleet_e150windows_wheel_floor", "MELensShell_fleet_e150windows_wheel_wall", "MELensShell_fleet_e150windows_window_return_1", "MELensShell_fleet_e150windows_window_return_2", "MELensShell_fleet_e150windows_window_return_3", "MELensShell_fleet_e150windows_window_return_4", "MELensShell_fleet_e150windows_window_return_5", "MELensShell_fleet_e150windows_window_return_6" },
         entryModel = 4,
         entryDoor = "TrunkDoor",
+        windowReturns = {
+            { model = 10, part = "WindowRearLeft", parent = "DoorRearLeft" },
+            { model = 11, part = "WindowRearRight", parent = "DoorRearRight" },
+            { model = 12, part = "WindowBackLeft" },
+            { model = 13, part = "WindowBackRight" },
+            { model = 14, part = "WindshieldRear", parent = "TrunkDoor" },
+            { model = 15, part = "WindshieldRear", parent = "TrunkDoor" },
+        },
+        wheelCoversModel = 7,
+        wheelFloorModel = 8,
+        wheelWallModel = 9,
     },
     hideKI5 = {
         ["86fordE150windshielda"] = {
-            plane = { 0, -1, 0, 2.6667 },
+            plane = { 0, -1, 0, 4.4444 },
         },
         ["86fordE150doorfla"] = {
-            plane = { 0, -1, 0, 2.6667 },
+            plane = { 0, -1, 0, 4.4444 },
         },
         ["86fordE150doorfra"] = {
-            plane = { 0, -1, 0, 2.6667 },
+            plane = { 0, -1, 0, 4.4444 },
         },
         ["86fordE150windshieldreara"] = true,
         ["86fordE150doorrla"] = true,
@@ -38,16 +49,16 @@ local profile = {
         ["86fordE150seatbm"] = true,
         ["86fordE150seatbr"] = true,
         ["86fordE150Roofrack0"] = {
-            plane = { 0, -1, 0, 2.6667 },
+            plane = { 0, -1, 0, 4.4444 },
         },
         ["86fordE150windshield"] = {
-            plane = { 0, -1, 0, 2.6667 },
+            plane = { 0, -1, 0, 4.4444 },
         },
         ["86fordE150windowfl"] = {
-            plane = { 0, -1, 0, 2.6667 },
+            plane = { 0, -1, 0, 4.4444 },
         },
         ["86fordE150windowfr"] = {
-            plane = { 0, -1, 0, 2.6667 },
+            plane = { 0, -1, 0, 4.4444 },
         },
         ["86fordE150windowrl"] = true,
         ["86fordE150windowrr"] = true,
@@ -55,14 +66,20 @@ local profile = {
         ["86fordE150windowbr"] = true,
         ["86fordE150rearWindshield"] = true,
         ["86fordE150interior"] = {
-            plane = { 0, -1, 0, 2.6667 },
+            plane = { 0, -1, 0, 4.4444 },
         },
         ["86fordE150interiorLongW"] = {
-            plane = { 0, -1, 0, 2.6667 },
+            plane = { 0, -1, 0, 4.4444 },
+        },
+        ["86fordE150seatfl"] = {
+            plane = { 0, -1, 0, 4.9556 },
+        },
+        ["86fordE150seatfr"] = {
+            plane = { 0, -1, 0, 4.9556 },
         },
     },
     light = {
-        interiorModels = { "MELensShell_fleet_e150windows_floor", "MELensShell_fleet_e150windows_walls", "MELensShell_fleet_e150windows_bulkhead", "MELensShell_fleet_e150windows_entry" },
+        interiorModels = { "MELensShell_fleet_e150windows_floor", "MELensShell_fleet_e150windows_walls", "MELensShell_fleet_e150windows_bulkhead", "MELensShell_fleet_e150windows_entry", "MELensShell_fleet_e150windows_support", "MELensShell_fleet_e150windows_door_returns", "MELensShell_fleet_e150windows_wheel_covers", "MELensShell_fleet_e150windows_wheel_floor", "MELensShell_fleet_e150windows_wheel_wall", "MELensShell_fleet_e150windows_window_return_1", "MELensShell_fleet_e150windows_window_return_2", "MELensShell_fleet_e150windows_window_return_3", "MELensShell_fleet_e150windows_window_return_4", "MELensShell_fleet_e150windows_window_return_5", "MELensShell_fleet_e150windows_window_return_6" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,
@@ -129,10 +146,42 @@ local profile = {
     panel = { x = -0.687, y = 0.237, z = -2.068, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
     waterTank = 40,
     fuelTank = 20,
+    nativeWheelArch = {
+        sides = {
+            {
+                side = 1,
+                contour = {
+                    { 0.8868018, -0.0706552, -1.6394353 },
+                    { 0.8872114, -0.0101292, -1.5813489 },
+                    { 0.8877813, 0.0348612, -1.4813127 },
+                    { 0.8893657, 0.0319829, -1.1818742 },
+                    { 0.8898138, -0.0065767, -1.0889913 },
+                    { 0.8832788, -0.0706552, -1.0198433 },
+                },
+            },
+            {
+                side = -1,
+                contour = {
+                    { -0.8868018, -0.0706552, -1.6394353 },
+                    { -0.8872114, -0.0101292, -1.5813489 },
+                    { -0.8877813, 0.0348612, -1.4813127 },
+                    { -0.8893657, 0.0319829, -1.1818742 },
+                    { -0.8898138, -0.0065767, -1.0889913 },
+                    { -0.8832788, -0.0706552, -1.0198433 },
+                },
+            },
+        },
+    },
     vanillaSeats = { "BackLeft", "BackMiddle", "BackRight", "FrontLeft", "FrontRight", "MiddleLeft", "MiddleMiddle", "MiddleRight", "RearLeft", "RearMiddle", "RearRight" },
-    cutFront = 0.24,
+    cutFront = 0.4,
     extraSeats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
     clipBody = true,
+    nativeBodyWalls = true,
+    nativeCabPartition = true,
+    nativeWallMaterial = { texture = "MELensShell_b700_walls", height = 1.028, perimeter = 7.704 },
+    nativeBodyModels = { "86fordE150PanelLeft", "86fordE150PanelRight", "86fordE150doorrlw", "86fordE150doorrrw", "86fordE150trunkDoor" },
+    nativeLivingLeafModels = { "86fordE150doorrlw", "86fordE150doorrrw", "86fordE150trunkDoor" },
+    nativeBodyLining = { 0.64, 0.66, 0.67 },
     windowBoxes = {
         {
             x = { -0.712, 0.712 },
@@ -167,59 +216,59 @@ do
         fitted.factoryLayout = "cargo-service-1"
         fitted.factoryRole = "passenger"
         fitted.factoryUse = {
-        loot = {  },
-        stock = {
-            parcels = {
-                { "Base.WaterBottle", 1 },
-                { "Base.BathTowel", 1 },
-            },
-            equipmentrack = {
-                { "Base.WaterBottle", 1 },
-                { "Base.BathTowel", 1 },
-            },
-            metalcase = {
-                { "Base.WaterBottle", 1 },
-                { "Base.BathTowel", 1 },
-            },
-            medlocker = {
-                { "Base.WaterBottle", 1 },
-                { "Base.BathTowel", 1 },
-            },
-            workbench = {
-                { "Base.WaterBottle", 1 },
-                { "Base.BathTowel", 1 },
-            },
-            medbench = {
-                { "Base.WaterBottle", 1 },
-                { "Base.BathTowel", 1 },
-            },
+    loot = {  },
+    stock = {
+        parcels = {
+            { "Base.WaterBottle", 1 },
+            { "Base.BathTowel", 1 },
         },
-    }
+        equipmentrack = {
+            { "Base.WaterBottle", 1 },
+            { "Base.BathTowel", 1 },
+        },
+        metalcase = {
+            { "Base.WaterBottle", 1 },
+            { "Base.BathTowel", 1 },
+        },
+        medlocker = {
+            { "Base.WaterBottle", 1 },
+            { "Base.BathTowel", 1 },
+        },
+        workbench = {
+            { "Base.WaterBottle", 1 },
+            { "Base.BathTowel", 1 },
+        },
+        medbench = {
+            { "Base.WaterBottle", 1 },
+            { "Base.BathTowel", 1 },
+        },
+    },
+}
         fitted.aisleX = 0.0
         for _,s in ipairs({
-        {
-            wall = "left",
-            x = 0.697,
-            z = -0.44,
-            length = 1.1,
-            depth = 0.4,
-            default = "medbench",
-            factory = true,
-            pieces = { "medbench" },
-            seats = { "MELensFurnitureLeft1" },
-        },
-        {
-            wall = "right",
-            x = -0.697,
-            z = -0.44,
-            length = 1.1,
-            depth = 0.4,
-            default = "medbench",
-            factory = true,
-            pieces = { "medbench" },
-            seats = { "MELensFurnitureLeft2" },
-        },
-    }) do fitted.spots[#fitted.spots+1]=s end
+    {
+        wall = "left",
+        x = 0.697,
+        z = -0.44,
+        length = 1.1,
+        depth = 0.4,
+        default = "medbench",
+        factory = true,
+        pieces = { "medbench" },
+        seats = { "MELensFurnitureLeft1" },
+    },
+    {
+        wall = "right",
+        x = -0.697,
+        z = -0.44,
+        length = 1.1,
+        depth = 0.4,
+        default = "medbench",
+        factory = true,
+        pieces = { "medbench" },
+        seats = { "MELensFurnitureLeft2" },
+    },
+}) do fitted.spots[#fitted.spots+1]=s end
         MELens.Profiles["Base.86fordE150LVairportShuttle"] = fitted
         MELens.Profiles["Base.86fordE150longW"] = fitted
     end

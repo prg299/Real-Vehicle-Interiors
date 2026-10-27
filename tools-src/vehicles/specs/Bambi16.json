@@ -1,5 +1,12 @@
 {
     "key": "Bambi16",
+    "nativeWallBoundaryFinish": true,
+    "nativeBodyModels": ["61bambiCamperToolboxLid"],
+    "nativeBodyWalls": true,
+    "nativeHighCut": 1.22,
+    "nativeWallMaterial": "bambi16",
+    "separateShellSupports": true,
+    "separateDoorReturns": true,
     "vehicles": [
         "Base.Trailer61Bambi16"
     ],

@@ -1,0 +1,203 @@
+{
+  "schemaVersion": 1,
+  "description": "Vanilla-only finish colour/detail from existing stock game pixels. Geometry classifiers, apertures, floor, cab and navigation remain independent.",
+  "texture": "vehicle_vanseatsshell",
+  "panelUV": [
+    0.3427734375,
+    0.2861328125,
+    0.4970703125,
+    0.3896484375
+  ],
+  "panelWidth": 1.1,
+  "panelHeight": 0.7425,
+  "coordinateConvention": "Direct game sampler UV is PNG top-left-normalized; the half-texel-inset panel rectangle needs no additional V flip.",
+  "panelSource": {
+    "path": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\textures\\Vehicles\\vehicle_vanseatsshell.png",
+    "sha256": "acb344323a57529894eb54f01f09641d10f78c16281fc74b89e1dfb3e921ee3b",
+    "pixelsHalfOpen": [
+      175,
+      146,
+      255,
+      200
+    ],
+    "qualification": "Existing VanSeats lower middle-door factory panel, dark pressed edges and highlight; no text, glass, lamp, handle or authored raster replacement."
+  },
+  "qualificationReport": "build/rv/wall-quality-20261026/vanilla/by-panel-patches.json",
+  "qualificationReportSha256": "1d9c3a5e3239aa6e1a22d7088a4c1638010f8a0af985defeb7c07b5a3cc76fb8",
+  "families": {
+    "VanillaVan": {
+      "paintUV": [
+        0.56640625,
+        0.35546875
+      ],
+      "sourceSkin": {
+        "path": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\textures\\Vehicles\\vehicle_vanshell.png",
+        "sha256": "30f7a2449862afe9a596dd9fc88e686910c25e80ec9eba76e52b086e80a45135"
+      },
+      "sourceMask": {
+        "path": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\textures\\Vehicles\\vehicle_van_mask.png",
+        "sha256": "52a7f5d7dd8b765408179619ca2f4ee0aaf2752f749c9fdb65464b8772162778"
+      },
+      "sourceLights": {
+        "path": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\textures\\Vehicles\\vehicle_van_lights.png",
+        "sha256": "e07ed9916873f1dbaaa98cd3ced5054c0b6f6618ebb573837a705dc845545041"
+      },
+      "paintPixels": [
+        280,
+        176,
+        300,
+        188
+      ],
+      "paintAlphaCounts": {
+        "0": 240
+      },
+      "partMaskRGBA": [
+        255,
+        0,
+        255,
+        255
+      ],
+      "qualification": "Canonical base skin original inspected; exactly one mask zone, uniform alpha, no enabled lamp alpha. Live skin is sampled at runtime."
+    },
+    "VanillaPassengerVan": {
+      "paintUV": [
+        0.56640625,
+        0.35546875
+      ],
+      "sourceSkin": {
+        "path": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\textures\\Vehicles\\vehicle_vanseatsshell.png",
+        "sha256": "acb344323a57529894eb54f01f09641d10f78c16281fc74b89e1dfb3e921ee3b"
+      },
+      "sourceMask": {
+        "path": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\textures\\Vehicles\\vehicle_vanseats_mask.png",
+        "sha256": "94dc273e329b22f7a0bdd521078f4d4fc2c62841d98ae12c4a137e9209099256"
+      },
+      "sourceLights": {
+        "path": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\textures\\Vehicles\\vehicle_van_lights.png",
+        "sha256": "e07ed9916873f1dbaaa98cd3ced5054c0b6f6618ebb573837a705dc845545041"
+      },
+      "paintPixels": [
+        280,
+        176,
+        300,
+        188
+      ],
+      "paintAlphaCounts": {
+        "0": 240
+      },
+      "partMaskRGBA": [
+        255,
+        0,
+        255,
+        255
+      ],
+      "qualification": "Canonical base skin original inspected; exactly one mask zone, uniform alpha, no enabled lamp alpha. Live skin is sampled at runtime."
+    },
+    "VanillaAmbulance": {
+      "paintUV": [
+        0.56640625,
+        0.35546875
+      ],
+      "sourceSkin": {
+        "path": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\textures\\Vehicles\\vehicle_vanambulanceshell.png",
+        "sha256": "752e6fd6e098f59f3743cd3aad1a67fea4dc423c06c358016217a6d8e56df448"
+      },
+      "sourceMask": {
+        "path": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\textures\\Vehicles\\vehicle_vanambulance_mask.png",
+        "sha256": "a92cd039c4f371db38b54c3627d3c858ad5d4d5dc2a674f201488faf1aeccca3"
+      },
+      "sourceLights": {
+        "path": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\textures\\Vehicles\\vehicle_vanambulance_lights.png",
+        "sha256": "636db0462994adfc64d276eedcd9357113f105c0dd01ffb827b0543ae6dae84b"
+      },
+      "paintPixels": [
+        280,
+        176,
+        300,
+        188
+      ],
+      "paintAlphaCounts": {
+        "255": 240
+      },
+      "partMaskRGBA": [
+        255,
+        0,
+        255,
+        255
+      ],
+      "qualification": "Canonical base skin original inspected; exactly one mask zone, uniform alpha, no enabled lamp alpha. Live skin is sampled at runtime."
+    },
+    "VanillaRadioVan": {
+      "paintUV": [
+        0.56640625,
+        0.35546875
+      ],
+      "sourceSkin": {
+        "path": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\textures\\Vehicles\\vehicle_vanradio_lbmwshell.png",
+        "sha256": "08204dcafe2e19bd5e7c9d9f94b544a373d11e05c22d2255a5043be16d36ea0f"
+      },
+      "sourceMask": {
+        "path": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\textures\\Vehicles\\vehicle_van_mask.png",
+        "sha256": "52a7f5d7dd8b765408179619ca2f4ee0aaf2752f749c9fdb65464b8772162778"
+      },
+      "sourceLights": {
+        "path": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\textures\\Vehicles\\vehicle_van_lights.png",
+        "sha256": "e07ed9916873f1dbaaa98cd3ced5054c0b6f6618ebb573837a705dc845545041"
+      },
+      "paintPixels": [
+        280,
+        176,
+        300,
+        188
+      ],
+      "paintAlphaCounts": {
+        "255": 240
+      },
+      "partMaskRGBA": [
+        255,
+        0,
+        255,
+        255
+      ],
+      "qualification": "Canonical base skin original inspected; exactly one mask zone, uniform alpha, no enabled lamp alpha. Live skin is sampled at runtime."
+    },
+    "VanillaStepVan": {
+      "paintUV": [
+        0.546875,
+        0.4296875
+      ],
+      "sourceSkin": {
+        "path": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\textures\\Vehicles\\vehicle_stepvanshell.png",
+        "sha256": "559d540368da1b776587604b7073046da8a760491d4248c473aa35def36d5b8b"
+      },
+      "sourceMask": {
+        "path": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\textures\\Vehicles\\vehicle_stepvan_mask.png",
+        "sha256": "f6cc1c8369f8f188a493b6b6e4527a9eb747939629fa70f54ca8f98b02a158e5"
+      },
+      "sourceLights": {
+        "path": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\textures\\Vehicles\\vehicle_stepvan_lights.png",
+        "sha256": "fcc762e25fdcfe0e39eef33a149f7864912639d228854e9f90e1979266c7d506"
+      },
+      "paintPixels": [
+        270,
+        210,
+        290,
+        230
+      ],
+      "paintAlphaCounts": {
+        "0": 400
+      },
+      "partMaskRGBA": [
+        0,
+        192,
+        192,
+        255
+      ],
+      "qualification": "Canonical base skin original inspected; exactly one mask zone, uniform alpha, no enabled lamp alpha. Live skin is sampled at runtime."
+    }
+  },
+  "limitations": [
+    "The five canonical base skins are raster-qualified; not every alternate livery raster.",
+    "References game textures in place; no game raster is copied or generated."
+  ]
+}

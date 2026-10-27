@@ -9,7 +9,22 @@ local profile = {
     floorY = -0.14,
     mesh = { scale = 0.09, lift = 0.666 },
     shell = {
-        models = { "MELensShell_airflyte_floor", "MELensShell_airflyte_walls" },
+        models = { "MELensShell_airflyte_floor", "MELensShell_airflyte_walls", "MELensShell_airflyte_support", "MELensShell_airflyte_floor_perimeter", "MELensShell_airflyte_wheel_covers", "MELensShell_airflyte_wheel_floor", "MELensShell_airflyte_window_return_1", "MELensShell_airflyte_window_return_2", "MELensShell_airflyte_window_return_3", "MELensShell_airflyte_window_return_4", "MELensShell_airflyte_window_return_5", "MELensShell_airflyte_window_return_6", "MELensShell_airflyte_window_return_7", "MELensShell_airflyte_window_return_8", "MELensShell_airflyte_window_return_9", "MELensShell_airflyte_window_return_10" },
+        nativeFloorModel = 4,
+        windowReturns = {
+            { model = 7, part = "Windshield" },
+            { model = 8, part = "Windshield" },
+            { model = 9, part = "Windshield" },
+            { model = 10, part = "Windshield" },
+            { model = 11, part = "WindowFrontLeft" },
+            { model = 12, part = "WindowFrontRight" },
+            { model = 13, part = "WindowMiddleLeft" },
+            { model = 14, part = "WindowRearLeft" },
+            { model = 15, part = "WindowRearRight" },
+            { model = 16, part = "WindshieldRear" },
+        },
+        wheelCoversModel = 5,
+        wheelFloorModel = 6,
     },
     hideKI5 = {
         TrailerKI5shastaAirflyteInterior = 1.39,
@@ -37,7 +52,7 @@ local profile = {
         ["mesh:61airflyte_windshield_rear_a"] = true,
     },
     light = {
-        interiorModels = { "MELensShell_airflyte_floor", "MELensShell_airflyte_walls" },
+        interiorModels = { "MELensShell_airflyte_floor", "MELensShell_airflyte_walls", "MELensShell_airflyte_support", "MELensShell_airflyte_floor_perimeter", "MELensShell_airflyte_wheel_covers", "MELensShell_airflyte_wheel_floor", "MELensShell_airflyte_window_return_1", "MELensShell_airflyte_window_return_2", "MELensShell_airflyte_window_return_3", "MELensShell_airflyte_window_return_4", "MELensShell_airflyte_window_return_5", "MELensShell_airflyte_window_return_6", "MELensShell_airflyte_window_return_7", "MELensShell_airflyte_window_return_8", "MELensShell_airflyte_window_return_9", "MELensShell_airflyte_window_return_10" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,
@@ -117,7 +132,88 @@ local profile = {
     panel = { x = -0.918, y = 0.155, z = 0.315, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
     waterTank = 60,
     fuelTank = 20,
+    nativeWheelArch = {
+        sides = {
+            {
+                side = 1,
+                contour = {
+                    { 0.9585, -0.2848557, -0.304941 },
+                    { 0.9585, -0.1500429, -0.1669117 },
+                    { 0.9585, -0.1500429, 0.2039383 },
+                    { 0.9585, -0.2848558, 0.3436306 },
+                },
+            },
+            {
+                side = -1,
+                contour = {
+                    { -0.9585, -0.2848557, -0.304941 },
+                    { -0.9585, -0.1500429, -0.1669117 },
+                    { -0.9585, -0.1500429, 0.2039383 },
+                    { -0.9585, -0.2848558, 0.3436306 },
+                },
+            },
+        },
+    },
+    nativeCutPlanes = {
+        { 0, 0, -1, -4.5 },
+        { 0, 0, -1, -7 },
+        { 0, 0, -1, -15.334 },
+    },
     clipBody = true,
+    nativeBodyWalls = true,
+    nativeBodyKeepPlanes = {
+        TrailerKI5shastaAirflyteInterior = { 0, 0, 0, 1 },
+        TrailerKI5shastaAstrodomeInterior = { 0, 0, 0, 1 },
+        ["61shastaCamperWings"] = { 0, 0, 0, 1 },
+        ["mesh:61airflyte_wings"] = { 0, 0, 0, 1 },
+        MELensShell_airflyte_support = { 0, 1, 0, -11.11111111111111 },
+    },
+    nativeWallMaterial = { texture = "MELensShell_airflyte_walls", height = 1.64, perimeter = 10.233767 },
+    nativeWallBoundaryFinish = true,
+    nativeBodyModels = { "TrailerKI5shastaAirflytetop", "TrailerKI5shastaAstrodometop", "61shastaCamperToolboxLid2", "61shastaCamperToolboxLid3", "61shastaCamperDoorfr" },
+    nativeLivingLeafModels = { "61shastaCamperDoorfr" },
+    nativeRoofCuts = {
+        {
+            models = { "TrailerKI5shastaAirflytebody", "mesh:61airflyte_body" },
+            maxUp = 0.6,
+            box = {
+                x = { -2, 2 },
+                y = { 1.16, 2 },
+                z = { -3, 0 },
+            },
+        },
+        {
+            models = { "TrailerKI5shastaAirflytetop", "mesh:61airflyte_top" },
+            maxUp = 0.6,
+            box = {
+                x = { -2, 2 },
+                y = { 1.16, 2 },
+                z = { -4, 4 },
+            },
+        },
+        {
+            models = { "TrailerKI5shastaAstrodometop", "mesh:61astrodome_top" },
+            maxUp = 0.6,
+        },
+        {
+            models = { "TrailerKI5shastaAstrodometop", "mesh:61astrodome_top" },
+            box = {
+                x = { -1, 1 },
+                y = { 1.34, 1.51 },
+                z = { 2.02, 2.52 },
+            },
+            uv = { 0.126, 0.208, 0.189, 0.265 },
+        },
+        {
+            models = { "TrailerKI5shastaAstrodometop", "mesh:61astrodome_top" },
+            box = {
+                x = { -1.02, 1.02 },
+                y = { 1, 1.445 },
+                z = { 2.29, 3.2 },
+            },
+        },
+    },
+    nativeBodyLining = { 0.8, 0.76, 0.66 },
     windowBoxes = {
         {
             x = { 0.55, 1.2 },

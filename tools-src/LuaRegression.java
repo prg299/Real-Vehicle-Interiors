@@ -71,6 +71,23 @@ public final class LuaRegression {
                 throw new AssertionError(name + ": " + java.util.Arrays.toString(result));
             }
         }
+        // Execute the diagnostic's actual baseline, rather than a second copy
+        // of its restoration rules, against native and intermediate bridges.
+        String isolationSource = Files.readString(root.resolve("dev/shell-isolation-tests.py"),
+            StandardCharsets.UTF_8).replace("\r\n", "\n");
+        String marker = "BASELINE = r\"\"\"\n";
+        int baselineStart = isolationSource.indexOf(marker);
+        if (baselineStart < 0) throw new AssertionError("Isolation baseline constant missing");
+        baselineStart += marker.length();
+        int baselineEnd = isolationSource.indexOf("\n\"\"\"", baselineStart);
+        if (baselineEnd < 0) throw new AssertionError("Isolation baseline constant unterminated");
+        Object[] isolationLoad = thread.pcall(LuaCompiler.loadstring("function regressionIsolationBaseline()\n"
+            + isolationSource.substring(baselineStart, baselineEnd) + "\nend", "isolation-baseline", env), new Object[0]);
+        if (!Boolean.TRUE.equals(isolationLoad[0])) throw new AssertionError(java.util.Arrays.toString(isolationLoad));
+        Object[] isolationCheck = thread.pcall(LuaCompiler.loadstring(Files.readString(
+            root.resolve("tools-src/regression/isolation-baseline.lua"), StandardCharsets.UTF_8),
+            "isolation-baseline-check", env), new Object[0]);
+        if (!Boolean.TRUE.equals(isolationCheck[0])) throw new AssertionError(java.util.Arrays.toString(isolationCheck));
         // Load every generated family/grid, including optional vehicle mods that
         // are absent from these engine doubles, before checking shared contracts.
         try (var files = Files.list(root.resolve(shared))) {
@@ -80,6 +97,14 @@ public final class LuaRegression {
                     source.toString(), env), new Object[0]);
                 if (!Boolean.TRUE.equals(result[0])) throw new AssertionError(java.util.Arrays.toString(result));
             }
+        }
+        for (String name : new String[] {
+                "tools-src/regression/fixtures/profile-save-contracts-2.0.14.lua",
+                "tools-src/regression/fixtures/profile-save-contracts-2.0.20.lua",
+                "tools-src/regression/profile-save-contracts.lua"}) {
+            Object[] historical = thread.pcall(LuaCompiler.loadstring(Files.readString(
+                root.resolve(name), StandardCharsets.UTF_8), name, env), new Object[0]);
+            if (!Boolean.TRUE.equals(historical[0])) throw new AssertionError(name + ": " + java.util.Arrays.toString(historical));
         }
         Path fleet = root.resolve("tools-src/regression/fleet.lua");
         thread.pcall(LuaCompiler.loadstring("ISUIElement={derive=function() return {} end};"
@@ -96,6 +121,9 @@ public final class LuaRegression {
         Object[] floorPlacement = thread.pcall(LuaCompiler.loadstring(Files.readString(
             root.resolve("tools-src/regression/factory-floor-placement.lua"), StandardCharsets.UTF_8), "factory-floor-placement.lua", env), new Object[0]);
         if (!Boolean.TRUE.equals(floorPlacement[0])) throw new AssertionError(java.util.Arrays.toString(floorPlacement));
+        Object[] layoutCompatibility = thread.pcall(LuaCompiler.loadstring(Files.readString(
+            root.resolve("tools-src/regression/loose-layout-compat.lua"), StandardCharsets.UTF_8), "loose-layout-compat.lua", env), new Object[0]);
+        if (!Boolean.TRUE.equals(layoutCompatibility[0])) throw new AssertionError(java.util.Arrays.toString(layoutCompatibility));
         Object[] factoryRoles = thread.pcall(LuaCompiler.loadstring(Files.readString(
             root.resolve("tools-src/regression/factory-roles.lua"), StandardCharsets.UTF_8), "factory-roles.lua", env), new Object[0]);
         if (!Boolean.TRUE.equals(factoryRoles[0])) throw new AssertionError(java.util.Arrays.toString(factoryRoles));

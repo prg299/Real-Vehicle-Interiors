@@ -522,6 +522,7 @@ public final class Loose {
         program.setVector4("MELensCutFront", 0f, 0f, 0f, 0f);
         program.setVector4("MELensKeepPlane", 0f, 0f, 0f, -1.0f);
         program.setVector4("MELensBodyUp", RV.planeA, RV.planeB, RV.planeC, 1f);
+        FlatWheels.upload(program, 1);
         ModelMesh bodyMesh = slot.modelSlot.model.model == null ? null : slot.modelSlot.model.model.mesh;
         if (bodyMesh != null && bodyMesh.minXyz.x <= bodyMesh.maxXyz.x) {
             program.setVector4("MELensShape", bodyMesh.minXyz.x, bodyMesh.minXyz.y, bodyMesh.maxXyz.x, bodyMesh.maxXyz.y);
@@ -541,6 +542,8 @@ public final class Loose {
         program.setVector4("MELensShade", RV.shadeX, RV.shadeY, RV.shadeStrength, 2f);   // 2: furniture lighting, any texture size
         program.setValue("MELensSpotCount", 0f);
         program.setVector4("MELensWallTint", 0f, 0f, 0f, 0f);
+        program.setValue("MELensSeamlessWall", 0f);
+        program.setVector4("MELensStockMetal", 0f, 0f, 0f, 0f);
         program.setVector4("MELensWellCut", RV.wellPlaneD, RV.wellFloorD, RV.wellFloorSet ? 1f : 0f, 0f);
         float[] clip0 = RV.clipBoxes[0];
         float[] clip1 = RV.clipBoxes[1];

@@ -1,5 +1,12 @@
 {
     "key": "Scamp16",
+    "nativeBodyWalls": true,
+    "nativeHighCut": 1.09,
+    "nativeBodyTrim": { "x": [-0.545, 0.545], "y": [-0.266, -0.088], "z": [1.802, 2.001], "uv": [0.539, 0.096, 0.997, 0.999] },
+    "nativeWallMaterial": "scamp16",
+    "nativeBodyModels": ["87scampCamperDoorfr"],
+    "separateShellSupports": true,
+    "separateDoorReturns": true,
     "vehicles": [
         "Base.Trailer87Scamp16"
     ],

@@ -1,0 +1,448 @@
+{
+  "schema": 1,
+  "description": "Exact resolved physical living-area leaves; cab doors and exterior lockers excluded",
+  "families": {
+    "Airflyte": {
+      "models": [
+        "61shastaCamperDoorfr"
+      ],
+      "sourceScriptFileSha256": "cb2a6e81a998e84285f80aa36d636558cdde2d53044044fcd888fd6768784845",
+      "parts": [
+        {
+          "part": "DoorFrontRight",
+          "model": "61shastaCamperDoorfr",
+          "scripts": [
+            "Base.Trailer61Airflyte",
+            "Base.Trailer61Astrodome"
+          ]
+        }
+      ]
+    },
+    "B700": {
+      "models": [
+        "87fordB700Doorfr",
+        "87fordB700Doorr"
+      ],
+      "sourceScriptFileSha256": "8b7dc58093d517f6d1e75e0941d830a1f16f3bebd71bc36eae1e09c26068052a",
+      "parts": [
+        {
+          "part": "DoorFrontRight",
+          "model": "87fordB700Doorfr",
+          "scripts": [
+            "Base.87fordB700school",
+            "Base.87fordB700prison",
+            "Base.87fordB700military"
+          ]
+        },
+        {
+          "part": "DoorRear",
+          "model": "87fordB700Doorr",
+          "scripts": [
+            "Base.87fordB700school",
+            "Base.87fordB700prison",
+            "Base.87fordB700military"
+          ]
+        }
+      ]
+    },
+    "Bambi16": {
+      "models": [
+        "61bambiCamperDoorfr"
+      ],
+      "sourceScriptFileSha256": "cb2a6e81a998e84285f80aa36d636558cdde2d53044044fcd888fd6768784845",
+      "parts": [
+        {
+          "part": "DoorFrontRight",
+          "model": "61bambiCamperDoorfr",
+          "scripts": [
+            "Base.Trailer61Bambi16"
+          ]
+        }
+      ]
+    },
+    "ChevyStepVan": {
+      "models": [
+        "85chevyStepVantrunkDoor"
+      ],
+      "sourceScriptFileSha256": "97d54aa370c341c0a9d17f395b5b321f2f2f4af05b73ae09bbf5d0bb7426c5f3",
+      "parts": [
+        {
+          "part": "TrunkDoor",
+          "model": "85chevyStepVantrunkDoor",
+          "scripts": [
+            "Base.85chevyStepVan",
+            "Base.85chevyStepVanBlacksmith",
+            "Base.85chevyStepVanButchers",
+            "Base.85chevyStepVanCitrusWave",
+            "Base.85chevyStepVanDelirosPlonkies",
+            "Base.85chevyStepVanFlorist",
+            "Base.85chevyStepVanGenuine",
+            "Base.85chevyStepVanHerald",
+            "Base.85chevyStepVanJorgensen",
+            "Base.85chevyStepVanLibrary",
+            "Base.85chevyStepVanLvAirportCatering",
+            "Base.85chevyStepVanLvMotorshop",
+            "Base.85chevyStepVanMarineBites",
+            "Base.85chevyStepVanMasonry",
+            "Base.85chevyStepVanMrHuangsLaundry",
+            "Base.85chevyStepVanPostal",
+            "Base.85chevyStepVanPropane",
+            "Base.85chevyStepVanRandys",
+            "Base.85chevyStepVanSWAT",
+            "Base.85chevyStepVanScarletOak",
+            "Base.85chevyStepVanSeHospitality",
+            "Base.85chevyStepVanSePaintingServices",
+            "Base.85chevyStepVanSmartCut",
+            "Base.85chevyStepVanSunBallz",
+            "Base.85chevyStepVanTheCompleteRepair",
+            "Base.85chevyStepVanTimelessGlass",
+            "Base.85chevyStepVanUsLogistics",
+            "Base.85chevyStepVanZippeeMarket"
+          ]
+        }
+      ]
+    },
+    "E150Long": {
+      "models": [
+        "86fordE150doorrr",
+        "86fordE150trunkDoor"
+      ],
+      "sourceScriptFileSha256": "a56694b564bfa6cf265476d29c41c291d656d236e66aa96d6a5ff984fb8b4dc7",
+      "parts": [
+        {
+          "part": "DoorRearRight",
+          "model": "86fordE150doorrr",
+          "scripts": [
+            "Base.86fordE150McCoyWoodworking",
+            "Base.86fordE150deerValley",
+            "Base.86fordE150heritageTailors",
+            "Base.86fordE150jones",
+            "Base.86fordE150kerrHomes",
+            "Base.86fordE150long",
+            "Base.86fordE150perfick",
+            "Base.86fordE150wpCarpentry"
+          ]
+        },
+        {
+          "part": "TrunkDoor",
+          "model": "86fordE150trunkDoor",
+          "scripts": [
+            "Base.86fordE150McCoyWoodworking",
+            "Base.86fordE150deerValley",
+            "Base.86fordE150heritageTailors",
+            "Base.86fordE150jones",
+            "Base.86fordE150kerrHomes",
+            "Base.86fordE150long",
+            "Base.86fordE150mccoy",
+            "Base.86fordE150perfick",
+            "Base.86fordE150wpCarpentry"
+          ]
+        }
+      ]
+    },
+    "E150Short": {
+      "models": [
+        "86fordE150trunkDoor",
+        "86fordE150doorrrw",
+        "86fordE150doorrr",
+        "86fordE150doorrl"
+      ],
+      "sourceScriptFileSha256": "b015e9410d72c243dd310d7b267a242b56704f0ea2f3c409d35eb1911219055c",
+      "parts": [
+        {
+          "part": "TrunkDoor",
+          "model": "86fordE150trunkDoor",
+          "scripts": [
+            "Base.86fordE150",
+            "Base.86fordE150LBMWradio",
+            "Base.86fordE150beckmansBuilding",
+            "Base.86fordE150blacksmith",
+            "Base.86fordE150brewster",
+            "Base.86fordE150brushAndClay",
+            "Base.86fordE150bugWipers",
+            "Base.86fordE150ccconstruction",
+            "Base.86fordE150creatureCruiser",
+            "Base.86fordE150dnd",
+            "Base.86fordE150fossoil",
+            "Base.86fordE150greenes",
+            "Base.86fordE150knobCreek",
+            "Base.86fordE150knoxDistilery",
+            "Base.86fordE150knoxTelecom",
+            "Base.86fordE150korshunovs",
+            "Base.86fordE150ksp",
+            "Base.86fordE150kyTransit",
+            "Base.86fordE150leatherwork",
+            "Base.86fordE150lectromax",
+            "Base.86fordE150locksmith",
+            "Base.86fordE150lvLandscaping",
+            "Base.86fordE150massGenfac",
+            "Base.86fordE150med",
+            "Base.86fordE150meltingPointMetal",
+            "Base.86fordE150mesmerWagon",
+            "Base.86fordE150metalheads",
+            "Base.86fordE150michelesWoodshop",
+            "Base.86fordE150mm",
+            "Base.86fordE150mobileMechanics",
+            "Base.86fordE150mooresMechanics",
+            "Base.86fordE150oVoFarms",
+            "Base.86fordE150oldMillWaterCompany",
+            "Base.86fordE150pd",
+            "Base.86fordE150pennSham",
+            "Base.86fordE150plattAutoRepair",
+            "Base.86fordE150pluggedInElectrics",
+            "Base.86fordE150postal",
+            "Base.86fordE150quantumVessel",
+            "Base.86fordE150riversideFab",
+            "Base.86fordE150rosewoodWorking",
+            "Base.86fordE150schwab",
+            "Base.86fordE150slide",
+            "Base.86fordE150slideSpiffo",
+            "Base.86fordE150so",
+            "Base.86fordE150stoneworksMasonry",
+            "Base.86fordE150tasteTheBrew",
+            "Base.86fordE150theGardenGods",
+            "Base.86fordE150theLadyDelighter",
+            "Base.86fordE150treyBaines",
+            "Base.86fordE150uncloggers",
+            "Base.86fordE150valkyriesSpear",
+            "Base.86fordE150voltMojo",
+            "Base.86fordE150zenith"
+          ]
+        },
+        {
+          "part": "DoorRearRight",
+          "model": "86fordE150doorrrw",
+          "scripts": [
+            "Base.86fordE150LBMWradio"
+          ]
+        },
+        {
+          "part": "DoorRearRight",
+          "model": "86fordE150doorrr",
+          "scripts": [
+            "Base.86fordE150blacksmith",
+            "Base.86fordE150brewster",
+            "Base.86fordE150creatureCruiser",
+            "Base.86fordE150fossoil",
+            "Base.86fordE150knobCreek",
+            "Base.86fordE150knoxDistilery",
+            "Base.86fordE150korshunovs",
+            "Base.86fordE150leatherwork",
+            "Base.86fordE150locksmith",
+            "Base.86fordE150lvLandscaping",
+            "Base.86fordE150mesmerWagon",
+            "Base.86fordE150metalheads",
+            "Base.86fordE150michelesWoodshop",
+            "Base.86fordE150mobileMechanics",
+            "Base.86fordE150oldMillWaterCompany",
+            "Base.86fordE150pd",
+            "Base.86fordE150pluggedInElectrics",
+            "Base.86fordE150postal",
+            "Base.86fordE150quantumVessel",
+            "Base.86fordE150riversideFab",
+            "Base.86fordE150rosewoodWorking",
+            "Base.86fordE150schwab",
+            "Base.86fordE150slide",
+            "Base.86fordE150slideSpiffo",
+            "Base.86fordE150stoneworksMasonry",
+            "Base.86fordE150tasteTheBrew",
+            "Base.86fordE150theLadyDelighter",
+            "Base.86fordE150valkyriesSpear",
+            "Base.86fordE150voltMojo"
+          ]
+        },
+        {
+          "part": "DoorRearLeft",
+          "model": "86fordE150doorrl",
+          "scripts": [
+            "Base.86fordE150blacksmith",
+            "Base.86fordE150brewster",
+            "Base.86fordE150creatureCruiser",
+            "Base.86fordE150fossoil",
+            "Base.86fordE150knobCreek",
+            "Base.86fordE150knoxDistilery",
+            "Base.86fordE150korshunovs",
+            "Base.86fordE150leatherwork",
+            "Base.86fordE150locksmith",
+            "Base.86fordE150lvLandscaping",
+            "Base.86fordE150mesmerWagon",
+            "Base.86fordE150metalheads",
+            "Base.86fordE150michelesWoodshop",
+            "Base.86fordE150mobileMechanics",
+            "Base.86fordE150oldMillWaterCompany",
+            "Base.86fordE150pd",
+            "Base.86fordE150pluggedInElectrics",
+            "Base.86fordE150postal",
+            "Base.86fordE150quantumVessel",
+            "Base.86fordE150riversideFab",
+            "Base.86fordE150rosewoodWorking",
+            "Base.86fordE150schwab",
+            "Base.86fordE150slideSpiffo",
+            "Base.86fordE150stoneworksMasonry",
+            "Base.86fordE150tasteTheBrew",
+            "Base.86fordE150theLadyDelighter",
+            "Base.86fordE150valkyriesSpear",
+            "Base.86fordE150voltMojo"
+          ]
+        }
+      ]
+    },
+    "E150Windows": {
+      "models": [
+        "86fordE150doorrlw",
+        "86fordE150doorrrw",
+        "86fordE150trunkDoor"
+      ],
+      "sourceScriptFileSha256": "efd9724905ac6d33b62396bdeb08a7224877e101610e1d323228a5bad8f1de57",
+      "parts": [
+        {
+          "part": "DoorRearLeft",
+          "model": "86fordE150doorrlw",
+          "scripts": [
+            "Base.86fordE150LVairportShuttle",
+            "Base.86fordE150longW"
+          ]
+        },
+        {
+          "part": "DoorRearRight",
+          "model": "86fordE150doorrrw",
+          "scripts": [
+            "Base.86fordE150LVairportShuttle",
+            "Base.86fordE150longW"
+          ]
+        },
+        {
+          "part": "TrunkDoor",
+          "model": "86fordE150trunkDoor",
+          "scripts": [
+            "Base.86fordE150LVairportShuttle",
+            "Base.86fordE150longW"
+          ]
+        }
+      ]
+    },
+    "F350Ambulance": {
+      "models": [
+        "90fordF350ambulancedoorrr",
+        "90fordF350ambulancedoorr"
+      ],
+      "sourceScriptFileSha256": "687ba2faef97677d4958167abaa764dbe477f5a7bcc830d4119ceb08a48a0a17",
+      "parts": [
+        {
+          "part": "DoorRearRight",
+          "model": "90fordF350ambulancedoorrr",
+          "scripts": [
+            "Base.90fordF350SWAT",
+            "Base.90fordF350ambulance"
+          ]
+        },
+        {
+          "part": "DoorRear",
+          "model": "90fordF350ambulancedoorr",
+          "scripts": [
+            "Base.90fordF350SWAT",
+            "Base.90fordF350ambulance"
+          ]
+        }
+      ]
+    },
+    "F700Bank": {
+      "models": [
+        "87fordF700TrunkDoor"
+      ],
+      "sourceScriptFileSha256": "757ed407e2035dd0f790f6334434f2fff14dd6838e108a38628b3838a314d9c4",
+      "parts": [
+        {
+          "part": "TrunkDoor",
+          "model": "87fordF700TrunkDoor",
+          "scripts": [
+            "Base.87fordF700bank"
+          ]
+        }
+      ]
+    },
+    "F700box": {
+      "models": [
+        "87fordF700TrunkDoorX"
+      ],
+      "sourceScriptFileSha256": "8b7dc58093d517f6d1e75e0941d830a1f16f3bebd71bc36eae1e09c26068052a",
+      "parts": [
+        {
+          "part": "TrunkDoor",
+          "model": "87fordF700TrunkDoorX",
+          "scripts": [
+            "Base.87fordF700box"
+          ]
+        }
+      ]
+    },
+    "F700Swat": {
+      "models": [
+        "87fordF700TrunkDoor",
+        "87fordF700Doorrr"
+      ],
+      "sourceScriptFileSha256": "608bca2475c1e00d22f70825432b933613b5c48edf9da19b80700c3f94a47f4e",
+      "parts": [
+        {
+          "part": "TrunkDoor",
+          "model": "87fordF700TrunkDoor",
+          "scripts": [
+            "Base.87fordF700swat"
+          ]
+        },
+        {
+          "part": "DoorRearRight",
+          "model": "87fordF700Doorrr",
+          "scripts": [
+            "Base.87fordF700swat"
+          ]
+        }
+      ]
+    },
+    "Scamp13": {
+      "models": [
+        "87scampCamperDoorfr"
+      ],
+      "sourceScriptFileSha256": "cb2a6e81a998e84285f80aa36d636558cdde2d53044044fcd888fd6768784845",
+      "parts": [
+        {
+          "part": "DoorFrontRight",
+          "model": "87scampCamperDoorfr",
+          "scripts": [
+            "Base.Trailer87Scamp13"
+          ]
+        }
+      ]
+    },
+    "Scamp16": {
+      "models": [
+        "87scampCamperDoorfr"
+      ],
+      "sourceScriptFileSha256": "cb2a6e81a998e84285f80aa36d636558cdde2d53044044fcd888fd6768784845",
+      "parts": [
+        {
+          "part": "DoorFrontRight",
+          "model": "87scampCamperDoorfr",
+          "scripts": [
+            "Base.Trailer87Scamp16"
+          ]
+        }
+      ]
+    },
+    "FlyingCloud22": {
+      "models": [
+        "54cloudCamperDoorfr"
+      ],
+      "sourceScriptFileSha256": "cb2a6e81a998e84285f80aa36d636558cdde2d53044044fcd888fd6768784845",
+      "parts": [
+        {
+          "part": "DoorFrontRight",
+          "model": "54cloudCamperDoorfr",
+          "scripts": [
+            "Base.Trailer54FlyingCloud22"
+          ]
+        }
+      ]
+    }
+  }
+}

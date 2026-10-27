@@ -1,5 +1,28 @@
 {
     "key": "Airflyte",
+    "nativeWallBoundaryFinish": true,
+    "nativeBodyWalls": true,
+    "nativeHighCut": 1.44,
+    "nativeBodyKeepPlanes": {
+        "61shastaCamperWings": [0, 0, 0, 1],
+        "mesh:61airflyte_wings": [0, 0, 0, 1],
+        "MELensShell_airflyte_support": [0, 1, 0, -11.11111111111111]
+    },
+    "nativeRoofCuts": [
+        {"models": ["TrailerKI5shastaAirflytebody", "mesh:61airflyte_body"], "maxUp": 0.6,
+         "box": {"x": [-2, 2], "y": [1.16, 2.0], "z": [-3, 0]}},
+        {"models": ["TrailerKI5shastaAirflytetop", "mesh:61airflyte_top"], "maxUp": 0.6,
+         "box": {"x": [-2, 2], "y": [1.16, 2.0], "z": [-4, 4]}},
+        {"models": ["TrailerKI5shastaAstrodometop", "mesh:61astrodome_top"], "maxUp": 0.6},
+        {"models": ["TrailerKI5shastaAstrodometop", "mesh:61astrodome_top"],
+         "box": {"x": [-1, 1], "y": [1.34, 1.51], "z": [2.02, 2.52]}, "uv": [0.126, 0.208, 0.189, 0.265]},
+        {"models": ["TrailerKI5shastaAstrodometop", "mesh:61astrodome_top"],
+         "box": {"x": [-1.02, 1.02], "y": [1.00, 1.445], "z": [2.29, 3.20]}}
+    ],
+    "nativeWallMaterial": "airflyte",
+    "nativeBodyModels": ["TrailerKI5shastaAirflytetop", "TrailerKI5shastaAstrodometop", "61shastaCamperToolboxLid2", "61shastaCamperToolboxLid3"],
+    "separateShellSupports": true,
+    "separateDoorReturns": true,
     "vehicles": [
         "Base.Trailer61Airflyte",
         "Base.Trailer61Astrodome"

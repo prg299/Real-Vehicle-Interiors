@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL11;
 import zombie.characters.IsoGameCharacter;
 import zombie.characters.IsoZombie;
 import zombie.vehicles.BaseVehicle;
@@ -15,6 +16,7 @@ import zombie.core.skinnedmodel.model.ModelInstance;
 import zombie.core.skinnedmodel.model.ModelInstanceRenderData;
 import zombie.core.skinnedmodel.model.ModelMesh;
 import zombie.core.skinnedmodel.model.ModelSlotRenderData;
+import zombie.core.skinnedmodel.model.VehicleModelInstance;
 import zombie.core.skinnedmodel.shader.Shader;
 import zombie.core.skinnedmodel.shader.ShaderManager;
 import zombie.scripting.objects.ModelScript;
@@ -47,6 +49,30 @@ public final class Cutaway {
     // DrawVehicle is not re-entrant, but keep the swap per thread anyway.
     private static final ThreadLocal<Model> swappedModel = new ThreadLocal<>();
     private static final ThreadLocal<Shader> originalShader = new ThreadLocal<>();
+    private static final ThreadLocal<ModelMesh> twoSidedMesh = new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> restoreCull = new ThreadLocal<>();
+    static final AtomicLong nativeWallDraws = new AtomicLong();
+    static final AtomicLong nativeWallRestores = new AtomicLong();
+    static final AtomicLong nativeWallStateErrors = new AtomicLong();
+
+    /** Model.DrawVehicle enables culling after its entry hook: scope this at the mesh draw. */
+    public static void beginMeshDraw(ModelMesh mesh) {
+        if (mesh != null && mesh == twoSidedMesh.get()) {
+            restoreCull.set(GL11.glIsEnabled(GL11.GL_CULL_FACE));
+            GL11.glDisable(GL11.GL_CULL_FACE);
+            nativeWallDraws.incrementAndGet();
+        }
+    }
+
+    public static void endMeshDraw() {
+        Boolean enabled = restoreCull.get();
+        if (enabled == null) return;
+        if (enabled) GL11.glEnable(GL11.GL_CULL_FACE);
+        else GL11.glDisable(GL11.GL_CULL_FACE);
+        nativeWallRestores.incrementAndGet();
+        if (GL11.glIsEnabled(GL11.GL_CULL_FACE) != enabled) nativeWallStateErrors.incrementAndGet();
+        restoreCull.remove();
+    }
 
     private static final Matrix4f scratch = new Matrix4f();
     private static final Vector4f plane = new Vector4f();
@@ -72,6 +98,15 @@ public final class Cutaway {
         if (!isCut) {
             return own;
         }
+        boolean nativeWalls = RV.nativeBodyWalls;
+        String name = modelName(inst);
+        boolean nativeCab = nativeWalls && !own && (RV.nativeCabModels.contains(name)
+                || RV.nativeCabModels.contains("mesh:" + meshName(inst)));
+        // The dependency supplies the curved hull and moving leaves. Independent
+        // support geometry retains the floor joins, wheel covers and thresholds.
+        if (nativeWalls && own && (name.endsWith("_walls") || name.endsWith("_entry")
+                || (name.endsWith("_bulkhead") && !RV.nativeCabPartition)
+                || name.endsWith("_door_returns"))) return true;
         // Parts of KI5's models that ME: LENS' inside replaces, removed in the camper you are in.
         float[] keep = keepPlaneFor(inst, RV.keepPlanes);
         Shader original = model.effect;
@@ -85,31 +120,78 @@ public final class Cutaway {
         if (isCut && RV.survey) {
             survey(model, inst, body);
         }
-        // Road wheels remain outside the room. Keep their native material and
-        // texture binding even when the body and lining above them are cut.
-        if (inst.modelInstance instanceof zombie.core.skinnedmodel.model.VehicleSubModelInstance sub
-                && sub.modelInfo != null && sub.modelInfo.part != null
-                && sub.modelInfo.part.getWheelIndex() >= 0) return false;
+        // The flat-floor experiment masks rear-wheel fragments at the arch;
+        // other wheels keep their original draw and texture binding.
+        boolean roadWheel = inst.modelInstance instanceof zombie.core.skinnedmodel.model.VehicleSubModelInstance sub
+                && sub.modelInfo != null
+                && (sub.modelInfo.wheelIndex >= 0 || sub.modelInfo.part != null
+                    && sub.modelInfo.part.getWheelIndex() >= 0);
+        if (roadWheel && !RV.flatWheelArchActive()) return false;
+        // Some packs reuse one model for a roof spare and the road wheels.
+        // The spare's cab/roof keep plane must never erase a wheel instance.
+        // Its actual live wheel role owns the reciprocal floor mask instead.
+        if (roadWheel) keep = null;
         // scratch maps this sub-model's mesh space into the body's mesh space. Parts from
         // other FBX files (awning, jack) have their own axes and offsets.
         scratch.set(body).invert().mul(inst.xfrm);
+        if (roadWheel && !FlatWheels.rearWheel(model.mesh, scratch)) return false;
+        boolean archTrim = nativeWalls && RV.nativeArchTrimActive() && RV.nativeArchTrimModels.contains(name)
+                && FlatWheels.rearWheel(model.mesh, scratch);
         RV.Light light = isCut ? RV.light : RV.Light.NONE;
         // ME: LENS furniture is never cut, like furniture in the game's own cutaway: only
         // the walls are. It still gets the interior light.
         boolean furniture = isCut && isFurniture(inst);
-        float lightMode = !isCut ? 0f : furniture ? 1f : lightMode(inst, original, light);
-        RV.NativeCutInset nativeInset = own ? RV.NativeCutInset.NONE : RV.nativeCutInset;
+        // An exterior spare is not a wall. Retain its full disk through the
+        // camera cut; its measured keep plane still trims an inward projection.
+        boolean exteriorSpare = nativeWalls && !own
+                && inst.modelInstance instanceof zombie.core.skinnedmodel.model.VehicleSubModelInstance spare
+                && spare.modelInfo != null && spare.modelInfo.part != null
+                && exteriorSpare(name, spare.modelInfo.part.getArea());
+        float lightMode = !isCut || roadWheel ? 0f : furniture || nativeCab ? 1f : lightMode(inst, original, light);
+        // Legacy offsets tuck the native skin under a separate lining. Native
+        // walls, supports, leaves and glass instead share one physical cut.
+        RV.NativeCutInset nativeInset = own || nativeWalls ? RV.NativeCutInset.NONE : RV.nativeCutInset;
         // Use the actual part contract, including trunk doors whose mesh name does
         // not pass the narrower door-paint classifier below.
         boolean nativeDoor = !own
                 && inst.modelInstance instanceof zombie.core.skinnedmodel.model.VehicleSubModelInstance nativePart
                 && nativePart.modelInfo != null && nativePart.modelInfo.part != null
-                && nativePart.modelInfo.part.getDoor() != null;
+                && nativePart.modelInfo.part.getDoor() != null
+                && openingDoorId(nativePart.modelInfo.part.getId());
+        boolean nativeWall = nativeWalls && (isBody(slot, inst) || nativeDoor || RV.nativeBodyModels.contains(name));
+        if (nativeWalls && nativeDoor) keep = null;
+        if (nativeWalls && nativeDoor
+                && ((zombie.core.skinnedmodel.model.VehicleSubModelInstance) inst.modelInstance)
+                    .modelInfo.part.isInventoryItemUninstalled()) return true;
+        // Native glazing is a window part, not a model-name convention. This
+        // covers each installed vehicle pack without restoring armor aliases.
+        // Keep its animation and honour missing/destroyed windows/doors.
+        boolean nativeGlass = nativeWalls && !own
+                && inst.modelInstance instanceof zombie.core.skinnedmodel.model.VehicleSubModelInstance window
+                && window.modelInfo != null && window.modelInfo.part != null
+                && (window.modelInfo.part.getWindow() != null || glazingPartId(window.modelInfo.part.getId()));
+        if (nativeGlass && inst.modelInstance instanceof zombie.core.skinnedmodel.model.VehicleSubModelInstance glass
+                && glass.modelInfo != null && glass.modelInfo.part != null) {
+            zombie.vehicles.VehiclePart part = glass.modelInfo.part;
+            var pane = part.getWindow();
+            if (part.isInventoryItemUninstalled() || (pane != null && pane.isDestroyed())) return true;
+            // Separate KI5 pane models do not inherit the root body's rolled-
+            // window mask. A fully lowered pane must expose its aperture too.
+            if (pane != null && pane.isOpen() && pane.getOpenDelta() >= .999f) return true;
+            for (zombie.vehicles.VehiclePart ancestor = part.getParent(); ancestor != null; ancestor = ancestor.getParent()) {
+                // Native passenger-entry hooks may have a door object but no
+                // installable item or leaf. The engine distinguishes those
+                // hooks from an actually uninstalled physical parent door.
+                if (ancestor.getDoor() != null && ancestor.isInventoryItemUninstalled()) return true;
+            }
+            keep = null;
+        }
         float drawPlaneD = nativeInset.apply(RV.planeD, false, nativeDoor);
         float drawNearPlaneD = nativeInset.apply(RV.nearPlaneD, true, nativeDoor);
         // Skip sub-models that nothing touches: entirely below the lowest cut (the camera
         // side's, when that is on), not lit as interior, and nothing to remove.
-        if (keep == null && model.isStatic && lightMode != 1f) {
+        if (!roadWheel && !archTrim && !nativeWall && !nativeGlass && !nativeCab && !(own && RV.flatWheelArchActive())
+                && keep == null && model.isStatic && lightMode != 1f) {
             float lowestD = RV.nearCutEnabled ? Math.max(drawPlaneD, drawNearPlaneD) : drawPlaneD;
             plane.set(RV.planeA, RV.planeB, RV.planeC, lowestD);
             scratch.transformTranspose(plane);
@@ -124,19 +206,67 @@ public final class Cutaway {
         }
         cut.Start();
         ShaderProgram program = cut.getShaderProgram();
+        boolean unseamed = nativeWalls && RV.bodyLining.plain()
+                && "MELensShell_f700box_walls".equals(NativeFinish.material.texture());
+        var partScript = inst.modelInstance.modelScript;
+        program.setValue("MELensSeamlessWall", unseamed && (nativeWall && original.isVehicleShader()
+                || own && partScript != null
+                    && "Vehicles/MELensShell_f700box_walls".equals(partScript.getTextureName())) ? 1f : 0f);
+        boolean stockFitting = own && nativeWalls && (name.endsWith("_bulkhead") || name.endsWith("_wheel_wall"));
+        ModelInstance rootInstance = slot.modelSlot == null ? null : slot.modelSlot.model;
+        VehicleModelInstance stockRoot = rootInstance instanceof VehicleModelInstance root ? root : null;
+        Shader stockSource = rootInstance == inst.modelInstance ? original
+                : stockRoot == null || stockRoot.model == null ? null : stockRoot.model.effect;
+        NativeFinish.uploadStock(program, nativeWalls && RV.bodyLining.plain()
+                && (nativeWall && original.isVehicleShader() || stockFitting), stockRoot, stockSource);
         // Preserve the source material's paint mode. NoRandom liveries are baked;
         // ordinary vehicle_multiuv materials use the vehicle's native HSV mask.
         if (original.isVehicleShader()) program.setValue("MELensVehiclePaint",
             "vehicle_multiuv".equals(original.getName()) ? 1f : 0f);
+        if (original.isVehicleShader()) program.setValue("MELensNativeWalls", nativeWall
+            ? (inst.modelInstance.modelScript != null && inst.modelInstance.modelScript.invertX ? -1f : 1f) : 0f);
+        // Separate KI5 panes may share the root's uninstall mask. Their actual
+        // live part already passed absence/destruction/open/parent checks above.
+        if (original.isVehicleShader()) program.setValue("MELensLiveGlass", nativeGlass ? 1f : 0f);
+        if (original.isVehicleShader()) program.setValue("MELensEmbeddedRearDoor",
+            nativeWalls && RV.bodyLining.plain() && isBody(slot, inst)
+                && embeddedRearDoorOpen((BaseVehicle) vehicle) ? 1f : 0f);
+        if (original.isVehicleShader()) {
+            RV.NativeEntry entry = RV.nativeEntry;
+            program.setVector4("MELensEntryMin", entry.minX(), entry.minY(), entry.minZ(), entry.present() ? 1f : 0f);
+            program.setVector3("MELensEntryMax", entry.maxX(), entry.maxY(), entry.maxZ());
+            RV.NativeEntry nearEntry = RV.nativeEntryNear.present() ? RV.nativeEntryNear : entry;
+            program.setVector4("MELensEntryNearMin", nearEntry.minX(), nearEntry.minY(), nearEntry.minZ(), nearEntry.present() ? 1f : 0f);
+            program.setVector3("MELensEntryNearMax", nearEntry.maxX(), nearEntry.maxY(), nearEntry.maxZ());
+            boolean embedded = nativeWalls && isBody(slot, inst);
+            BaseVehicle v = (BaseVehicle) vehicle;
+            var openings = RV.nativeDoorOpenings;
+            int[][] doorLocations = nativeDoorLocations(program);
+            for (int i = 0; i < RV.MAX_NATIVE_DOOR_OPENINGS; i++) {
+                RV.NativeEntry box = RV.NativeEntry.NONE;
+                if (embedded && i < openings.size()) {
+                    RV.NativeDoorOpening opening = openings.get(i);
+                    if (embeddedDoorOpen(v, opening.part())) box = opening.bounds();
+                }
+                GL20.glUniform4f(doorLocations[0][i], box.minX(), box.minY(), box.minZ(), box.present() ? 1f : 0f);
+                GL20.glUniform3f(doorLocations[1][i], box.maxX(), box.maxY(), box.maxZ());
+            }
+        }
         program.setValue("MELensToBody", scratch);
-        if (!isCut || furniture || isCabBulkhead(inst)) {
+        NativeRoof.upload(program, name, meshName(inst), nativeWalls && !own);
+        boolean stockBody=nativeWall && original.isVehicleShader() && isBody(slot,inst)
+                && RV.bodyLining.plain() && FlatWheels.stockTrimActive();
+        FlatWheels.upload(program, roadWheel ? 2 : archTrim ? 5 : stockBody ? 4 : nativeWall && original.isVehicleShader() ? 3 : own ? 1 : 0,
+                roadWheel && FlatWheels.unboundedMesh(model.mesh));
+        if (!isCut || furniture || roadWheel || exteriorSpare || isCabBulkhead(inst)) {
             program.setVector4("MELensBodyPlane", 0f, 0f, 0f, -1.0f);
             program.setVector4("MELensNearCut", 0f, 0f, 0f, 0f);
             program.setVector4("MELensCutFront", 0f, 0f, 0f, 0f);
         } else {
             program.setVector4("MELensBodyPlane", RV.planeA, RV.planeB, RV.planeC, drawPlaneD);
-            program.setVector4("MELensNearCut", RV.nearDirX, RV.nearDirY, drawNearPlaneD, RV.nearCutEnabled ? 1f : 0f);
-            program.setVector4("MELensCutFront", RV.cutFrontY, RV.cutFrontTopZ, 0f, RV.cutFrontEnabled ? 1f : 0f);
+            program.setVector4("MELensNearCut", RV.nearDirX, RV.nearDirY, drawNearPlaneD,
+                    RV.nearCutEnabled && !nativeCab ? nativeWalls && RV.bodyLining.plain() ? 2f : 1f : 0f);
+            program.setVector4("MELensCutFront", RV.cutFrontY, RV.cutFrontTopZ, RV.cutFrontCabY, RV.cutFrontEnabled ? 1f : 0f);
         }
         if (keep != null) {
             program.setVector4("MELensKeepPlane", keep[0], keep[1], keep[2], keep[3]);
@@ -151,7 +281,10 @@ public final class Cutaway {
         } else {
             program.setVector4("MELensShape", 0f, 0f, 0f, 0f);
         }
-        program.setVector4("MELensFill", light.share(), light.constant(), light.bias(), 0f);
+        // Cab materials retain their original detail, but their nearly black
+        // backfaces need a charcoal floor under the cabin's diffuse light.
+        // Keep this separate from wall/furniture colour and exterior paint.
+        program.setVector4("MELensFill", light.share(), light.constant(), light.bias(), nativeCab ? .15f : 0f);
         float[] lamp0 = light.lamp0();
         float[] lamp1 = light.lamp1();
         program.setVector4("MELensLamp0", lamp0[0], lamp0[1], lamp0[2], lamp0[3]);
@@ -179,16 +312,42 @@ public final class Cutaway {
             program.setVector4("MELensGhost", RV.ghostRed, RV.ghostGreen, RV.ghostBlue, ghost ? 1f : 0f);
             // the paint the walls were given
             boolean painted = isCut && RV.wallPainted && isShellWalls(inst);
-            program.setVector4("MELensWallTint", RV.wallRed, RV.wallGreen, RV.wallBlue, painted ? 0.9f : 0f);
+            boolean plainArch = own && nativeWalls && RV.flatWheelArchActive()
+                    && RV.bodyLining.plain() && NativeFinish.material == NativeFinish.Material.NONE
+                    && name.endsWith("_wheel_wall");
+            RV.BodyLining lining=RV.bodyLining;
+            program.setValue("MELensMatchWallLight", own && nativeWalls
+                    && NativeFinish.material != NativeFinish.Material.NONE
+                    && (name.endsWith("_wheel_wall") || NativeFinish.stockActive() && stockFitting) ? 1f : 0f);
+            program.setVector4("MELensWallTint", plainArch ? lining.red() : RV.wallRed,
+                    plainArch ? lining.green() : RV.wallGreen, plainArch ? lining.blue() : RV.wallBlue,
+                    plainArch ? 1f : painted ? 0.9f : 0f);
             program.setVector4("MELensUv", 0f, 0f, 1f, 1f);
             // Keep wheel-well lids intact; the shader clips only the liner below the floor.
             program.setVector4("MELensWellCut", RV.wellPlaneD, RV.wellFloorD, RV.wellFloorSet ? 1f : 0f,
                     isCut && RV.nearCutEnabled ? 1f : 0f);
         } else {
             RV.BodyLining lining = RV.bodyLining;
-            boolean lineBody = isCut && RV.roomEnabled && isBody(slot, inst) && lining != RV.BodyLining.NONE;
+            boolean lineBody = isCut && RV.roomEnabled && (isBody(slot, inst) || nativeWall) && lining != RV.BodyLining.NONE;
             program.setVector4("MELensBodyLining", lining.red(), lining.green(), lining.blue(),
                     lineBody ? 1f + lining.debug() : 0f);
+            program.setValue("MELensPlainFinish", lineBody && lining.plain() ? 1f : 0f);
+            // Only the hull and measured aliases receive the atlas. Most leaves
+            // retain their native embossing; an explicitly registered leaf can
+            // replace mirrored exterior graphics on its inward skin as well.
+            NativeFinish.upload(program, lineBody && nativeWall && (isBody(slot, inst) || RV.nativeBodyModels.contains(name)));
+            // Only source-qualified rigid leaves share a closed body-space
+            // bind frame. Articulated roll-ups can lie flat before skinning;
+            // structural eligibility alone does not establish rest ownership.
+            program.setValue("MELensRestFinish", lineBody && nativeWall && !model.isStatic
+                    && !nativeGlass && !roadWheel && !own && RV.nativeBodyModels.contains(name)
+                    && restFinishModel(name) ? 1f : 0f);
+            RV.NativeBodyTrim trim = RV.nativeBodyTrim;
+            boolean trimBody = nativeWalls && isBody(slot, inst) && trim.present();
+            RV.NativeEntry trimBox = trim.bounds();
+            program.setVector4("MELensBodyTrimMin", trimBox.minX(), trimBox.minY(), trimBox.minZ(), trimBody ? 1f : 0f);
+            program.setVector3("MELensBodyTrimMax", trimBox.maxX(), trimBox.maxY(), trimBox.maxZ());
+            program.setVector4("MELensBodyTrimUV", trim.minU(), trim.minV(), trim.maxU(), trim.maxV());
             // a door leaf's bare black inside is painted like the room
             boolean doorLeaf = isCut && isDoor(inst);
             boolean door = doorLeaf && RV.doorPaintEnabled;
@@ -196,11 +355,14 @@ public final class Cutaway {
             // KI5's own body details standing inside ME: LENS' lining are not drawn
             // (not a door leaf: its lower 30 cm stand inside the outline at the doorway, and without them
             // the doorway shows the ground outside)
-            boolean room = isCut && !furniture && RV.roomEnabled && !doorLeaf;
+            // Native structural faces are the actual room boundary. The legacy
+            // lining clip would carve holes through cab and curved lower joins.
+            boolean room = isCut && !furniture && !roadWheel && !exteriorSpare && !nativeCab
+                    && RV.roomEnabled && !doorLeaf && !nativeWall && !nativeGlass;
             float[] ring = RV.roomRing;
             program.setVector4("MELensRoom", room ? ring.length / 2 : 0f, RV.roomFloorDot, RV.roomMin, RV.roomMax);
             // (the camper's body only: its tank, tyres and hitch stand in some windows' boxes)
-            int windows = isCut && !furniture && isBody(slot, inst) ? RV.windowCount : 0;
+            int windows = !nativeWalls && isCut && !furniture && isBody(slot, inst) ? RV.windowCount : 0;
             program.setVector4("MELensRoomCut", RV.roomNormal, RV.roomDebug ? 1f : 0f, windows, RV.windowDark);
             // (the camper's body only: the dark jambs of its doors are painted like the room)
             int jambs = isCut && !furniture && RV.doorPaintEnabled && isBody(slot, inst) ? RV.jambCount : 0;
@@ -242,8 +404,25 @@ public final class Cutaway {
         model.effect = cut;
         swappedModel.set(model);
         originalShader.set(original);
+        if (nativeWall || nativeGlass) twoSidedMesh.set(model.mesh);
         cutDraws.incrementAndGet();
         return false;
+    }
+
+    /** Stock rear doors share the hull's Tail mask rather than a moving sub-model. */
+    private static boolean embeddedRearDoorOpen(BaseVehicle vehicle) {
+        return embeddedDoorOpen(vehicle, "DoorRear", "TrunkDoor");
+    }
+
+    private static boolean embeddedDoorOpen(BaseVehicle vehicle, String... ids) {
+        zombie.vehicles.VehiclePart part = null;
+        for (String id : ids) {
+            part = vehicle.getPartById(id);
+            if (part != null) break;
+        }
+        if (part == null || part.getDoor() == null || part.getScriptPart() == null
+                || part.getScriptPart().getModelCount() != 0) return false;
+        return part.getInventoryItem() == null || part.getDoor().isOpen();
     }
 
     /** Diagnostics: each sub-model of the cut camper, its mesh bounds and its transform into the body's mesh space. */
@@ -261,8 +440,16 @@ public final class Cutaway {
         org.joml.Vector3f bodyLo = toBody.transformPosition(new org.joml.Vector3f(lo));
         org.joml.Vector3f bodyHi = toBody.transformPosition(new org.joml.Vector3f(hi));
         surveyed.put(name, "mesh " + lo + ".." + hi + " -> body " + bodyLo + ".." + bodyHi
+                + " instance=" + inst.modelInstance.getClass().getName()
+                + " static=" + model.isStatic
+                + " origin=" + toBody.transformPosition(new org.joml.Vector3f())
                 + " scale " + toBody.getScale(new org.joml.Vector3f())
                 + " shader=" + (model.effect == null ? "none" : model.effect.getName())
+                + " owner=" + (inst.modelInstance instanceof zombie.core.skinnedmodel.model.VehicleSubModelInstance part
+                    && part.modelInfo != null && part.modelInfo.part != null
+                    ? part.modelInfo.part.getId() + "/" + part.modelInfo.part.getCondition() : "root")
+                + " renderWheel=" + (inst.modelInstance instanceof zombie.core.skinnedmodel.model.VehicleSubModelInstance core
+                    && core.modelInfo != null ? core.modelInfo.wheelIndex : -1)
                 + " wheel=" + (inst.modelInstance instanceof zombie.core.skinnedmodel.model.VehicleSubModelInstance sub
                     && sub.modelInfo != null && sub.modelInfo.part != null ? sub.modelInfo.part.getWheelIndex() : -1));
     }
@@ -274,13 +461,19 @@ public final class Cutaway {
         }
         // the depth the game gave the camper's models this draw (see alignCabinDepth)
         Object vehicle = RV.cutVehicle;
-        if (vehicle != null && slot != null && slot.object == vehicle && inst != null && inst.modelInstance != null) {
+        // Skipped authored door skins never execute the engine draw that sets
+        // targetDepth. Their stale depth must not replace the body's authority.
+        if (vehicle != null && slot != null && slot.object == vehicle && inst != null
+                && inst.modelInstance != null && (!RV.nativeBodyWalls || isBody(slot, inst))) {
             depthVehicle = vehicle;
             vehicleDepth = inst.modelInstance.targetDepth;
         }
     }
 
     public static void endVehicleDraw() {
+        NativeFinish.restore();
+        endMeshDraw();
+        twoSidedMesh.remove();
         Model model = swappedModel.get();
         if (model == null) {
             return;
@@ -469,6 +662,33 @@ public final class Cutaway {
         return modelName(inst).startsWith("MELens");
     }
 
+    /** Awning, jack and vent animations also use VehicleDoor; they are not leaves. */
+    static boolean openingDoorId(String id) {
+        return id != null && (id.startsWith("Door") || id.equals("TrunkDoor"));
+    }
+
+    /** Measured E150 rigid living leaves; other packs retain posed ownership. */
+    static boolean restFinishModel(String name) {
+        return name != null && switch (name) {
+            case "86fordE150doorrl", "86fordE150doorrr", "86fordE150doorrlw",
+                    "86fordE150doorrrw", "86fordE150trunkDoor" -> true;
+            default -> false;
+        };
+    }
+
+    /** Fixed windshields may be installable bodywork without VehicleWindow. */
+    static boolean glazingPartId(String id) {
+        return id != null && (id.startsWith("Window") || id.startsWith("Windshield"))
+                && !id.toLowerCase(java.util.Locale.ROOT).contains("armor");
+    }
+
+    /** Roof cargo is cut with its absent roof; mounted rear/front spares remain. */
+    static boolean exteriorSpare(String name, String area) {
+        return name != null && name.toLowerCase(java.util.Locale.ROOT).contains("spare")
+                && area != null && !area.isBlank()
+                && !area.toLowerCase(java.util.Locale.ROOT).contains("roof");
+    }
+
     private static final RV.Marker[] NO_SPOTS = new RV.Marker[0];
     private static final String[] SPOT = new String[RV.MAX_SPOTS];
     private static final String[] SPOT_SIZE = new String[RV.MAX_SPOTS];
@@ -486,6 +706,19 @@ public final class Cutaway {
      * knows an array uniform by its first element's name.
      */
     private static final java.util.Map<Integer, int[][]> spotLocationsByProgram = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static final java.util.Map<Integer, int[][]> nativeDoorLocationsByProgram = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static int[][] nativeDoorLocations(ShaderProgram program) {
+        return nativeDoorLocationsByProgram.computeIfAbsent(program.getShaderID(), id -> {
+            int[][] locations = new int[2][RV.MAX_NATIVE_DOOR_OPENINGS];
+            for (int i = 0; i < RV.MAX_NATIVE_DOOR_OPENINGS; i++) {
+                locations[0][i] = GL20.glGetUniformLocation(id, "MELensDoorMin[" + i + "]");
+                locations[1][i] = GL20.glGetUniformLocation(id, "MELensDoorMax[" + i + "]");
+            }
+            return locations;
+        });
+    }
 
     private static int[][] spotLocations(ShaderProgram program) {
         return spotLocationsByProgram.computeIfAbsent(program.getShaderID(), id -> {
@@ -537,7 +770,9 @@ public final class Cutaway {
     /** The shell's walls: ME: LENS' inside lining (MELensShell_*_walls). */
     private static boolean isShellWalls(ModelInstanceRenderData inst) {
         String name = modelName(inst);
-        return name.startsWith("MELensShell_") && (name.endsWith("_walls") || name.endsWith("_bulkhead") || name.endsWith("_entry"));
+        return name.startsWith("MELensShell_") && (name.endsWith("_walls") || name.endsWith("_bulkhead")
+                || name.endsWith("_entry") || name.endsWith("_support") || name.endsWith("_support_seals")
+                || name.endsWith("_wheel_covers") || name.endsWith("_wheel_wall"));
     }
 
     private static boolean isCabBulkhead(ModelInstanceRenderData inst) {

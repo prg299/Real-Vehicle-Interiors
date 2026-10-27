@@ -493,9 +493,11 @@ function M.itemLimit()
     return itemLimit and math.floor(itemLimit:getValue()) or 64
 end
 
-local function cutPlaneFor(profile)
+local function cutPlaneFor(profile, rv)
     local choice = wallHeight and wallHeight:getValue() or 2
-    return profile.cutPlanes[choice] or profile.cutPlanes[2]
+    local planes = M.nativeWallsAvailable(profile, rv)
+        and profile.nativeCutPlanes or profile.cutPlanes
+    return planes[choice] or planes[2]
 end
 
 -- Passenger space (tiles) to the body's mesh space (see the profiles).
@@ -588,6 +590,67 @@ local function applyPaint(rv, vehicle)
     end
 end
 
+-- Optional render-only arch projection. Older bridges retain the complete physical covers.
+local function applyStockWheelTrim(rv, profile)
+    local trim, mesh = profile.nativeWheelWellTrim, profile.mesh
+    if not trim then return true end
+    if not rv.setNativeWheelWellTrim or type(trim.sides) ~= "table" then return false end
+    local left, right, leftInner, rightInner
+    for _, side in ipairs(trim.sides) do
+        if type(side.inner) ~= "number" or type(side.segments) ~= "table" then return false end
+        local spans = {}
+        for _, span in ipairs(side.segments) do
+            if type(span) ~= "table" or #span ~= 5 then return false end
+            for i = 1, 5 do if type(span[i]) ~= "number" then return false end end
+            local a, b = string.format("%.9g", span[1] / mesh.scale), string.format("%.9g", span[2] / mesh.scale)
+            if a ~= b then spans[#spans + 1] = a .. "," .. b .. "," .. string.format("%.9g,%.9g,%.9g",
+                mesh.lift - span[3] / mesh.scale, mesh.lift - span[4] / mesh.scale, span[5] / mesh.scale) end
+        end
+        if side.side == 1 then left, leftInner = table.concat(spans, ";"), side.inner / mesh.scale
+        elseif side.side == -1 then right, rightInner = table.concat(spans, ";"), side.inner / mesh.scale end
+    end
+    return left and right and rv.setNativeWheelWellTrim(left, right, leftInner, rightInner) ~= false or false
+end
+
+local function applyFlatWheelArch(rv, profile)
+    local arch, mesh = profile.nativeWheelArch, profile.mesh
+    if not profile.nativeBodyWalls or not rv.setNativeBodyWalls or not rv.setFlatWheelArch
+            or not arch or not mesh or type(mesh.scale) ~= "number" or mesh.scale <= 0
+            or type(mesh.lift) ~= "number" or type(profile.floorY) ~= "number" then return end
+    if profile.nativeWheelWellTrim and not rv.setNativeWheelWellTrim then return end
+    if arch.sides then
+        if not rv.setCurvedWheelArches then return end
+        local left, right
+        for _, side in ipairs(arch.sides) do
+            if type(side.contour) ~= "table" then return end
+            local points = {}
+            for _, point in ipairs(side.contour) do
+                if type(point) ~= "table" or type(point[1]) ~= "number"
+                        or type(point[2]) ~= "number" or type(point[3]) ~= "number" then return end
+                points[#points + 1] = string.format("%.9g,%.9g,%.9g", point[3] / mesh.scale,
+                    mesh.lift - point[2] / mesh.scale, -point[1] / mesh.scale)
+            end
+            if side.side == 1 then left = table.concat(points, ";")
+            elseif side.side == -1 then right = table.concat(points, ";") end
+        end
+        if left and right then
+            local valid = rv.setCurvedWheelArches(left, right, mesh.lift - profile.floorY / mesh.scale)
+            if valid ~= false and not applyStockWheelTrim(rv, profile) and rv.clearFlatWheelArch then rv.clearFlatWheelArch() end
+        end
+        return
+    end
+    if type(arch.contour) ~= "table" or type(arch.sideX) ~= "number" then return end
+    local points = {}
+    for _, point in ipairs(arch.contour) do
+        if type(point) ~= "table" or type(point[1]) ~= "number" or type(point[2]) ~= "number" then return end
+        points[#points + 1] = string.format("%.9g,%.9g", point[1] / mesh.scale,
+            mesh.lift - point[2] / mesh.scale)
+    end
+    rv.setFlatWheelArch(table.concat(points, ";"), arch.sideX / mesh.scale,
+        mesh.lift - profile.floorY / mesh.scale)
+    if not applyStockWheelTrim(rv, profile) and rv.clearFlatWheelArch then rv.clearFlatWheelArch() end
+end
+
 local function armCutaway(vehicle, profile, dt)
     local rv = java()
     if not rv then return end
@@ -615,11 +678,116 @@ local function armCutaway(vehicle, profile, dt)
     -- the Lua direction cache was just reset, so applyNearCut cannot detect it.
     rv.clearNearCut()
     if vehicle then
-        local p = cutPlaneFor(profile)
+        local p = cutPlaneFor(profile, rv)
         rv.setCutaway(vehicle, p[1], p[2], p[3], p[4])
+        -- Optional bridge API: older Java components continue drawing the existing shell.
+        local nativeWalls = M.nativeWallsAvailable(profile, rv)
+        if nativeWalls then
+            rv.setNativeBodyWalls(true)
+        end
+        if rv.setNativeCabPartition then rv.setNativeCabPartition(profile.nativeCabPartition == true) end
+        if rv.setNativeBodyModels then
+            local models = {}
+            for _, model in ipairs(profile.nativeBodyModels or {}) do models[#models + 1] = model end
+            -- Bridges predating the cab-material API still need their original
+            -- structural clip exemptions. New bridges preserve cab materials.
+            if not rv.setNativeCabModels then
+                for _, model in ipairs(profile.nativeCabFallbackBodyModels or {}) do models[#models + 1] = model end
+            end
+            rv.setNativeBodyModels(table.concat(models, ","))
+        end
+        if rv.setNativeCabModels then
+            rv.setNativeCabModels(table.concat(profile.nativeCabModels or {}, ","))
+        end
+        if rv.setNativeArchTrimModels then
+            rv.setNativeArchTrimModels(table.concat(profile.nativeArchTrimModels or {}, ","))
+        end
+        local addCut = rv.setNativeSurfaceCut or rv.setNativeRoofCut
+        local clearCuts = rv.clearNativeSurfaceCuts or rv.clearNativeRoofCuts
+        if addCut and clearCuts then
+            clearCuts()
+            for _, cuts in ipairs({ profile.nativeRoofCuts or {}, profile.nativeSurfaceCuts or {} }) do
+                for _, cut in ipairs(cuts) do
+                    local ax, ay, az, bx, by, bz = 0, 0, 0, 0, 0, 0
+                    if cut.box then
+                        local b = cut.box
+                        ax, ay, az = toMesh(profile, b.x[1], b.y[1], b.z[1])
+                        bx, by, bz = toMesh(profile, b.x[2], b.y[2], b.z[2])
+                    end
+                    local uv = cut.uv or { 0, 0, 0, 0 }
+                    addCut(table.concat(cut.models, ","), cut.maxUp or -1,
+                        ax, ay, az, bx, by, bz, uv[1], uv[2], uv[3], uv[4])
+                end
+            end
+            if rv.setNativeNearFace then
+                for _, face in ipairs(profile.nativeNearFaces or {}) do
+                    local b, uv = face.box, face.uv
+                    local ax, ay, az = toMesh(profile, b.x[1], b.y[1], b.z[1])
+                    local bx, by, bz = toMesh(profile, b.x[2], b.y[2], b.z[2])
+                    rv.setNativeNearFace(table.concat(face.models, ","),
+                        ax, ay, az, bx, by, bz, uv[1], uv[2], uv[3], uv[4])
+                end
+            end
+        end
+        if rv.setNativeBodyTrim then
+            local trim = profile.nativeBodyTrim
+            if trim then
+                local ax, ay, az = toMesh(profile, trim.x[1], trim.y[1], trim.z[1])
+                local bx, by, bz = toMesh(profile, trim.x[2], trim.y[2], trim.z[2])
+                rv.setNativeBodyTrim(ax, ay, az, bx, by, bz, trim.uv[1], trim.uv[2], trim.uv[3], trim.uv[4])
+            else
+                rv.clearNativeBodyTrim()
+            end
+        end
+        if rv.setNativeEntryOpening then
+            local w = profile.nativeEntryOpening
+            if w then
+                local ax, ay, az = toMesh(profile, w.x[1], w.y[1], w.z[1])
+                local bx, by, bz = toMesh(profile, w.x[2], w.y[2], w.z[2])
+                rv.setNativeEntryOpening(ax, ay, az, bx, by, bz)
+            else
+                rv.clearNativeEntryOpening()
+            end
+        end
+        if rv.setNativeEntryNearBounds then
+            local w = profile.nativeEntryNearBounds
+            if w then
+                local ax, ay, az = toMesh(profile, w.x[1], w.y[1], w.z[1])
+                local bx, by, bz = toMesh(profile, w.x[2], w.y[2], w.z[2])
+                rv.setNativeEntryNearBounds(ax, ay, az, bx, by, bz)
+            else
+                rv.clearNativeEntryNearBounds()
+            end
+        end
+        if rv.setNativeDoorOpening then
+            rv.clearNativeDoorOpenings()
+            for _, w in ipairs(profile.nativeDoorOpenings or {}) do
+                local ax, ay, az = toMesh(profile, w.x[1], w.y[1], w.z[1])
+                local bx, by, bz = toMesh(profile, w.x[2], w.y[2], w.z[2])
+                rv.setNativeDoorOpening(w.part, ax, ay, az, bx, by, bz)
+            end
+        end
+        applyFlatWheelArch(rv, profile)
         local lining = profile.nativeBodyLining
         if rv.setBodyLining and lining then
             rv.setBodyLining(lining[1], lining[2], lining[3])
+            if rv.setBodyLiningPlain then rv.setBodyLiningPlain(profile.nativePlainFinish == true) end
+            if rv.setBodyLiningMaterial and profile.nativeWallMaterial then
+                local material = profile.nativeWallMaterial
+                rv.setBodyLiningMaterial(material.texture, profile.mesh.scale, material.height, material.perimeter)
+                if rv.setBodyLiningBoundaryFinish then
+                    rv.setBodyLiningBoundaryFinish(profile.nativeWallBoundaryFinish == true)
+                end
+                -- Colour/detail only: retain the measured material's geometry and glass masks.
+                -- Older bridges keep the existing finish through the optional API fallback.
+                if rv.setBodyLiningStockMetal and profile.nativeStockMetal then
+                    local metal = profile.nativeStockMetal
+                    rv.setBodyLiningStockMetal(metal.texture, profile.mesh.scale,
+                        metal.paintUV[1], metal.paintUV[2],
+                        metal.panelUV[1], metal.panelUV[2], metal.panelUV[3], metal.panelUV[4],
+                        metal.panelWidth, metal.panelHeight)
+                end
+            end
         end
         if rv.setNativeCutInsets and profile.mesh and profile.kind == "cargo" then
             local meshFloor = profile.mesh.lift - (profile.floorY + NATIVE_CUT_FLOOR_MARGIN) / profile.mesh.scale
@@ -636,14 +804,19 @@ local function armCutaway(vehicle, profile, dt)
                 and (profile.mesh.lift + p[4] / p[3]) * profile.mesh.scale or profile.floorY + 1
             rv.setWeatherRoom(table.concat(points, ";"), profile.floorY, top)
         end
-        -- nothing ahead of the compartment is cut (a bus's hood)
+        -- Native door bays can extend behind the fitted cab partition.
+        -- Their render-only keep plane must not move the room or furniture.
         if rv.setCutFront then
-            if profile.cutFront then
-                rv.setCutFront(profile.cutFront / profile.mesh.scale)
+            local doorBay = nativeWalls and rv.setCutFrontCab and profile.nativeCabCutFront ~= nil
+            local front = doorBay and profile.nativeCabCutFront or profile.cutFront
+            local top = doorBay and profile.nativeCabCutFrontTop or profile.cutFrontTop
+            if front then
+                rv.setCutFront(front / profile.mesh.scale)
                 -- ... but only as high as the cab goes: its mirrors and roof lights stand higher
-                if profile.cutFrontTop and rv.setCutFrontTop then
-                    rv.setCutFrontTop(profile.mesh.lift - profile.cutFrontTop / profile.mesh.scale)
+                if top and rv.setCutFrontTop then
+                    rv.setCutFrontTop(profile.mesh.lift - top / profile.mesh.scale)
                 end
+                if doorBay then rv.setCutFrontCab(profile.cutFront / profile.mesh.scale) end
             else
                 rv.clearCutFront()
             end
@@ -706,7 +879,10 @@ local function armCutaway(vehicle, profile, dt)
         end
         -- KI5's body details standing inside the lining (a tongue's arm tips) are not drawn
         if rv.setRoom then
-            local ring = profile.clipBody and M.RoomRings and M.RoomRings[profile.walkGrid]
+            -- A native finish needs the measured floor and compartment bounds
+            -- even on bodies (notably the bus) with no legacy interior clip.
+            local nativeRoom = rv.nativeBodyWallsActive and rv.nativeBodyWallsActive()
+            local ring = (profile.clipBody or nativeRoom) and M.RoomRings and M.RoomRings[profile.walkGrid]
             if ring and #ring >= 3 then
                 local points = {}
                 for _, corner in ipairs(ring) do

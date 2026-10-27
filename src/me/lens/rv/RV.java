@@ -18,7 +18,7 @@ import zombie.scripting.objects.VehicleScript;
  */
 @Exposer.LuaClass(name = "MELensRV")
 public final class RV {
-    public static final String VERSION = "2.0.20";
+    public static final String VERSION = "2.0.21";
 
     static volatile BaseVehicle cutVehicle;
     /** Plane in the vehicle body's raw mesh space; fragments with a*x+b*y+c*z+d > 0 are discarded. */
@@ -37,10 +37,244 @@ public final class RV {
     static volatile NativeCutInset nativeCutInset = NativeCutInset.NONE;
 
     /** Cargo body faces exposed by a cut use a lining finish on their inward side. */
-    record BodyLining(float red, float green, float blue, int debug) {
-        static final BodyLining NONE = new BodyLining(0f, 0f, 0f, 0);
+    record BodyLining(float red, float green, float blue, int debug, boolean plain) {
+        static final BodyLining NONE = new BodyLining(0f, 0f, 0f, 0, false);
     }
     static volatile BodyLining bodyLining = BodyLining.NONE;
+    // Render-only opt-in. No vehicle, part or save data is changed.
+    static volatile boolean nativeBodyWalls;
+    static volatile boolean nativeCabPartition;
+    /** Registered structural panels can live on an unrelated part such as GloveBox. */
+    static volatile Set<String> nativeBodyModels = Set.of();
+    /** Original cab fittings retain their materials and are exempt from the room clip. */
+    static volatile Set<String> nativeCabModels = Set.of();
+    /** Native exterior arch fittings that can project into a flat living floor. */
+    static volatile Set<String> nativeArchTrimModels = Set.of();
+
+    public static void setNativeArchTrimModels(String names) { nativeArchTrimModels = modelNames(names); }
+    public static boolean nativeArchTrimActive() { return nativeBodyWalls && flatWheelArchActive() && !nativeArchTrimModels.isEmpty(); }
+
+    public static void setNativeBodyModels(String names) {
+        nativeBodyModels = modelNames(names);
+    }
+
+    public static void setNativeCabModels(String names) {
+        nativeCabModels = modelNames(names);
+    }
+
+    public static void clearNativeRoofCuts() { NativeRoof.cuts = java.util.List.of(); }
+
+    public static boolean setNativeRoofCut(String models, double maxUp, double ax, double ay, double az,
+            double bx, double by, double bz, double minU, double minV, double maxU, double maxV) {
+        return NativeRoof.add(models, maxUp, ax, ay, az, bx, by, bz, minU, minV, maxU, maxV);
+    }
+
+    public static boolean nativeRoofCutsActive() { return nativeBodyWalls && !NativeRoof.cuts.isEmpty(); }
+
+    /** View-independent measured surfaces; shares the existing bounded roof-cut evaluator. */
+    public static boolean setNativeSurfaceCut(String models, double maxUp, double ax, double ay, double az,
+            double bx, double by, double bz, double minU, double minV, double maxU, double maxV) {
+        return setNativeRoofCut(models, maxUp, ax, ay, az, bx, by, bz, minU, minV, maxU, maxV);
+    }
+
+    public static void clearNativeSurfaceCuts() { clearNativeRoofCuts(); }
+
+    /** Source-qualified side-door thickness follows its adjoining wall's cut. */
+    public static boolean setNativeNearFace(String models, double ax, double ay, double az,
+            double bx, double by, double bz, double minU, double minV, double maxU, double maxV) {
+        return NativeRoof.addNear(models,ax,ay,az,bx,by,bz,minU,minV,maxU,maxV);
+    }
+
+    public static int nativeNearFaceCount() {
+        return nativeBodyWalls ? (int)NativeRoof.cuts.stream().filter(NativeRoof.Cut::nearFace).count() : 0;
+    }
+
+    public static boolean nativeSurfaceCutsActive() { return nativeRoofCutsActive(); }
+
+    private static Set<String> modelNames(String names) {
+        return names == null || names.isBlank() ? Set.of()
+            : Set.copyOf(java.util.Arrays.asList(names.trim().split("\\s*,\\s*")));
+    }
+
+    /** Measured primary doorway in raw body coordinates; invalid input clears it. */
+    record NativeEntry(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
+        static final NativeEntry NONE = new NativeEntry(1, 1, 1, 0, 0, 0);
+        boolean present() { return minX < maxX && minY < maxY && minZ < maxZ; }
+    }
+    static volatile NativeEntry nativeEntry = NativeEntry.NONE;
+    static volatile NativeEntry nativeEntryNear = NativeEntry.NONE;
+
+    private static NativeEntry measuredEntry(double ax, double ay, double az, double bx, double by, double bz) {
+        for (double value : new double[] {ax, ay, az, bx, by, bz}) {
+            if (!Double.isFinite(value) || Math.abs(value) > Float.MAX_VALUE) {
+                return NativeEntry.NONE;
+            }
+        }
+        NativeEntry next = new NativeEntry((float) Math.min(ax, bx), (float) Math.min(ay, by), (float) Math.min(az, bz),
+            (float) Math.max(ax, bx), (float) Math.max(ay, by), (float) Math.max(az, bz));
+        return next.present() ? next : NativeEntry.NONE;
+    }
+    public static boolean setNativeEntryOpening(double ax, double ay, double az, double bx, double by, double bz) {
+        nativeEntry = measuredEntry(ax, ay, az, bx, by, bz);
+        return nativeEntry.present();
+    }
+    public static void clearNativeEntryOpening() { nativeEntry = NativeEntry.NONE; }
+    public static boolean nativeEntryOpeningActive() { return nativeBodyWalls && nativeEntry.present(); }
+
+    /** Rear leaf thickness follows the rear cut without enlarging the usable aperture. */
+    public static boolean setNativeEntryNearBounds(double ax, double ay, double az, double bx, double by, double bz) {
+        nativeEntryNear = measuredEntry(ax, ay, az, bx, by, bz);
+        return nativeEntryNear.present();
+    }
+    public static void clearNativeEntryNearBounds() { nativeEntryNear = NativeEntry.NONE; }
+
+    /** Source faces qualified jointly by measured position and first UV. */
+    record NativeBodyTrim(NativeEntry bounds, float minU, float minV, float maxU, float maxV) {
+        static final NativeBodyTrim NONE = new NativeBodyTrim(NativeEntry.NONE, 0, 0, 0, 0);
+        boolean present() { return bounds.present() && minU < maxU && minV < maxV; }
+    }
+    static volatile NativeBodyTrim nativeBodyTrim = NativeBodyTrim.NONE;
+
+    public static boolean setNativeBodyTrim(double ax, double ay, double az, double bx, double by, double bz,
+            double minU, double minV, double maxU, double maxV) {
+        nativeBodyTrim = NativeBodyTrim.NONE;
+        for (double value : new double[]{minU, minV, maxU, maxV})
+            if (!Double.isFinite(value) || value < 0 || value > 1) return false;
+        NativeBodyTrim next = new NativeBodyTrim(measuredEntry(ax, ay, az, bx, by, bz),
+            (float) minU, (float) minV, (float) maxU, (float) maxV);
+        if (!next.present()) return false;
+        nativeBodyTrim = next;
+        return true;
+    }
+    public static void clearNativeBodyTrim() { nativeBodyTrim = NativeBodyTrim.NONE; }
+    public static boolean nativeBodyTrimActive() { return nativeBodyWalls && nativeBodyTrim.present(); }
+
+    /** Some native doors share the fixed side's paint mask; only measured apertures can distinguish them. */
+    record NativeDoorOpening(String part, NativeEntry bounds) { }
+    static volatile java.util.List<NativeDoorOpening> nativeDoorOpenings = java.util.List.of();
+    static final int MAX_NATIVE_DOOR_OPENINGS = 4;
+
+    public static boolean setNativeDoorOpening(String part, double ax, double ay, double az, double bx, double by, double bz) {
+        if (part == null || part.isBlank()) return false;
+        NativeEntry bounds = measuredEntry(ax, ay, az, bx, by, bz);
+        var next = new java.util.ArrayList<NativeDoorOpening>();
+        for (NativeDoorOpening old : nativeDoorOpenings) if (!old.part().equals(part)) next.add(old);
+        if (!bounds.present()) {
+            nativeDoorOpenings = java.util.List.copyOf(next);
+            return false;
+        }
+        if (next.size() >= MAX_NATIVE_DOOR_OPENINGS) return false;
+        next.add(new NativeDoorOpening(part, bounds));
+        nativeDoorOpenings = java.util.List.copyOf(next);
+        return true;
+    }
+    public static void clearNativeDoorOpenings() { nativeDoorOpenings = java.util.List.of(); }
+
+    /** Measured arch in raw body space: ascending front/body-y and height/body-z pairs. */
+    record WheelArch(float halfWidth, float floorZ, int count, float[] upload,
+            int leftCount, int rightCount, float[] left, float[] right) {
+        static final WheelArch NONE = new WheelArch(0f, 0f, 0, new float[32],0,0,new float[48],new float[48]);
+    }
+    static volatile WheelArch wheelArch = WheelArch.NONE;
+
+    /** Publishes a complete contour, or clears it on invalid input so the physical covers remain. */
+    public static boolean setFlatWheelArch(String contour, double halfWidth, double floorZ) {
+        FlatWheels.clearStockTrim();
+        if (contour == null || !Double.isFinite(halfWidth) || halfWidth <= 0
+                || halfWidth > Float.MAX_VALUE || (float) halfWidth <= 0
+                || !Double.isFinite(floorZ) || Math.abs(floorZ) > Float.MAX_VALUE) {
+            wheelArch = WheelArch.NONE;
+            return false;
+        }
+        String[] points = contour.split(";", -1);
+        if (points.length < 2 || points.length > 16) {
+            wheelArch = WheelArch.NONE;
+            return false;
+        }
+        float[] upload = new float[32];
+        try {
+            for (int i = 0; i < points.length; i++) {
+                String[] pair = points[i].split(",", -1);
+                if (pair.length != 2) throw new IllegalArgumentException("arch pair");
+                float front = Float.parseFloat(pair[0].trim());
+                float height = Float.parseFloat(pair[1].trim());
+                if (!Float.isFinite(front) || !Float.isFinite(height)
+                        || (i > 0 && front <= upload[(i - 1) * 2])) {
+                    throw new IllegalArgumentException("arch order/finite");
+                }
+                upload[i * 2] = front;
+                upload[i * 2 + 1] = height;
+            }
+        } catch (IllegalArgumentException bad) {
+            wheelArch = WheelArch.NONE;
+            return false;
+        }
+        wheelArch = new WheelArch((float) halfWidth, (float) floorZ, points.length, upload,
+                0,0,new float[48],new float[48]);
+        return true;
+    }
+
+    /** Bilateral measured curves: ascending body-y, body-z, signed body-x triples.
+     * Each end lies below the floor. Invalid input keeps the physical fallback. */
+    public static boolean setCurvedWheelArches(String left, String right, double floorZ) {
+        FlatWheels.clearStockTrim();
+        try {
+            if (!Double.isFinite(floorZ) || Math.abs(floorZ)>Float.MAX_VALUE)
+                throw new IllegalArgumentException("arch floor");
+            float[][] curves = new float[2][48];
+            int[] counts = new int[2];
+            float width=0, low=Float.POSITIVE_INFINITY, high=Float.NEGATIVE_INFINITY;
+            String[] sources={left,right};
+            for (int side=0;side<2;side++) {
+                if(sources[side]==null)throw new IllegalArgumentException("arch missing side");
+                String[] points=sources[side].split(";",-1);
+                if(points.length<2 || points.length>16)throw new IllegalArgumentException("arch points");
+                counts[side]=points.length;
+                for(int i=0;i<points.length;i++) {
+                    String[] triple=points[i].split(",",-1);
+                    if(triple.length!=3)throw new IllegalArgumentException("arch triple");
+                    for(int axis=0;axis<3;axis++) {
+                        float value=Float.parseFloat(triple[axis].trim());
+                        if(!Float.isFinite(value))throw new IllegalArgumentException("arch finite");
+                        curves[side][i*3+axis]=value;
+                    }
+                    float front=curves[side][i*3], x=curves[side][i*3+2];
+                    if(i>0 && front<=curves[side][(i-1)*3] || (side==0 ? x>=0 : x<=0))
+                        throw new IllegalArgumentException("arch order/side");
+                    width=Math.max(width,Math.abs(x));low=Math.min(low,front);high=Math.max(high,front);
+                }
+                if(curves[side][1]<(float)floorZ || curves[side][(points.length-1)*3+1]<(float)floorZ)
+                    throw new IllegalArgumentException("arch open floor ends");
+            }
+            float[] bounds=new float[32];bounds[0]=low;bounds[2]=high;
+            wheelArch=new WheelArch(width,(float)floorZ,2,bounds,counts[0],counts[1],curves[0],curves[1]);
+            return true;
+        } catch(IllegalArgumentException invalid) {
+            wheelArch=WheelArch.NONE;
+            return false;
+        }
+    }
+
+    public static boolean flatWheelArchActive() {
+        return nativeBodyWalls && wheelArch.count() >= 2 && Cutaway.shaderError == null;
+    }
+
+    public static void clearFlatWheelArch() { wheelArch = WheelArch.NONE; FlatWheels.clearStockTrim(); }
+    public static boolean setNativeWheelWellTrim(String left,String right,double leftInner,double rightInner) {
+        return FlatWheels.setStockTrim(left,right,leftInner,rightInner);
+    }
+    public static boolean nativeWheelWellTrimActive(){return nativeBodyWalls && FlatWheels.stockTrimActive();}
+    public static String flatWheelArchInfo() { return FlatWheels.info(); }
+
+    public static void setNativeBodyWalls(boolean enabled) { nativeBodyWalls = enabled; }
+    public static boolean nativeBodyWallsActive() { return nativeBodyWalls; }
+    /** Keep the measured fixed partition when a native cab opens into the room. */
+    public static void setNativeCabPartition(boolean enabled) { nativeCabPartition = enabled; }
+    public static boolean nativeCabPartitionActive() { return nativeBodyWalls && nativeCabPartition; }
+    public static String nativeBodyWallsInfo() {
+        return "draws=" + Cutaway.nativeWallDraws.get() + ";restores=" + Cutaway.nativeWallRestores.get()
+            + ";stateErrors=" + Cutaway.nativeWallStateErrors.get();
+    }
 
     /**
      * Walls facing the camera are cut lower, like the game's cutaway of building walls:
@@ -90,6 +324,8 @@ public final class RV {
     static volatile boolean cutFrontEnabled;
     /** The keep only counts up to this height: body mesh z beyond it (higher up) is cut as usual (the cab's mirrors and roof lights). */
     static volatile float cutFrontTopZ = -1e9f;
+    /** Original cab boundary beyond an optional lower side-door bay. */
+    static volatile float cutFrontCabY = 1e9f;
 
     /** Which way each character standing in a camper faces (yours and, in multiplayer, the others'). */
     static final java.util.Map<IsoGameCharacter, Float> facing = new java.util.concurrent.ConcurrentHashMap<>();
@@ -369,8 +605,22 @@ public final class RV {
     }
 
     public static void setCutaway(BaseVehicle vehicle, double a, double b, double c, double d) {
+        nativeBodyTrim = NativeBodyTrim.NONE;
+        nativeCabPartition = false;
+        nativeBodyWalls = false;
+        nativeBodyModels = Set.of();
+        nativeCabModels = Set.of();
+        nativeArchTrimModels = Set.of();
+        clearNativeRoofCuts();
+        nativeEntry = NativeEntry.NONE;
+        nativeEntryNear = NativeEntry.NONE;
+        nativeDoorOpenings = java.util.List.of();
+        wheelArch = WheelArch.NONE;
         nativeCutInset = NativeCutInset.NONE;
+        FlatWheels.clearStockTrim();
         bodyLining = BodyLining.NONE;
+        NativeFinish.material = NativeFinish.Material.NONE;
+        NativeFinish.stockMetal = NativeFinish.StockMetal.NONE;
         planeA = (float) a;
         planeB = (float) b;
         planeC = (float) c;
@@ -403,15 +653,30 @@ public final class RV {
     }
 
     public static void clearCutaway() {
+        nativeBodyTrim = NativeBodyTrim.NONE;
+        nativeCabPartition = false;
+        nativeBodyWalls = false;
+        nativeBodyModels = Set.of();
+        nativeCabModels = Set.of();
+        nativeArchTrimModels = Set.of();
+        clearNativeRoofCuts();
+        nativeEntry = NativeEntry.NONE;
+        nativeEntryNear = NativeEntry.NONE;
+        nativeDoorOpenings = java.util.List.of();
+        wheelArch = WheelArch.NONE;
         Weather.clear();
+        FlatWheels.clearStockTrim();
         cutVehicle = null;
         nativeCutInset = NativeCutInset.NONE;
         bodyLining = BodyLining.NONE;
+        NativeFinish.material = NativeFinish.Material.NONE;
+        NativeFinish.stockMetal = NativeFinish.StockMetal.NONE;
         wallPainted = false;
         light = Light.NONE;
         marker = Marker.NONE;
         nearCutEnabled = false;
         cutFrontEnabled = false;
+        cutFrontCabY = 1e9f;
         roomEnabled = false;
         doorPaintEnabled = false;
         windowCount = 0;
@@ -419,15 +684,49 @@ public final class RV {
     }
 
     public static void setBodyLining(double red, double green, double blue) {
+        NativeFinish.material = NativeFinish.Material.NONE;
+        NativeFinish.stockMetal = NativeFinish.StockMetal.NONE;
         if (!Double.isFinite(red) || !Double.isFinite(green) || !Double.isFinite(blue)
                 || red < 0 || red > 1 || green < 0 || green > 1 || blue < 0 || blue > 1) {
             bodyLining = BodyLining.NONE;
             return;
         }
-        bodyLining = new BodyLining((float) red, (float) green, (float) blue, 0);
+        bodyLining = new BodyLining((float) red, (float) green, (float) blue, 0, false);
     }
 
-    public static void clearBodyLining() { bodyLining = BodyLining.NONE; }
+    /** Stock bodies replace all visible inward skins; KI5 keeps the approved reverse-face finish. */
+    public static void setBodyLiningPlain(boolean enabled) {
+        if (!enabled) NativeFinish.stockMetal = NativeFinish.StockMetal.NONE;
+        BodyLining current = bodyLining;
+        if (current != BodyLining.NONE) {
+            bodyLining = new BodyLining(current.red, current.green, current.blue, current.debug, enabled);
+        }
+    }
+
+    public static boolean bodyLiningPlainActive() { return bodyLining.plain; }
+
+    /** Optional curved-body material, sourced from an existing authored shell atlas. */
+    public static boolean setBodyLiningMaterial(String texture, double scale, double height, double perimeter) {
+        return bodyLining != BodyLining.NONE && NativeFinish.set(texture, scale, height, perimeter);
+    }
+
+    public static boolean bodyLiningMaterialActive() { return NativeFinish.material != NativeFinish.Material.NONE; }
+
+    public static void setBodyLiningBoundaryFinish(boolean enabled) { NativeFinish.setBoundary(enabled); }
+
+    /** Vanilla metal finish shares the live vehicle paint and an existing stock pressed panel. */
+    public static boolean setBodyLiningStockMetal(String texture, double scale, double paintU, double paintV,
+            double u0, double v0, double u1, double v1, double width, double height) {
+        return NativeFinish.setStock(texture,scale,paintU,paintV,u0,v0,u1,v1,width,height);
+    }
+
+    public static boolean bodyLiningStockMetalActive() { return NativeFinish.stockActive(); }
+
+    public static void clearBodyLining() {
+        bodyLining = BodyLining.NONE;
+        NativeFinish.material = NativeFinish.Material.NONE;
+        NativeFinish.stockMetal = NativeFinish.StockMetal.NONE;
+    }
 
     public static boolean bodyLiningActive() { return bodyLining != BodyLining.NONE; }
 
@@ -436,14 +735,16 @@ public final class RV {
         setBodyLiningDebugMode(on ? 1 : 0);
     }
 
-    /** 0 finish; 1 normal classes; 2 native texel; 3 native part mask; 4 paint alpha. */
+    /** 0 finish; 1 normals; 2 texel; 3 mask; 4 alpha; 5 UV; 6 position; 7..14 UV bits; 15..22 position bits. */
     public static void setBodyLiningDebugMode(double mode) {
         BodyLining current = bodyLining;
         if (current != BodyLining.NONE) {
-            int value = Double.isFinite(mode) && mode >= 0 && mode <= 4 && mode == Math.rint(mode) ? (int) mode : 0;
-            bodyLining = new BodyLining(current.red, current.green, current.blue, value);
+            int value = Double.isFinite(mode) && mode >= 0 && mode <= 22 && mode == Math.rint(mode) ? (int) mode : 0;
+            bodyLining = new BodyLining(current.red, current.green, current.blue, value, current.plain);
         }
     }
+
+    public static int bodyLiningDebugMode() { return bodyLining.debug(); }
 
     public static void setWeatherRoom(String polygon, double floor, double ceiling) {
         Weather.setRoom(polygon, floor, ceiling);
@@ -619,6 +920,7 @@ public final class RV {
         // Each profile supplies its own optional height after this call. A
         // previous vehicle's mesh-space cutoff must never leak into this one.
         cutFrontTopZ = -1e9f;
+        cutFrontCabY = 1e9f;
         cutFrontEnabled = true;
     }
 
@@ -627,9 +929,15 @@ public final class RV {
         cutFrontTopZ = (float) meshZ;
     }
 
+    /** Keep the original full cab above the lower side-door bay's top. */
+    public static void setCutFrontCab(double meshY) {
+        if (Double.isFinite(meshY) && Float.isFinite((float) meshY)) cutFrontCabY = (float) meshY;
+    }
+
     public static void clearCutFront() {
         cutFrontEnabled = false;
         cutFrontTopZ = -1e9f;
+        cutFrontCabY = 1e9f;
     }
 
     /**

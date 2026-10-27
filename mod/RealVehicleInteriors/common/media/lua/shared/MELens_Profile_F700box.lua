@@ -9,7 +9,8 @@ local profile = {
     floorY = 0.02,
     mesh = { scale = 0.09, lift = 0.666 },
     shell = {
-        models = { "MELensShell_f700box_floor", "MELensShell_f700box_walls", "MELensShell_f700box_bulkhead" },
+        models = { "MELensShell_f700box_floor", "MELensShell_f700box_walls", "MELensShell_f700box_bulkhead", "MELensShell_f700box_support", "MELensShell_f700box_floor_perimeter" },
+        nativeFloorModel = 5,
     },
     hideKI5 = {
         ["87fordF700boxInterior"] = {
@@ -17,7 +18,7 @@ local profile = {
         },
     },
     light = {
-        interiorModels = { "MELensShell_f700box_floor", "MELensShell_f700box_walls", "MELensShell_f700box_bulkhead" },
+        interiorModels = { "MELensShell_f700box_floor", "MELensShell_f700box_walls", "MELensShell_f700box_bulkhead", "MELensShell_f700box_support", "MELensShell_f700box_floor_perimeter" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,
@@ -814,6 +815,12 @@ local profile = {
     cutFront = 1.1,
     cutFrontTop = 0.95,
     extraSeats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2", "MELensFurnitureRight1", "MELensFurnitureRight2" },
+    nativeBodyWalls = true,
+    nativeCabPartition = true,
+    nativeWallMaterial = { texture = "MELensShell_f700box_walls", height = 1.64, perimeter = 14.92 },
+    nativeLivingLeafModels = { "87fordF700TrunkDoorX" },
+    nativeBodyModels = { "87fordF700TrunkDoorX" },
+    nativeBodyLining = { 0.64, 0.66, 0.67 },
 }
 
 MELens.Profiles["Base.87fordF700box"] = profile

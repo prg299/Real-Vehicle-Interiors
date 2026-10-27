@@ -9,13 +9,19 @@ local profile = {
     floorY = -0.568,
     mesh = { scale = 0.01456, lift = 0 },
     shell = {
-        models = { "MELensShell_fleet_vanillaradiovan_floor", "MELensShell_fleet_vanillaradiovan_walls", "MELensShell_fleet_vanillaradiovan_bulkhead", "MELensShell_fleet_vanillaradiovan_entry" },
+        models = { "MELensShell_fleet_vanillaradiovan_floor", "MELensShell_fleet_vanillaradiovan_walls", "MELensShell_fleet_vanillaradiovan_bulkhead", "MELensShell_fleet_vanillaradiovan_entry", "MELensShell_fleet_vanillaradiovan_support", "MELensShell_fleet_vanillaradiovan_door_returns", "MELensShell_fleet_vanillaradiovan_floor_perimeter", "MELensShell_fleet_vanillaradiovan_wheel_covers", "MELensShell_fleet_vanillaradiovan_wheel_floor", "MELensShell_fleet_vanillaradiovan_wheel_wall", "MELensShell_fleet_vanillaradiovan_panel_legacy", "MELensShell_fleet_vanillaradiovan_panel_native" },
         entryModel = 4,
         entryDoor = "DoorRear",
+        nativeFloorModel = 7,
+        legacyPanelModel = 11,
+        nativePanelModel = 12,
+        wheelCoversModel = 8,
+        wheelFloorModel = 9,
+        wheelWallModel = 10,
     },
     hideKI5 = {  },
     light = {
-        interiorModels = { "MELensShell_fleet_vanillaradiovan_floor", "MELensShell_fleet_vanillaradiovan_walls", "MELensShell_fleet_vanillaradiovan_bulkhead", "MELensShell_fleet_vanillaradiovan_entry" },
+        interiorModels = { "MELensShell_fleet_vanillaradiovan_floor", "MELensShell_fleet_vanillaradiovan_walls", "MELensShell_fleet_vanillaradiovan_bulkhead", "MELensShell_fleet_vanillaradiovan_entry", "MELensShell_fleet_vanillaradiovan_support", "MELensShell_fleet_vanillaradiovan_door_returns", "MELensShell_fleet_vanillaradiovan_floor_perimeter", "MELensShell_fleet_vanillaradiovan_wheel_covers", "MELensShell_fleet_vanillaradiovan_wheel_floor", "MELensShell_fleet_vanillaradiovan_wheel_wall", "MELensShell_fleet_vanillaradiovan_panel_legacy", "MELensShell_fleet_vanillaradiovan_panel_native" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,
@@ -82,12 +88,141 @@ local profile = {
     panel = { x = -0.644, y = -0.273, z = -1.765, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
     waterTank = 40,
     fuelTank = 20,
+    nativePanel = { x = -0.682079, y = -0.273, z = -1.765, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
+    nativeWheelArch = {
+        sides = {
+            {
+                side = 1,
+                contour = {
+                    { 0.8185018, -0.5953088, -1.3538834 },
+                    { 0.8186621, -0.4579044, -1.3339579 },
+                    { 0.8189, -0.3282365, -1.1896541 },
+                    { 0.818899, -0.2810625, -0.9752264 },
+                    { 0.8187952, -0.3322606, -0.7607985 },
+                    { 0.8187051, -0.4890977, -0.6264846 },
+                    { 0.8185016, -0.6553163, -0.5598171 },
+                },
+            },
+            {
+                side = -1,
+                contour = {
+                    { -0.8185013, -0.5953088, -1.3538839 },
+                    { -0.8186615, -0.4579044, -1.3339585 },
+                    { -0.8188994, -0.3282365, -1.1896547 },
+                    { -0.8188986, -0.2810625, -0.9752269 },
+                    { -0.818795, -0.3322606, -0.7607991 },
+                    { -0.8187049, -0.4890977, -0.6264852 },
+                    { -0.8185014, -0.6553163, -0.5598177 },
+                },
+            },
+        },
+    },
+    nativeWheelWellTrim = {
+        sides = {
+            {
+                side = 1,
+                inner = 0.4724656,
+                segments = {
+                    { -1.4123694643113152, -1.4123523807751257, -0.5798555805304023, -0.5793797698804571, 0.8165016 },
+                    { -1.4123523807751257, -1.2283636526941146, -0.5793797698804556, -0.27303460431219967, 0.8165016 },
+                    { -1.2283636526941115, -0.9881359918119877, -0.273034604312199, -0.22766267971647605, 0.8165016 },
+                    { -0.9881359918119726, -0.74334313172106, -0.2276626797164791, -0.2769052552736874, 0.8165016 },
+                    { -0.7433431317210599, -0.5589786000109975, -0.27690525527368753, -0.577655152735003, 0.8165016 },
+                    { -0.5589786000109559, -0.55896127730526, -0.5776551527350723, -0.5781810523131196, 0.8165016 },
+                },
+            },
+            {
+                side = -1,
+                inner = 0.47165429999999997,
+                segments = {
+                    { -1.412369737647894, -1.4123533374531523, -0.5798555805304023, -0.5793797698804571, 0.8165013 },
+                    { -1.4123533374531523, -1.228363789362404, -0.5793797698804556, -0.27303460431219967, 0.8165013 },
+                    { -1.228363789362404, -0.9881361284802773, -0.27303460431219956, -0.22766267971647602, 0.8165013 },
+                    { -0.9881361284802773, -0.7433602152572719, -0.22766267971647605, -0.2769018187484035, 0.8165013 },
+                    { -0.7433602152572492, -0.7433431317210599, -0.2769018187484081, -0.2769052552736875, 0.7356185070781616 },
+                    { -0.7433431317210591, -0.7431814931152686, -0.2769052552736884, -0.2770902162826105, 0.7356269963444375 },
+                    { -0.7431814931152686, -0.7423378925063369, -0.2770902162826105, -0.27805553777243736, 0.7357073188929875 },
+                    { -0.7423378925063369, -0.7404413657996468, -0.27805553777243736, -0.2802257092571601, 0.7361265266097097 },
+                    { -0.7404413657996468, -0.7354242836393654, -0.2802257092571601, -0.28596669281533854, 0.7370689614799514 },
+                    { -0.7354242836393654, -0.6943515763946722, -0.28596669281533854, -0.3329656713946401, 0.7395620838588969 },
+                    { -0.6943515763946722, -0.6939205041130463, -0.3329656713946401, -0.33345894194555764, 0.7599722111648203 },
+                    { -0.6939205041130463, -0.6936265563687397, -0.33345894194555764, -0.3337953026255536, 0.7601864225167436 },
+                    { -0.6936265563687277, -0.6928544785943975, -0.3337953026255673, -0.33467878144183133, 0.7603324930167252 },
+                    { -0.6928544785943975, -0.6928499040324372, -0.33467878144183133, -0.3346840160551307, 0.7607161591230345 },
+                    { -0.6928499040324372, -0.6264851841081753, -0.3346840160551307, -0.41062432433721324, 0.7607184323452846 },
+                    { -0.6264851841081753, -0.5948387855383642, -0.41062432433721324, -0.44683689731502113, 0.7936968375477111 },
+                    { -0.5948387855383642, -0.5801427438215363, -0.44683689731502113, -0.46365339167792824, 0.8094227798318611 },
+                    { -0.5801427438215363, -0.5801426754874418, -0.46365339167792824, -0.46365346987176687, 0.8165013 },
+                    { -0.5801426754873915, -0.560534226816356, -0.46365346987182426, -0.4981587190254579, 0.8165013 },
+                    { -0.5605342268163558, -0.5096602077201363, -0.46178887023090437, -0.5568014851111951, 0.8165013 },
+                },
+            },
+        },
+    },
+    nativeCutPlanes = {
+        { 0, 0, -1, -2.54 },
+        { 0, 0, -1, -17.99 },
+        { 0, 0, -1, -45.467033 },
+    },
     vehicleScale = 1.82,
     vanillaSeats = { "FrontLeft", "FrontRight" },
     cutFront = 0.32,
     modelShift = { 0, 0, 0 },
     extraSeats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
     clipBody = true,
+    nativeBodyLining = { 0.8, 0.77, 0.7 },
+    nativeBodyWalls = true,
+    nativeCabPartition = true,
+    nativePlainFinish = true,
+    nativeWallMaterial = { texture = "MELensShell_f700box_walls", height = 1.520027, perimeter = 7.086 },
+    nativeStockMetal = {
+        texture = "vehicle_vanseatsshell",
+        paintUV = { 0.56640625, 0.35546875 },
+        panelUV = { 0.3427734375, 0.2861328125, 0.4970703125, 0.3896484375 },
+        panelWidth = 1.1,
+        panelHeight = 0.7425,
+    },
+    nativeRoofCuts = {
+        {
+            models = { "Vehicles_VanRadio", "Vehicles_VanRadio_NoRandom", "mesh:Vehicles_VanRadio" },
+            maxUp = 0.9,
+            box = {
+                x = { -0.9673660831, 0.9673660831 },
+                y = { 0.4763042, 1.5609240496 },
+                z = { -2.1453649427999997, 0.32 },
+            },
+        },
+    },
+    nativeSurfaceCuts = {
+        {
+            models = { "Vehicles_VanRadio", "mesh:Vehicles_VanRadio" },
+            box = {
+                x = { -0.7084427888, 0.7164421205 },
+                y = { -0.5816415398, 0.4764145762 },
+                z = { -1.8173773534000002, 0.4430446558 },
+            },
+            uv = { 0.6484365, 0.83203025, 0.9973869787, 0.9983179306000001 },
+        },
+        {
+            models = { "Vehicles_VanRadio", "mesh:Vehicles_VanRadio" },
+            box = {
+                x = { 0.5824712066000001, 0.7164421205 },
+                y = { -0.5805099264, 0.476414337 },
+                z = { -1.8173772167, 0.4430443482 },
+            },
+            uv = { 0.0460232443, 0.8371693029, 0.0700013058, 0.8605452643 },
+        },
+    },
+    nativeEntryOpening = {
+        x = { -0.724, 0.724 },
+        y = { -0.588, 0.61 },
+        z = { -2.275, -1.94 },
+    },
+    nativeEntryNearBounds = {
+        x = { -0.724, 0.724 },
+        y = { -0.588, 0.6466140547 },
+        z = { -2.275, -1.9162164973 },
+    },
     windowBoxes = {
         {
             x = { -0.669, 0.669 },
@@ -122,79 +257,79 @@ do
         fitted.factoryLayout = "cargo-service-1"
         fitted.factoryRole = "radio"
         fitted.factoryUse = {
-        loot = { parcels = "CrateElectronics", equipmentrack = "CrateElectronics", metalcase = "CrateElectronics", medlocker = "CrateElectronics" },
-        stock = {
-            parcels = {
-                { "Base.ElectricWire", 1 },
-                { "Base.Battery", 2 },
-            },
-            equipmentrack = {
-                { "Base.ElectricWire", 1 },
-                { "Base.Battery", 2 },
-            },
-            metalcase = {
-                { "Base.ElectricWire", 1 },
-                { "Base.Battery", 2 },
-            },
-            medlocker = {
-                { "Base.ElectricWire", 1 },
-                { "Base.Battery", 2 },
-            },
-            workbench = {
-                { "Base.HamRadio1", 1 },
-                { "Base.Headphones", 1 },
-                { "Base.Battery", 2 },
-            },
-            medbench = {
-                { "Base.Notebook", 1 },
-                { "Base.Pen", 1 },
-            },
+    loot = { parcels = "CrateElectronics", equipmentrack = "CrateElectronics", metalcase = "CrateElectronics", medlocker = "CrateElectronics" },
+    stock = {
+        parcels = {
+            { "Base.ElectricWire", 1 },
+            { "Base.Battery", 2 },
         },
-    }
+        equipmentrack = {
+            { "Base.ElectricWire", 1 },
+            { "Base.Battery", 2 },
+        },
+        metalcase = {
+            { "Base.ElectricWire", 1 },
+            { "Base.Battery", 2 },
+        },
+        medlocker = {
+            { "Base.ElectricWire", 1 },
+            { "Base.Battery", 2 },
+        },
+        workbench = {
+            { "Base.HamRadio1", 1 },
+            { "Base.Headphones", 1 },
+            { "Base.Battery", 2 },
+        },
+        medbench = {
+            { "Base.Notebook", 1 },
+            { "Base.Pen", 1 },
+        },
+    },
+}
         fitted.aisleX = 0.0
         for _,s in ipairs({
-        {
-            wall = "left",
-            x = 0.654,
-            z = -0.21,
-            length = 0.9,
-            depth = 0.4,
-            default = "workbench",
-            factory = true,
-            pieces = { "workbench" },
-        },
-        {
-            wall = "left",
-            x = 0.654,
-            z = -1.525,
-            length = 0.6,
-            depth = 0.32,
-            default = "equipmentrack",
-            factory = true,
-            pieces = { "equipmentrack" },
-        },
-        {
-            wall = "right",
-            x = -0.654,
-            z = -0.07,
-            length = 0.6,
-            depth = 0.32,
-            default = "equipmentrack",
-            factory = true,
-            pieces = { "equipmentrack" },
-        },
-        {
-            wall = "right",
-            x = -0.654,
-            z = -1.215,
-            length = 1.1,
-            depth = 0.4,
-            default = "medbench",
-            factory = true,
-            pieces = { "medbench" },
-            seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
-        },
-    }) do fitted.spots[#fitted.spots+1]=s end
+    {
+        wall = "left",
+        x = 0.654,
+        z = -0.21,
+        length = 0.9,
+        depth = 0.4,
+        default = "workbench",
+        factory = true,
+        pieces = { "workbench" },
+    },
+    {
+        wall = "left",
+        x = 0.654,
+        z = -1.525,
+        length = 0.6,
+        depth = 0.32,
+        default = "equipmentrack",
+        factory = true,
+        pieces = { "equipmentrack" },
+    },
+    {
+        wall = "right",
+        x = -0.654,
+        z = -0.07,
+        length = 0.6,
+        depth = 0.32,
+        default = "equipmentrack",
+        factory = true,
+        pieces = { "equipmentrack" },
+    },
+    {
+        wall = "right",
+        x = -0.654,
+        z = -1.215,
+        length = 1.1,
+        depth = 0.4,
+        default = "medbench",
+        factory = true,
+        pieces = { "medbench" },
+        seats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
+    },
+}) do fitted.spots[#fitted.spots+1]=s end
         MELens.Profiles["Base.VanRadio"] = fitted
         MELens.Profiles["Base.VanRadio_3N"] = fitted
     end

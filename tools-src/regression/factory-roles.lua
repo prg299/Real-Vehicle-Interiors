@@ -26,8 +26,28 @@ do
         check(stretcher.z<pr.door.z+1.1,"ambulance stretcher moved away from the rear door: "..name)
     end
     local ambulance=profiles["Base.90fordF350ambulance"]
+    local stepVan=profiles["Base.85chevyStepVan"]
+    local emptyFront=0
+    local stepVehicle={getScript=function() return {getFullName=function() return "Base.85chevyStepVan" end} end}
+    for index,spot in ipairs(stepVan.spots) do
+        if spot.factory and spot.wall=="front" and spot.default=="metalcase" then
+            emptyFront=emptyFront+1
+            check(spot.empty and MELens.Parts.factoryPiece(stepVehicle,index,spot)==nil,
+                "Chevrolet Step Van centre cabinet still factory-fills")
+            check(MELens.Parts.fits(spot,"metalcase"),"empty Step Van bay lost its saved placement contract")
+        end
+    end
+    check(emptyFront==1,"Step Van centre cabinet bay identity changed")
     local v={getScript=function() return {getFullName=function() return "Base.90fordF350ambulance" end} end}
     check(#ambulance.spots==12 and ambulance.legacySpotCount==4,"ambulance placement slot IDs changed")
+    for _,index in ipairs({7,8}) do
+        local spot=ambulance.spots[index]
+        check(spot.wall=="front" and spot.default=="medlocker" and spot.factory,
+            "front cabinet correction changed installed slot identity")
+        -- Native bulkhead rear face and the kit's maximum 14mm rear trim.
+        check(spot.z+.014 <= -.4294017-.01,
+            "front cabinet back intersects native F350 bulkhead")
+    end
     for _,index in ipairs({11,12}) do
         local spot=ambulance.spots[index]
         check(spot.wall=="right" and spot.default=="medlocker" and spot.factory and spot.empty,

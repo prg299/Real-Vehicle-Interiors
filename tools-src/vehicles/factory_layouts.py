@@ -144,6 +144,8 @@ def use_for(role):
 def layout(spec, base, role):
     half=spec['box']['x']-.03; rear,front=spec['box']['z']; floor=base['floorY']
     result=[]; seat_ids=[]
+    front_inset=spec.get('factoryFrontInset',{}).get(role,0)
+    assert 0 <= front_inset < front-rear, (spec['key'],role,'invalid front furniture inset')
 
     def add(piece,wall,at,seats=0):
         width,depth,height=SIZES[piece]
@@ -154,7 +156,7 @@ def layout(spec, base, role):
             x,z=(half if wall=='left' else -half),at
             if z-width/2<rear+.09-1e-6 or z+width/2>front-.05+1e-6:return False
         else:
-            x,z=at,front-.03
+            x,z=at,front-.03-front_inset
             if abs(x)+width/2>half:return False
         spot=dict(wall=wall,x=round(x,3),z=round(z,3),length=width,depth=depth,
                   default=piece,factory=True,pieces=[piece])
@@ -298,8 +300,8 @@ def append_profiles(spec, base, lines):
         assert 2*half-depths['left']-depths['right']>=.35,(spec['key'],role,'aisle narrower than grid-safe clearance')
         # Shallow copy immutable geometry, copy arrays we extend. The released slots
         # retain both IDs and coordinates, so a loaded player's furnishings stay put.
-        # Kahlua debug mode indexes its fixed local-line array by cumulative
-        # declarations, even across do blocks. Give each role its own function.
+        # Kahlua debug bookkeeping counts declarations across do blocks. Each
+        # role gets a function prototype, keeping its debug-local array bounded.
         lines += ['', 'do', '    local function installProfile()',
                   '        local fitted = {}', '        for k,v in pairs(profile) do fitted[k]=v end',
                   '        fitted.legacySpotCount = #profile.spots',
@@ -310,6 +312,15 @@ def append_profiles(spec, base, lines):
                   '        fitted.factoryUse = '+mv.lua(use_for(role)),
                   '        fitted.aisleX = '+str(aisle),
                   '        for _,s in ipairs('+mv.lua(spots)+') do fitted.spots[#fitted.spots+1]=s end']
+        # Keep loose shelf records in the released anchor frame. Read/placement
+        # projection follows the moved fitting without rewriting an old save.
+        inset = spec.get('factoryFrontInset', {}).get(role, 0)
+        offsets = {str(len(base['spots']) + i): {'x': 0, 'z': -inset}
+                   for i, spot in enumerate(spots, 1) if inset and spot['wall'] == 'front'}
+        if offsets:
+            lines.append('        fitted.looseSpotOffsets = '+mv.lua(offsets))
+        if spec.get('nativeBodyWallsRole') == role:
+            lines += ['        fitted.nativeBodyWalls = true', '        fitted.nativeBodyLining = { 0.64, 0.66, 0.67 }']
         if cargo:lines.append('        fitted.factoryFloor = '+mv.lua(cargo))
         for name in names:lines.append('        MELens.Profiles['+mv.lua(name)+'] = fitted')
         lines += ['    end', '    installProfile()', 'end']

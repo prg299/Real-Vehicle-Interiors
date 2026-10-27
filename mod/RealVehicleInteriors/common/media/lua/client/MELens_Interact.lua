@@ -68,7 +68,7 @@ function I.pick(vehicle, profile, sx, sy)
     end
     -- The utility panel first: it is small and low on the wall, so tall furniture in
     -- front of it must not hide it from the mouse.
-    local panel = profile.panel
+    local panel = P.panelFor(vehicle, profile)
     if panel then
         local h = panel.y + panel.halfY
         while h >= panel.y - panel.halfY do
@@ -482,7 +482,7 @@ local function panelMenu(player, vehicle, profile, context)
     header.iconTexture = getTexture("Item_LightBulb")
     local sub = ISContextMenu:getNew(context)
     context:addSubMenu(header, sub)
-    local p = profile.panel
+    local p = P.panelFor(vehicle, profile)
     local near = function(fn)
         M.standingThen(player, function()
             M.walkTo(player, p.x + 0.25, p.z, fn)
@@ -579,8 +579,9 @@ function I.nearestHit(player, vehicle, profile)
                 a = 0, x = spot.x, z = spot.z }, spot.x, spot.z)
         end
     end
-    if profile.panel then
-        consider({ kind = "panel", x = profile.panel.x, z = profile.panel.z }, profile.panel.x, profile.panel.z)
+    local panel = P.panelFor(vehicle, profile)
+    if panel then
+        consider({ kind = "panel", x = panel.x, z = panel.z }, panel.x, panel.z)
     end
     -- what lies there
     if M.LooseUI then
