@@ -1,0 +1,192 @@
+{
+  "description": "Passenger-space native skin X samples at the existing utility panel footprint; read-only KI5 body triangle intersections, 2026-10-25. Existing panel atlas and legacy placement retained.",
+  "source": {
+    "workshopId": "3670064951",
+    "model": "Trailers_KI5campers_Body.fbx",
+    "sha256": "6291d55ec7b3681b85d8d8ac582a684065c8a0b3c99e9f949e169ad6434b9090"
+  },
+  "families": {
+    "Scamp13": {
+      "y": [
+        -0.08,
+        0.03
+      ],
+      "z": [
+        0.814,
+        0.884
+      ],
+      "skinX": [
+        [
+          -0.8546463,
+          -0.8552448
+        ],
+        [
+          -0.8674403,
+          -0.8674649
+        ]
+      ],
+      "inset": 0.002
+    },
+    "Scamp16": {
+      "y": [
+        -0.08,
+        0.03
+      ],
+      "z": [
+        1.62,
+        1.69
+      ],
+      "skinX": [
+        [
+          -0.8481135,
+          -0.8419765
+        ],
+        [
+          -0.8599072,
+          -0.8543773
+        ]
+      ],
+      "inset": 0.002
+    },
+    "VanillaVan": {
+      "source": {
+        "model": "Vehicles_Van.fbx",
+        "sha256": "cc0ef742aeb6442f87677a21afed8c97a1406353d575ff55841508cc4656ccdc",
+        "inwardFaceIds": [
+          693
+        ]
+      },
+      "y": [
+        -0.278,
+        -0.168
+      ],
+      "z": [
+        -1.835,
+        -1.695
+      ],
+      "skinX": [
+        [
+          -0.74791335,
+          -0.75929715
+        ],
+        [
+          -0.74786338,
+          -0.75924718
+        ]
+      ],
+      "inset": 0.002
+    },
+    "VanillaPassengerVan": {
+      "source": {
+        "model": "Vehicles_VanSeats.fbx",
+        "sha256": "00ddd2276611c41a61fc8485eb2a8134ee2c084d02d5933762a86439ac10f6e4",
+        "inwardFaceIds": [
+          533
+        ]
+      },
+      "y": [
+        -0.278,
+        -0.168
+      ],
+      "z": [
+        -1.835,
+        -1.695
+      ],
+      "skinX": [
+        [
+          -0.73625549,
+          -0.73659495
+        ],
+        [
+          -0.73591876,
+          -0.73625822
+        ]
+      ],
+      "inset": 0.002
+    },
+    "VanillaAmbulance": {
+      "source": {
+        "model": "Vehicles_VanAmbulance.fbx",
+        "sha256": "9b21de01ef825c6bbfca0b716e3ec350f0ef337eca8d77c3f8682f466872d2e0",
+        "inwardFaceIds": [
+          610
+        ]
+      },
+      "y": [
+        -0.328,
+        -0.218
+      ],
+      "z": [
+        -1.835,
+        -1.695
+      ],
+      "skinX": [
+        [
+          -0.68841154,
+          -0.69979533
+        ],
+        [
+          -0.68836154,
+          -0.69974533
+        ]
+      ],
+      "inset": 0.002
+    },
+    "VanillaRadioVan": {
+      "source": {
+        "model": "Vehicles_VanRadio.fbx",
+        "sha256": "0344b6dbf6ab7feb88a7fa174cbf956460b1848e31f25851c100f43b4e8f72f4",
+        "inwardFaceIds": [
+          720
+        ]
+      },
+      "y": [
+        -0.328,
+        -0.218
+      ],
+      "z": [
+        -1.835,
+        -1.695
+      ],
+      "skinX": [
+        [
+          -0.68841203,
+          -0.69979582
+        ],
+        [
+          -0.68836205,
+          -0.69974584
+        ]
+      ],
+      "inset": 0.002
+    },
+    "VanillaStepVan": {
+      "source": {
+        "model": "Vehicle_StepVan.fbx",
+        "sha256": "6d396bd03b624e0d8cbb1d6099bd3d43ae92b962f13daf31365b500160859c3d",
+        "inwardFaceIds": [
+          230
+        ]
+      },
+      "y": [
+        -0.328,
+        -0.218
+      ],
+      "z": [
+        -1.81,
+        -1.67
+      ],
+      "skinX": [
+        [
+          0.7669268,
+          0.76692678
+        ],
+        [
+          0.7669268,
+          0.76692678
+        ]
+      ],
+      "inset": 0.002
+    }
+  }
+}

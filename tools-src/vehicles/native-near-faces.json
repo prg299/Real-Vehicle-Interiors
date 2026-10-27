@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "description": "Measured native-only side-edge near-wall classification. No aperture, UV, geometry or pane-mask changes.",
+  "families": {
+    "VanillaPassengerVan": {
+      "sourceModel": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\models_X\\vehicles\\Vehicles_VanSeats.fbx",
+      "sourceModelSha256": "00ddd2276611c41a61fc8485eb2a8134ee2c084d02d5933762a86439ac10f6e4",
+      "qualification": "source-qualified side-frame endpoint",
+      "sourceFaceGroups": [
+        [
+          610,
+          611,
+          612,
+          615,
+          616
+        ],
+        [
+          641,
+          642,
+          643,
+          644,
+          652
+        ]
+      ],
+      "faces": [
+        {
+          "models": [
+            "Vehicles_VanSeats",
+            "Vehicles_VanSeats_NoRandom"
+          ],
+          "box": {
+            "x": [
+              -0.8190979979,
+              -0.6433227424
+            ],
+            "y": [
+              -0.48023840419999997,
+              0.6081473497000001
+            ],
+            "z": [
+              -0.5809179013,
+              -0.5753582854
+            ]
+          },
+          "uv": [
+            0.3446072175,
+            0.008510185600000001,
+            0.34470354179999996,
+            0.1725416647
+          ]
+        },
+        {
+          "models": [
+            "Vehicles_VanSeats",
+            "Vehicles_VanSeats_NoRandom"
+          ],
+          "box": {
+            "x": [
+              0.6359675283999999,
+              0.8190980663
+            ],
+            "y": [
+              -0.4796803876,
+              0.608147418
+            ],
+            "z": [
+              -0.579932318,
+              -0.577375646
+            ]
+          },
+          "uv": [
+            0.34457774300000005,
+            0.2056549324,
+            0.3451260792,
+            0.36942581989999995
+          ]
+        }
+      ]
+    },
+    "VanillaVan": {
+      "sourceModel": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\models_X\\vehicles\\Vehicles_Van.fbx",
+      "sourceModelSha256": "cc0ef742aeb6442f87677a21afed8c97a1406353d575ff55841508cc4656ccdc",
+      "qualification": "source-qualified side-frame endpoint",
+      "sourceFaceGroups": [
+        [
+          495,
+          496,
+          497,
+          498,
+          499,
+          500
+        ],
+        [
+          577,
+          578,
+          579,
+          580,
+          581,
+          582
+        ]
+      ],
+      "faces": [
+        {
+          "models": [
+            "Vehicles_Van",
+            "Vehicles_Van_NoRandom"
+          ],
+          "box": {
+            "x": [
+              -0.8190979296,
+              -0.6486871094
+            ],
+            "y": [
+              -0.5080516653,
+              0.6081473497000001
+            ],
+            "z": [
+              -0.5814118889000001,
+              -0.579930113
+            ]
+          },
+          "uv": [
+            0.34447280900000005,
+            0.008510185600000001,
+            0.3446977006,
+            0.1767434345
+          ]
+        },
+        {
+          "models": [
+            "Vehicles_Van",
+            "Vehicles_Van_NoRandom"
+          ],
+          "box": {
+            "x": [
+              0.6473781005,
+              0.8190980663
+            ],
+            "y": [
+              -0.46917278279999997,
+              0.608147418
+            ],
+            "z": [
+              -0.5820543665,
+              -0.5799301813
+            ]
+          },
+          "uv": [
+            0.3444230689,
+            0.2033767833,
+            0.34496317969999996,
+            0.3678472505
+          ]
+        }
+      ]
+    },
+    "VanillaAmbulance": {
+      "sourceModel": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\models_X\\vehicles\\Vehicles_VanAmbulance.fbx",
+      "sourceModelSha256": "9b21de01ef825c6bbfca0b716e3ec350f0ef337eca8d77c3f8682f466872d2e0",
+      "qualification": "No verified analogous side-frame endpoint; no rule registered",
+      "sourceFaceGroups": [],
+      "faces": []
+    },
+    "VanillaRadioVan": {
+      "sourceModel": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\models_X\\vehicles\\Vehicles_VanRadio.fbx",
+      "sourceModelSha256": "0344b6dbf6ab7feb88a7fa174cbf956460b1848e31f25851c100f43b4e8f72f4",
+      "qualification": "No verified analogous side-frame endpoint; no rule registered",
+      "sourceFaceGroups": [],
+      "faces": []
+    },
+    "VanillaStepVan": {
+      "sourceModel": "C:\\SteamLibrary\\steamapps\\common\\ProjectZomboid\\media\\models_X\\vehicles\\Vehicle_StepVan.fbx",
+      "sourceModelSha256": "6d396bd03b624e0d8cbb1d6099bd3d43ae92b962f13daf31365b500160859c3d",
+      "qualification": "No verified analogous side-frame endpoint; no rule registered",
+      "sourceFaceGroups": [],
+      "faces": []
+    }
+  }
+}

@@ -21,6 +21,11 @@ def prepare(game_root, output):
             if 'copy' in operation:
                 start, end = operation['copy']
                 chunks.append(b''.join(lines[start:end]))
+            elif 'insertFile' in operation:
+                source = (path.parent / operation['insertFile']).resolve()
+                if not source.is_relative_to(path.parent.resolve()):
+                    raise ValueError('Shader insertion must stay in the recipe directory')
+                chunks.append(source.read_bytes())
             else:
                 chunks.append(operation['insert'].encode('utf-8'))
         result = b''.join(chunks)

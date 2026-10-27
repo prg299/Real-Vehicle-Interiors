@@ -9,7 +9,18 @@ local profile = {
     floorY = -0.14,
     mesh = { scale = 0.09, lift = 0.666 },
     shell = {
-        models = { "MELensShell_bambi16_floor", "MELensShell_bambi16_walls" },
+        models = { "MELensShell_bambi16_floor", "MELensShell_bambi16_walls", "MELensShell_bambi16_support", "MELensShell_bambi16_floor_perimeter", "MELensShell_bambi16_wheel_covers", "MELensShell_bambi16_wheel_floor", "MELensShell_bambi16_wheel_wall", "MELensShell_bambi16_window_return_1", "MELensShell_bambi16_window_return_2", "MELensShell_bambi16_window_return_3", "MELensShell_bambi16_window_return_4", "MELensShell_bambi16_window_return_5" },
+        nativeFloorModel = 4,
+        windowReturns = {
+            { model = 8, part = "Windshield" },
+            { model = 9, part = "WindowFrontLeft" },
+            { model = 10, part = "WindowFrontRight", parent = "DoorFrontRight" },
+            { model = 11, part = "WindowRearLeft" },
+            { model = 12, part = "WindshieldRear" },
+        },
+        wheelCoversModel = 5,
+        wheelFloorModel = 6,
+        wheelWallModel = 7,
     },
     hideKI5 = {
         TrailerKI5camperBambi16Interior = 1.45,
@@ -29,7 +40,7 @@ local profile = {
         ["mesh:bambi16_windshield_rear_a"] = true,
     },
     light = {
-        interiorModels = { "MELensShell_bambi16_floor", "MELensShell_bambi16_walls" },
+        interiorModels = { "MELensShell_bambi16_floor", "MELensShell_bambi16_walls", "MELensShell_bambi16_support", "MELensShell_bambi16_floor_perimeter", "MELensShell_bambi16_wheel_covers", "MELensShell_bambi16_wheel_floor", "MELensShell_bambi16_wheel_wall", "MELensShell_bambi16_window_return_1", "MELensShell_bambi16_window_return_2", "MELensShell_bambi16_window_return_3", "MELensShell_bambi16_window_return_4", "MELensShell_bambi16_window_return_5" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,
@@ -117,7 +128,47 @@ local profile = {
     panel = { x = -0.854, y = 0.155, z = 1.318, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
     waterTank = 60,
     fuelTank = 20,
+    nativeWheelArch = {
+        sides = {
+            {
+                side = 1,
+                contour = {
+                    { 0.8969767, -0.1743684, -0.3474975 },
+                    { 0.8971791, -0.0818963, -0.2749025 },
+                    { 0.8983254, -0.0490006, -0.20859 },
+                    { 0.8986015, -0.0490006, 0.1535117 },
+                    { 0.898176, -0.0818963, 0.2269064 },
+                    { 0.8968479, -0.1743685, 0.3003327 },
+                },
+            },
+            {
+                side = -1,
+                contour = {
+                    { -0.8969767, -0.1743684, -0.3474975 },
+                    { -0.8971793, -0.0818963, -0.2749039 },
+                    { -0.8983259, -0.0489998, -0.2086647 },
+                    { -0.8986015, -0.0490006, 0.1535117 },
+                    { -0.8981759, -0.0818963, 0.2269064 },
+                    { -0.8968479, -0.1743685, 0.3003327 },
+                },
+            },
+        },
+    },
+    nativeCutPlanes = {
+        { 0, 0, -1, -4.5 },
+        { 0, 0, -1, -7 },
+        { 0, 0, -1, -12.889556 },
+    },
     clipBody = true,
+    nativeBodyWalls = true,
+    nativeBodyKeepPlanes = {
+        TrailerKI5camperBambi16Interior = { 0, 0, 0, 1 },
+    },
+    nativeWallMaterial = { texture = "MELensShell_bambi16_walls", height = 1.64, perimeter = 9.495245 },
+    nativeWallBoundaryFinish = true,
+    nativeBodyModels = { "61bambiCamperToolboxLid", "61bambiCamperDoorfr" },
+    nativeLivingLeafModels = { "61bambiCamperDoorfr" },
+    nativeBodyLining = { 0.8, 0.76, 0.66 },
     windowBoxes = {
         {
             x = { 0.55, 1.2 },

@@ -30,6 +30,15 @@ module Base
     model MELensShell_f700box_walls { mesh = vehicles/MELens_Shells|shell_f700box_walls, texture = Vehicles/MELensShell_f700box_walls, shader = vehiclewheel, scale = 0.0111111, }
     model MELensShell_f700box_bulkhead { mesh = vehicles/MELens_Shells|shell_f700box_bulkhead, texture = Vehicles/MELensShell_f700box_walls, shader = vehiclewheel, scale = 0.0111111, }
 
+    /* Appended native-body supports preserve all released shell bindings. */
+    model MELensShell_cloud22_support { mesh = vehicles/MELens_Shells|shell_cloud22_support, texture = Vehicles/MELensShell_cloud22_walls, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_bambi16_support { mesh = vehicles/MELens_Shells|shell_bambi16_support, texture = Vehicles/MELensShell_bambi16_walls, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_airflyte_support { mesh = vehicles/MELens_Shells|shell_airflyte_support, texture = Vehicles/MELensShell_airflyte_walls, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_scamp13_support { mesh = vehicles/MELens_Shells|shell_scamp13_support, texture = Vehicles/MELensShell_scamp13_walls, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_scamp16_support { mesh = vehicles/MELens_Shells|shell_scamp16_support, texture = Vehicles/MELensShell_scamp16_walls, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_b700_support { mesh = vehicles/MELens_Shells|shell_b700_support, texture = Vehicles/MELensShell_b700_walls, shader = vehiclewheel, scale = 0.0111111, }
+    model MELensShell_f700box_support { mesh = vehicles/MELens_Shells|shell_f700box_support, texture = Vehicles/MELensShell_f700box_walls, shader = vehiclewheel, scale = 0.0111111, }
+
     model MELensDecal { mesh = vehicles/MELens_Shells|decal, texture = Vehicles/MELensShell_cloud22_floor, shader = vehiclewheel, scale = 0.0111111, }
 
     model MELensRV_bed { mesh = vehicles/MELens_RV|rv_bed, texture = Vehicles/MELensRV_bed, shader = vehiclewheel, scale = 0.0111111, }

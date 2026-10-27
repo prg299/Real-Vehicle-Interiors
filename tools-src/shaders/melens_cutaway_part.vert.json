@@ -3,7 +3,7 @@
   "base": "aim_outline_solid.vert",
   "baseSha256": "4cecd9a500c09f0ed65684b499b0f4caf00b991ec3750958d6011defb0452bbc",
   "output": "melens_cutaway_part.vert",
-  "outputSha256": "0ce4d39c83d8047c92c512a2936a2ba2f4f1d0c868a506e682e4a88fb8bf3e3c",
+  "outputSha256": "cd8c2d058eb639e2048f8adff59580617506f6647d20e137fec3904bb8ebcc3b",
   "operations": [
     {
       "copy": [
@@ -30,7 +30,7 @@
       ]
     },
     {
-      "insert": "varying vec3 meLensMeshPos;\nvarying vec3 meLensMeshNormal;\n"
+      "insert": "varying vec3 meLensMeshPos;\nvarying vec3 meLensMeshNormal;\nvarying vec3 meLensBodyViewRay;\nuniform mat4 MELensToBody;\nuniform vec4 MELensWheelArch;\n"
     },
     {
       "copy": [
@@ -99,7 +99,7 @@
       ]
     },
     {
-      "insert": "\tvec4 skinned = boneEffect * position;\n\tmeLensMeshPos = skinned.xyz;\n\n"
+      "insert": "\tvec4 skinned = boneEffect * position;\n\tmeLensMeshPos = skinned.xyz;\n\tmeLensBodyViewRay = vec3(0.0, 0.0, -1.0);\n\tif (MELensWheelArch.x > 0.5) {\n\t\tvec4 clipRay = inverse(ModelViewProjection) * vec4(0.0, 0.0, -1.0, 0.0);\n\t\tmeLensBodyViewRay = (MELensToBody * vec4(clipRay.xyz, 0.0)).xyz;\n\t}\n\n\n"
     },
     {
       "copy": [

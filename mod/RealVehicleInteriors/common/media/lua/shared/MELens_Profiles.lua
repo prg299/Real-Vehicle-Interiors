@@ -17,20 +17,67 @@ require "MELens_Java"
 MELens = MELens or {}
 MELens.Profiles = MELens.Profiles or {}
 
+-- BEGIN GENERATED CLOUD NATIVE ARCH
+local cloudNativeWheelArch = {
+    sides = {
+        {
+            side = 1,
+            contour = {
+                { 0.8969767, -0.1743684, -0.3474975 },
+                { 0.8971791, -0.0818963, -0.2749025 },
+                { 0.8983254, -0.0490006, -0.20859 },
+                { 0.8986015, -0.0490006, 0.1535117 },
+                { 0.898176, -0.0818963, 0.2269064 },
+                { 0.8968479, -0.1743685, 0.3003327 },
+            },
+        },
+        {
+            side = -1,
+            contour = {
+                { -0.8969767, -0.1743684, -0.3474975 },
+                { -0.8971793, -0.0818963, -0.2749039 },
+                { -0.8983259, -0.0489998, -0.2086647 },
+                { -0.8986015, -0.0490006, 0.1535117 },
+                { -0.8981759, -0.0818963, 0.2269064 },
+                { -0.8968479, -0.1743685, 0.3003327 },
+            },
+        },
+    },
+}
+-- END GENERATED CLOUD NATIVE ARCH
+
 MELens.Profiles["Base.Trailer54FlyingCloud22"] = {
     name = "Flying Cloud 22",
     kind = "camper",
+    -- Shared KI5 curved-wall finish; plain inward repaint is vanilla-only.
+    nativeBodyWalls = true,
+    nativeBodyLining = { 0.80, 0.76, 0.66 },
+    nativeWallMaterial = { texture = "MELensShell_cloud22_walls", height = 1.640000, perimeter = 12.806298 },
+    nativeWallBoundaryFinish = true,
+    nativeWheelArch = cloudNativeWheelArch,
     seatId = "MELensCabin",
     floorY = -0.14,
 
     -- Passenger space (tiles) to the body's mesh space, for lamp positions:
     -- mesh x = -px / scale, mesh y = pz / scale, mesh z = lift - py / scale.
     mesh = { scale = 0.09, lift = 0.666 },
+    -- High retains the measured window tops; the camera-side wall still lowers.
+    nativeCutPlanes = {
+        { 0, 0, -1, -4.5 }, { 0, 0, -1, -7 },
+        { 0, 0, -1, -12.889556 }, -- passenger y=1.22m
+    },
 
     -- The inside shell (floor, inside walls, wheel-well boxes and the utility panel) that
     -- replaces KI5's furnished interior in the camper you are in. Every other camper is
     -- drawn exactly as KI5 made it.
-    shell = { models = { "MELensShell_cloud22_floor", "MELensShell_cloud22_walls" } },
+    shell = {
+        models = { "MELensShell_cloud22_floor", "MELensShell_cloud22_walls", "MELensShell_cloud22_support",
+                   "MELensShell_cloud22_floor_perimeter", "MELensShell_cloud22_wheel_covers",
+                   "MELensShell_cloud22_wheel_floor", "MELensShell_cloud22_wheel_wall" },
+        nativeFloorModel = 4,
+        wheelCoversModel = 5, wheelFloorModel = 6, wheelWallModel = 7,
+    },
+    nativeBodyKeepPlanes = { TrailerKI5camperFlyingCloud22Interior = { 0, 0, 0, 1 } },
     -- KI5 models the Java part hides in the camper you are in: a number keeps only what is
     -- above that height (KI5's interior model also carries the ceiling and part of the
     -- roof), true hides the whole model (KI5's seat and bed cushions).
@@ -55,7 +102,9 @@ MELens.Profiles["Base.Trailer54FlyingCloud22"] = {
 
     -- Light inside while the roof is cut away (see the cutaway shaders).
     light = {
-        interiorModels = { "MELensShell_cloud22_floor", "MELensShell_cloud22_walls" },
+        interiorModels = { "MELensShell_cloud22_floor", "MELensShell_cloud22_walls",
+                           "MELensShell_cloud22_support", "MELensShell_cloud22_floor_perimeter",
+                           "MELensShell_cloud22_wheel_covers", "MELensShell_cloud22_wheel_floor", "MELensShell_cloud22_wheel_wall" },
         daylight = 1.0,    -- share of the outside ambient light that reaches the inside
         minimum = 0.18,    -- constant light: the inside of a camper is never pitch black
         topDown = 0.5,     -- surfaces facing up (floor, tables, beds) get more light
@@ -164,6 +213,27 @@ MELens.Profiles["Base.Trailer54FlyingCloud22"] = {
     waterTank = 60,
     fuelTank = 20,
 }
+
+-- BEGIN GENERATED CLOUD WINDOW RETURNS
+local cloudProfile = MELens.Profiles["Base.Trailer54FlyingCloud22"]
+for _, model in ipairs({ "MELensShell_cloud22_window_return_1", "MELensShell_cloud22_window_return_2", "MELensShell_cloud22_window_return_3", "MELensShell_cloud22_window_return_4", "MELensShell_cloud22_window_return_5", "MELensShell_cloud22_window_return_6", "MELensShell_cloud22_window_return_7", "MELensShell_cloud22_window_return_8", "MELensShell_cloud22_window_return_9" }) do
+    table.insert(cloudProfile.shell.models, model)
+    table.insert(cloudProfile.light.interiorModels, model)
+end
+cloudProfile.shell.windowReturns = {
+    { model = 8, part = "Windshield" },
+    { model = 9, part = "WindowFrontLeft" },
+    { model = 10, part = "WindowFrontLeft" },
+    { model = 11, part = "WindowFrontRight" },
+    { model = 12, part = "WindowFrontRight" },
+    { model = 13, part = "WindowMiddleLeft" },
+    { model = 14, part = "WindowRearLeft" },
+    { model = 15, part = "WindowRearRight" },
+    { model = 16, part = "WindshieldRear" },
+}
+cloudProfile.nativeBodyModels = { "54cloudCamperDoorfr" }
+cloudProfile.nativeLivingLeafModels = { "54cloudCamperDoorfr" }
+-- END GENERATED CLOUD WINDOW RETURNS
 
 function MELens.profileFor(vehicle)
     local script = vehicle and vehicle:getScript()
@@ -313,6 +383,15 @@ end
 
 -- Per-profile overrides are already in BODY mesh space, including translated
 -- native submodels. Only aliases touched by the previous profile are restored.
+function MELens.nativeWallsAvailable(profile, rv)
+    if not profile or not profile.nativeBodyWalls or not rv or not rv.setNativeBodyWalls then return false end
+    if profile.nativeRoofCuts or profile.nativeSurfaceCuts then
+        return (rv.setNativeSurfaceCut or rv.setNativeRoofCut) ~= nil
+            and (rv.clearNativeSurfaceCuts or rv.clearNativeRoofCuts) ~= nil
+    end
+    return true
+end
+
 function MELens.applyBodyKeepPlanes(profile)
     local rv = MELensRV
     if not rv or not rv.setKeepPlane then return end
@@ -322,11 +401,25 @@ function MELens.applyBodyKeepPlanes(profile)
         restored = true
     end
     if restored then activeBodyKeepPlanes = {} end
-    if not profile or not profile.bodyKeepPlanes then return end
-    for model, p in pairs(profile.bodyKeepPlanes) do
+    if not profile then return end
+    for model, p in pairs(profile.bodyKeepPlanes or {}) do
         local copy = { p[1], p[2], p[3], p[4] }
         writeKeepPlane(rv, model, copy)
         activeBodyKeepPlanes[model] = copy
+    end
+    if MELens.nativeWallsAvailable(profile, rv) then
+        for model, p in pairs(profile.nativeBodyKeepPlanes or {}) do
+            local copy = { p[1], p[2], p[3], p[4] }
+            writeKeepPlane(rv, model, copy)
+            activeBodyKeepPlanes[model] = copy
+        end
+        if rv.setNativeCabModels then
+            for model, p in pairs(profile.nativeCabKeepPlanes or {}) do
+                local copy = { p[1], p[2], p[3], p[4] }
+                writeKeepPlane(rv, model, copy)
+                activeBodyKeepPlanes[model] = copy
+            end
+        end
     end
 end
 

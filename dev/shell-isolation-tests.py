@@ -4,7 +4,7 @@ Spawn, direct cabin entry, empty fittings, position, camera, wall options and
 model visibility are explicit diagnostic fixtures. No input/workflow or final
 visual acceptance is claimed. Root owns launch, save protection and shutdown.
 The keep-plane baseline is rebuilt from ALL registered profile hideKI5 rules,
-then the current profile's bodyKeepPlanes overrides are applied, as production
+then the current profile's body/native/cab overrides are applied, as production
 does while standing inside that vehicle. This intentionally removes
 earlier ad-hoc diagnostic overrides; no raw Java keep-map getter is available.
 Profiles are never edited. Each isolation restores the complete captured profile
@@ -54,6 +54,18 @@ for model,p in pairs(pr.bodyKeepPlanes or {}) do
  local plane={p[1],p[2],p[3],p[4]}
  state.profileKeepPlanes[model]=plane;state.planes[model]=plane
 end
+if pr.nativeBodyWalls and MELensRV.nativeBodyWallsActive and MELensRV.nativeBodyWallsActive() then
+ for model,p in pairs(pr.nativeBodyKeepPlanes or {}) do
+  local plane={p[1],p[2],p[3],p[4]}
+  state.profileKeepPlanes[model]=plane;state.planes[model]=plane
+ end
+ if MELensRV.setNativeCabModels then
+  for model,p in pairs(pr.nativeCabKeepPlanes or {}) do
+   local plane={p[1],p[2],p[3],p[4]}
+   state.profileKeepPlanes[model]=plane;state.planes[model]=plane
+  end
+ end
+end
 local boxes={}
 for _,w in ipairs(pr.windowBoxes or {}) do
  local m=pr.mesh
@@ -75,7 +87,7 @@ end
 MELensShellIsolation=state
 state.restore()
 return {profileRules=state.profileRules,planes=state.planes,globalPlanes=state.globalPlanes,
- profileKeepPlanes=state.profileKeepPlanes,keepPlaneOrder="global hideKI5 then active bodyKeepPlanes",
+ profileKeepPlanes=state.profileKeepPlanes,keepPlaneOrder="global hideKI5 then body, native-body and native-cab overrides",
  windows=pr.windowBoxes or {},windowString=state.windowString,shellModels=pr.shell.models}
 """
 RESTORE = "assert(MELensShellIsolation);MELensShellIsolation.restore();return true"

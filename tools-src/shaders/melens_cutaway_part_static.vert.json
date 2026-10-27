@@ -3,7 +3,7 @@
   "base": "vehicle_static.vert",
   "baseSha256": "a40b35a0e096cd98a13348296ddd0b65e855298d43aeaa25012b064eed4f4f36",
   "output": "melens_cutaway_part_static.vert",
-  "outputSha256": "31b715cc1bdca6945208cfc1068f628d0707dfbad61ad2690437a6c98b913af3",
+  "outputSha256": "a487036822e328c1d230969d1de00bfcf462ed5370a194d340b39dbba5c963c1",
   "operations": [
     {
       "copy": [
@@ -21,13 +21,16 @@
       ]
     },
     {
-      "insert": "varying vec3 vertColour;\nvarying vec3 vertNormal;\nvarying vec2 texCoords;\nvarying vec3 meLensMeshPos;\nvarying vec3 meLensMeshNormal;\n"
+      "insert": "varying vec3 vertColour;\nvarying vec3 vertNormal;\nvarying vec2 texCoords;\nvarying vec3 meLensMeshPos;\nvarying vec3 meLensMeshNormal;\nvarying vec3 meLensBodyViewRay;\nuniform mat4 MELensToBody;\nuniform vec4 MELensWheelArch;\n"
     },
     {
       "copy": [
         6,
         10
       ]
+    },
+    {
+      "insert": "// Procedural Vehicles_Wheel: tangent at2, native UV at3.\nlayout (location = 3) in vec2 meLensProceduralUv;\nuniform float MELensWheelUV;\n"
     },
     {
       "copy": [
@@ -51,7 +54,7 @@
       ]
     },
     {
-      "insert": "\tmeLensMeshPos = vertex.xyz;\n\tmeLensMeshNormal = normal.xyz;\n"
+      "insert": "\tif (MELensWheelUV > 0.5) texCoords = meLensProceduralUv;\n\tmeLensMeshPos = vertex.xyz;\n\tmeLensBodyViewRay = vec3(0.0, 0.0, -1.0);\n\tif (MELensWheelArch.x > 0.5) {\n\t\tvec4 clipRay = inverse(ModelViewProjection * transform) * vec4(0.0, 0.0, -1.0, 0.0);\n\t\tmeLensBodyViewRay = (MELensToBody * vec4(clipRay.xyz, 0.0)).xyz;\n\t}\n\n\tmeLensMeshNormal = normal.xyz;\n"
     },
     {
       "copy": [

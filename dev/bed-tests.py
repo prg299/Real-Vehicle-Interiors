@@ -22,6 +22,13 @@ def enter(h, vehicle, heading, walk_approach=True):
     spawn = spawn.replace('tonumber("7")','tonumber("-4")').replace('local HEADING = "E"',f'local HEADING = "{heading}"')
     h.lua(spawn)
     if not walk_approach:time.sleep(1)
+    enter_existing(h, vehicle, walk_approach)
+
+def enter_existing(h, vehicle=None, walk_approach=True):
+    """Approach an existing fixture through movement and production Interact."""
+    assert not h.lua('return getPlayer():getVehicle()~=nil'), 'start outside'
+    if vehicle is None:
+        vehicle=h.lua('return MELensTest.vehicle:getScriptName()')
     h.lua('''local p=getPlayer();local v=MELensTest.vehicle;local q=Vector3f.new()
 v:getPassengerPositionWorldPos(v:getPassengerPosition(MELens.cabinSeat(v),"outside"),q)
 p:setX(q:x());p:setY(q:y());p:setLastX(q:x());p:setLastY(q:y())

@@ -1,0 +1,24 @@
+# Prepared update 2.0.21
+
+This update brings the approved interior wall, window, floor and cab separation work onto public 2.0.20 (`70137e36301c83a7c392e3007c55538de45f34d9`). It retains that release's native movement, optional vehicle packs, animal support and utility fixes. Source is prepared on `interior-walls-update-2.0.21`; no Workshop upload or main-branch merge is part of this preparation.
+
+## Saved interiors
+
+Vehicle/profile identifiers, furniture slot order, installed item IDs, storage capacities, utility data and the released model-binding prefix remain stable. Existing and deliberately cleared slots retain their saved state; fresh vehicle defaults do not replace them. No reset, bulk migration or inventory refill is required.
+
+The F350's two front medical cabinets move 60 mm for clearance. Old shelf placements keep their saved coordinates and IDs. A shared coordinate adapter projects them onto the adjusted cabinets for display and interaction; new explicit placements are stored in the same released coordinate frame. See [save compatibility](vehicles.md#save-compatibility) for the implementation contract.
+
+## Qualification
+
+- Historical package contracts cover all 203 vehicle definitions against both 2.0.14 and public 2.0.20, independently of the current generator. Furniture slots and allowed pieces, profile/floor/navigation settings, kit dimensions and capacities, and the released shell-model prefix are checked. Only the two documented F350 offsets are permitted.
+- Focused checks pass 190,676 Lua assertions, 285 cutaway/state assertions, 22 vision checks and 46 optional-camera contract assertions. The build compiles 130 normal/debug Lua files with no errors. Repository checks cover 758 files; 75 PowerShell scripts parse successfully. These automated checks have their own scope and do not replace native evidence.
+- A copied stocked 2.0.13 F700 save cold-loads in 2.0.21 and passes real keyboard entry, exit and re-entry. Installed furniture, stocked contents, capacities, 7.25 L fuel, 11.5 L tainted water and generator condition 73 match the old-package baseline.
+- A copied 2.0.20 world retains its existing step van. An explicitly prepared additional old-package ambulance fixture covers nested storage, a deliberately cleared slot, propane, saved utilities and an item at the old shelf edge. Both vehicles cold-load and pass the same native entry cycle with exact persistent-state comparisons. The shelf item's raw Z stays -0.46 while its displayed Z becomes -0.52, matching the cabinet adjustment.
+- A copied 2.0.20 dedicated-server world cold-restarts in 2.0.21 with two real clients. The existing stocked Flying Cloud retains SQL identity 32, furniture, storage, loose records, propane and both players' inventories and original standing seats. Both clients pass native exit, entry and re-entry with server/replica comparisons. The source has zero generator fuel and water; nonzero conservation for those resources is covered by single-player. Ordinary native battery charge drain and native exterior-part condition normalization are excluded; battery identity/type and all interior item state remain covered. Both server lifetimes exit successfully and all owned clients close.
+- The approved visual meshes and six reconstructed shaders remain byte-identical. Three new single-player upgrade screenshots and both upgraded-client camper screenshots were opened at original resolution. Prior full-fleet visual evidence is recorded in [native body review](native-body-review.md).
+
+Native save files are copied before testing; original worlds and installed Workshop files are immutable inputs. Relocation/fixture setup and the save API are harness operations. Entry/exit are tested through the production Interact key. These results do not establish Save/Continue menu input, every historical game build, controllers, Steam transport or exhaustive mod combinations.
+
+Multiplayer upgrade qualification and the final package receipt are recorded in the prepared artifact report. Original copied-world provenance remains under `build/rv/update-prep-20261027-2.0.21`; the delivery bundle and qualification are under `build/rv/release-2.0.21-prepared`. The frozen candidate contains 219 runtime files, including Java SHA-256 `52493ba375c3125bd51c5028ba581277557f2e706054f89bbf7dd01a417557f5`.
+
+Update the server and all clients together, approve the new Java component and restart. This is compatibility with existing interior data on Project Zomboid 42.21, not support for mixed running mod/JAR versions.

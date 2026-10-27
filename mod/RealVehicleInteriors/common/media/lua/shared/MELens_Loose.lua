@@ -69,6 +69,20 @@ local function key(id)
     return string.format("%d", id)
 end
 
+-- A moved fitting keeps the released coordinate frame in saved Floor records.
+-- Project on read and invert on explicit placement; loading never rewrites it.
+local function spotOffset(profile, index)
+    if not profile or not profile.looseSpotOffsets or type(index) ~= "number"
+            or index <= 0 or index ~= math.floor(index) then return nil end
+    return profile.looseSpotOffsets[key(index)]
+end
+
+local function placedPosition(profile, entry)
+    local offset = spotOffset(profile, entry.s)
+    if not offset then return entry.x, entry.z end
+    return entry.x + (offset.x or 0), entry.z + (offset.z or 0)
+end
+
 function L.floorPart(vehicle)
     return vehicle and vehicle:getPartById(P.FLOOR) or nil
 end
@@ -93,7 +107,13 @@ end
 
 function L.entry(vehicle, id)
     local positions = L.positions(vehicle, false)
-    return positions and positions[key(id)] or nil
+    local entry = positions and positions[key(id)] or nil
+    local profile = entry and M.profileFor(vehicle)
+    if not entry or not spotOffset(profile, entry.s) then return entry end
+    local shown = {}
+    for k, value in pairs(entry) do shown[k] = value end
+    shown.x, shown.z = placedPosition(profile, entry)
+    return shown
 end
 
 -- How a bag or a hat looks (its texture and tint come from the item, not from its type), or nil for the
@@ -122,6 +142,8 @@ end
 function L.set(vehicle, item, x, y, z, r, s)
     local positions, part = L.positions(vehicle, true)
     if not positions then return nil end
+    local offset = spotOffset(M.profileFor(vehicle), s)
+    if offset then x, z = x - (offset.x or 0), z - (offset.z or 0) end
     local e = { t = item:getFullType(), x = x, y = y, z = z, r = r or 0, s = s or 0 }
     local look = L.lookOf(item)
     if look then
@@ -471,7 +493,8 @@ function L.list(vehicle, profile)
         for k, e in pairs(positions) do
             local id = tonumber(k)
             if id and type(e) == "table" and e.t and e.x and e.z then
-                out[#out + 1] = { id = id, t = e.t, x = e.x, y = e.y or profile.floorY, z = e.z, r = e.r or 0, s = e.s or 0,
+                local x, z = placedPosition(profile, e)
+                out[#out + 1] = { id = id, t = e.t, x = x, y = e.y or profile.floorY, z = z, r = e.r or 0, s = e.s or 0,
                                   tx = e.tx, tr = e.tr, tg = e.tg, tb = e.tb }
                 seen[id] = true
             end
@@ -609,7 +632,8 @@ function L.displace(vehicle, index)
     table.sort(ids)
     for _, id in ipairs(ids) do
         local e = positions[key(id)]
-        local x, z = L.dropSpot(vehicle, profile, e.x, e.z, id)
+        local px, pz = placedPosition(profile, e)
+        local x, z = L.dropSpot(vehicle, profile, px, pz, id)
         e.x, e.z, e.y, e.s = x, z, profile.floorY, 0
     end
     return part
@@ -661,7 +685,8 @@ function L.tumble(vehicle)
     table.sort(ids)
     for _, id in ipairs(ids) do
         local e = positions[key(id)]
-        local x, z = L.dropSpot(vehicle, profile, e.x, e.z, id)
+        local px, pz = placedPosition(profile, e)
+        local x, z = L.dropSpot(vehicle, profile, px, pz, id)
         e.x, e.z, e.y, e.s = x, z, profile.floorY, 0
     end
     local data = part:getModData()

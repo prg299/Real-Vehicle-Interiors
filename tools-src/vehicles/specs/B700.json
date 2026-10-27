@@ -1,5 +1,50 @@
 {
     "key": "B700",
+    "nativeBodyWalls": true,
+    "nativeHighCut": 1.112,
+    "nativeCeiling": 1.12,
+    "nativeBodyKeepPlanes": {
+        "87fordB700Roof": [
+            0,
+            0,
+            0,
+            1
+        ],
+        "mesh:b700_roof": [
+            0,
+            0,
+            0,
+            1
+        ]
+    },
+    "nativeWallMaterial": "b700",
+    "nativeBodyModels": [
+        "87fordB700Doorr"
+    ],
+    "nativeCabFallbackBodyModels": [
+        "87fordB700Engine"
+    ],
+    "nativeCabModels": [
+        "87fordB700Interior",
+        "mesh:b700_interior_bus",
+        "87fordB700Engine",
+        "mesh:b700_interior"
+    ],
+    "nativeCabKeepPlanes": {
+        "87fordB700Interior": [
+            0,
+            -1,
+            0,
+            12.444444
+        ],
+        "mesh:b700_interior_bus": [
+            0,
+            -1,
+            0,
+            12.444444
+        ]
+    },
+    "separateShellSupports": true,
     "vehicles": [
         "Base.87fordB700school",
         "Base.87fordB700prison",
@@ -58,7 +103,8 @@
             ]
         },
         "87fordB700Doora": true,
-        "mesh:b700_door_fr_a": true
+        "mesh:b700_door_fr_a": true,
+        "mesh:b700_roofrack0": true
     },
     "cutFront": 1.99,
     "entry": {
@@ -272,11 +318,14 @@
             ]
         }
     ],
-    "cutFrontTop": 0.50,
+    "cutFrontTop": 0.5,
     "cowlReturn": {
         "height": 0.498,
         "rear": 1.99,
-        "x": [-1.12, 1.12],
+        "x": [
+            -1.12,
+            1.12
+        ],
         "thickness": 0.006
     },
     "openingPad": 0.06

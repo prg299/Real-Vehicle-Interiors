@@ -16,16 +16,37 @@ do
         for _,id in ipairs(pr.extraSeats) do check(seats[id],"SWAT bench loses released passenger ID: "..name) end
     end
     for _,name in ipairs({"Base.StepVan","Base.85chevyStepVan"}) do
+        local bridge=MELensRV; MELensRV=completeJava()
         local pr=M.Profiles[name];check(pr.shell.entryModel==4,"missing rear door interior skin: "..name)
         local open,item,shown=false,{},nil
         local door={isOpen=function() return open end}
         local leaf={getDoor=function() return door end,getInventoryItem=function() return item end}
-        local part={setModelVisible=function(_,model,value) check(model=="MELensShell4","wrong rear door model");shown=value end}
+        local part={setModelVisible=function(_,model,value)
+            if model=="MELensShell4" then shown=value
+            else
+                local index=tonumber(model:match("MELensShell(%d+)"))
+                if index==pr.shell.nativePanelModel or index==pr.shell.legacyPanelModel then
+                    check(value==(index==pr.shell.legacyPanelModel),"older bridge chose native utility panel")
+                    return
+                end
+                for _,trim in ipairs(pr.shell.windowReturns or {}) do
+                    if index==trim.model then
+                        check(value==false,"older bridge exposes native window surround")
+                        return
+                    end
+                end
+                check(index==pr.shell.wheelCoversModel or index==pr.shell.wheelFloorModel or index==pr.shell.wheelWallModel
+                    or index==pr.shell.nativeFloorModel,
+                    "unexpected model in door/fallback synchronization")
+                check(value==(index==pr.shell.wheelCoversModel),"older bridge lost fallback wheel covers")
+            end
+        end}
         local v={getPartById=function(_,id) return id==P.SHELL and part or leaf end}
         P.syncShellDoors(v,pr);check(shown==true,"closed rear door is transparent")
         open=true;P.syncShellDoors(v,pr);check(shown==false,"open rear door retains closed lining")
         open=false;P.syncShellDoors(v,pr);check(shown==true,"closing rear door does not restore lining")
         item=nil;P.syncShellDoors(v,pr);check(shown==false,"missing rear door retains lining")
+        MELensRV=bridge
     end
     local old=M.modelOffset(.45,.51,.84)
     check(math.abs(old[1]-.5)<1e-8 and math.abs(old[2]-.5)<1e-8 and math.abs(old[3]-1)<1e-8,
@@ -74,6 +95,98 @@ do
     local count=0
     for _,pr in pairs(M.Profiles) do if seen[pr.walkGrid] then count=count+1 end end
     check(count==193,"fleet identifier coverage changed unexpectedly")
+    local supported,plainWalls,ki5Walls=0,0,0
+    -- Exact source-qualified living leaves plus the previously approved panels.
+    -- Cab doors and exterior storage lids must never enter this classifier.
+    local bodyAliases={
+        Airflyte={"TrailerKI5shastaAirflytetop","TrailerKI5shastaAstrodometop","61shastaCamperToolboxLid2","61shastaCamperToolboxLid3","61shastaCamperDoorfr"},
+        B700={"87fordB700Doorr","87fordB700Doorfr"},Bambi16={"61bambiCamperToolboxLid","61bambiCamperDoorfr"},
+        ChevyStepVan={"85chevyStepVantrunkDoor"},
+        E150Long={"86fordE150PanelLeft","86fordE150PanelRight","86fordE150doorrr","86fordE150trunkDoor"},
+        E150Short={"86fordE150PanelLeft","86fordE150PanelRight","86fordE150doorrl","86fordE150doorrr","86fordE150doorrrw","86fordE150trunkDoor"},
+        E150Windows={"86fordE150PanelLeft","86fordE150PanelRight","86fordE150doorrlw","86fordE150doorrrw","86fordE150trunkDoor"},
+        F350Ambulance={"90fordF350ambulancedoorrr","90fordF350ambulancedoorr"},
+        F700Bank={"87fordF700TrunkDoor"},F700Swat={"87fordF700TrunkDoor","87fordF700Doorrr"},
+        F700box={"87fordF700TrunkDoorX"},Scamp13={"87scampCamperDoorfr"},Scamp16={"87scampCamperDoorfr"},
+        FlyingCloud22={"54cloudCamperDoorfr"},
+    }
+    local vanillaGrids={}
+    for i=1,5 do vanillaGrids[M.Profiles[representatives[i]].walkGrid]=true end
+    for name,pr in pairs(M.Profiles) do
+        supported=supported+1
+        local vanilla=vanillaGrids[pr.walkGrid]==true
+        check((pr.nativePlainFinish==true)==vanilla,"plain finish escaped vanilla scope: "..name)
+        check(pr.nativeBodyWalls==true,"supported vehicle lost native curved walls: "..name)
+        local sideEdges=pr.walkGrid=="MELens.VanillaPassengerVan.shell" or pr.walkGrid=="MELens.VanillaVan.shell"
+        check((#(pr.nativeNearFaces or {})==2)==sideEdges,"side edge classifier escaped qualified source families: "..name)
+        if #(pr.wheelWells or {})>0 then
+            check(pr.nativeWheelArch and pr.shell.wheelCoversModel and pr.shell.wheelFloorModel,
+                "supported interior still lacks the flat wheel-floor contract: "..name)
+        end
+        if vanilla then check(pr.nativeWheelWellTrim and #pr.nativeWheelWellTrim.sides==2,
+            "stock inner wheel skin retained behind the replacement floor: "..name) end
+        local partition=pr.kind=="cargo" and pr.walkGrid~="MELens.F350Ambulance.shell"
+        check((pr.nativeCabPartition==true)==partition,"measured cargo cab partition scope changed: "..name)
+        local fenderPrefix=pr.walkGrid=="MELens.F700Bank.shell" and "87fordF700bank"
+            or pr.walkGrid=="MELens.F700Swat.shell" and "87fordF700swat" or nil
+        if fenderPrefix then
+            local fittings=pr.nativeArchTrimModels or {}
+            check(#fittings==2 and fittings[1]==fenderPrefix.."FenderL" and fittings[2]==fenderPrefix.."FenderR",
+                "rear fitting trim lost exact native aliases: "..name)
+        else
+            check(pr.nativeArchTrimModels==nil,"rear fitting trim escaped measured truck scope: "..name)
+        end
+        if vanilla then
+            plainWalls=plainWalls+1
+            local metal=pr.nativeStockMetal
+            local step=pr.walkGrid=="MELens.VanillaStepVan.shell"
+            check(metal and metal.texture=="vehicle_vanseatsshell"
+                and metal.paintUV[1]==(step and .546875 or .56640625)
+                and metal.paintUV[2]==(step and .4296875 or .35546875)
+                and metal.panelUV[1]==.3427734375 and metal.panelUV[2]==.2861328125
+                and metal.panelUV[3]==.4970703125 and metal.panelUV[4]==.3896484375
+                and metal.panelWidth==1.10 and metal.panelHeight==.7425,
+                "stock metal lost qualified game pixels or physical scale: "..name)
+            local material=pr.nativeWallMaterial
+            check(material and material.texture=="MELensShell_f700box_walls"
+                and material.height>=.5 and material.height<=4
+                and material.perimeter>=2 and material.perimeter<=40,
+                "stock native walls lost their measured partition material: "..name)
+        else
+            ki5Walls=ki5Walls+1
+            check(pr.nativeStockMetal==nil,"stock metal escaped vanilla scope: "..name)
+            local colour=pr.kind=="cargo" and {.64,.66,.67} or pr.kind=="bus" and {.78,.76,.70} or {.80,.76,.66}
+            check(pr.nativeBodyLining[1]==colour[1] and pr.nativeBodyLining[2]==colour[2] and pr.nativeBodyLining[3]==colour[3],
+                "approved KI5 finish changed: "..name)
+            local scamp=name=="Base.Trailer87Scamp13" or name=="Base.Trailer87Scamp16"
+            local family=pr.walkGrid:match("MELens%.(.-)%.shell") or "FlyingCloud22"
+            local expected=bodyAliases[family]
+            check(expected and #pr.nativeBodyModels==#expected,"native structural alias coverage changed: "..name)
+            local actual={}
+            for _,alias in ipairs(pr.nativeBodyModels) do actual[alias]=true end
+            for _,alias in ipairs(expected) do check(actual[alias],"native leaf/panel alias mismatch: "..name..":"..alias) end
+            if pr.kind=="bus" then check(pr.nativeCabModels and #pr.nativeCabModels==4
+                and pr.nativeCabModels[1]=="87fordB700Interior" and pr.nativeCabModels[3]=="87fordB700Engine",
+                "bus lost its actual cab controls: "..name) end
+            if family=="Airflyte" then check(pr.nativeRoofCuts and #pr.nativeRoofCuts==5,"Airflyte lost measured roof cuts") end
+            check((pr.nativeBodyTrim~=nil)==scamp,"measured hitch trim escaped Scamp scope: "..name)
+            check(pr.nativeEntryOpening==nil and pr.nativeDoorOpenings==nil,
+                "later generic wall controls replace approved KI5 details: "..name)
+            local material=pr.nativeWallMaterial
+            if material then
+                check(material.texture:match("^MELensShell_[a-z0-9_]+_walls$")~=nil
+                    and material.height>=.5 and material.height<=4 and material.perimeter>=2 and material.perimeter<=40,
+                    "curved material exceeds the existing atlas/physical bounds contract: "..name)
+            end
+        end
+        local support=false
+        for _,model in ipairs(pr.shell.models) do
+            if model:find("_support$",1) then support=true end
+        end
+        check(support,"native body hides utility/wheel supports with lining: "..name)
+    end
+    check(supported==203,"interior coverage includes disabled or missing scripts")
+    check(plainWalls==96 and ki5Walls==107,"vanilla/KI5 finish coverage changed")
     check(#M.Profiles["Base.87fordF700box"].spots==83,"released cargo slots changed")
     for name,pr in pairs(M.Profiles) do
       if pr.factoryLayout then

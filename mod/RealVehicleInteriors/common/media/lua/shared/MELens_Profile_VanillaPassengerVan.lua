@@ -9,13 +9,19 @@ local profile = {
     floorY = -0.518,
     mesh = { scale = 0.01456, lift = 0 },
     shell = {
-        models = { "MELensShell_fleet_vanillapassengervan_floor", "MELensShell_fleet_vanillapassengervan_walls", "MELensShell_fleet_vanillapassengervan_bulkhead", "MELensShell_fleet_vanillapassengervan_entry" },
+        models = { "MELensShell_fleet_vanillapassengervan_floor", "MELensShell_fleet_vanillapassengervan_walls", "MELensShell_fleet_vanillapassengervan_bulkhead", "MELensShell_fleet_vanillapassengervan_entry", "MELensShell_fleet_vanillapassengervan_support", "MELensShell_fleet_vanillapassengervan_door_returns", "MELensShell_fleet_vanillapassengervan_floor_perimeter", "MELensShell_fleet_vanillapassengervan_wheel_covers", "MELensShell_fleet_vanillapassengervan_wheel_floor", "MELensShell_fleet_vanillapassengervan_wheel_wall", "MELensShell_fleet_vanillapassengervan_panel_legacy", "MELensShell_fleet_vanillapassengervan_panel_native" },
         entryModel = 4,
         entryDoor = "DoorRear",
+        nativeFloorModel = 7,
+        legacyPanelModel = 11,
+        nativePanelModel = 12,
+        wheelCoversModel = 8,
+        wheelFloorModel = 9,
+        wheelWallModel = 10,
     },
     hideKI5 = {  },
     light = {
-        interiorModels = { "MELensShell_fleet_vanillapassengervan_floor", "MELensShell_fleet_vanillapassengervan_walls", "MELensShell_fleet_vanillapassengervan_bulkhead", "MELensShell_fleet_vanillapassengervan_entry" },
+        interiorModels = { "MELensShell_fleet_vanillapassengervan_floor", "MELensShell_fleet_vanillapassengervan_walls", "MELensShell_fleet_vanillapassengervan_bulkhead", "MELensShell_fleet_vanillapassengervan_entry", "MELensShell_fleet_vanillapassengervan_support", "MELensShell_fleet_vanillapassengervan_door_returns", "MELensShell_fleet_vanillapassengervan_floor_perimeter", "MELensShell_fleet_vanillapassengervan_wheel_covers", "MELensShell_fleet_vanillapassengervan_wheel_floor", "MELensShell_fleet_vanillapassengervan_wheel_wall", "MELensShell_fleet_vanillapassengervan_panel_legacy", "MELensShell_fleet_vanillapassengervan_panel_native" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,
@@ -82,12 +88,192 @@ local profile = {
     panel = { x = -0.629, y = -0.223, z = -1.765, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
     waterTank = 40,
     fuelTank = 20,
+    nativePanel = { x = -0.724257, y = -0.223, z = -1.765, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
+    nativeWheelArch = {
+        sides = {
+            {
+                side = 1,
+                contour = {
+                    { 0.8185019, -0.5953088, -1.3538834 },
+                    { 0.8186623, -0.4579044, -1.3339579 },
+                    { 0.8189002, -0.3282365, -1.1896541 },
+                    { 0.8188991, -0.2810625, -0.9752264 },
+                    { 0.8187954, -0.3322606, -0.7607985 },
+                    { 0.8187053, -0.4890977, -0.6264846 },
+                    { 0.8185017, -0.6553163, -0.5598171 },
+                },
+            },
+            {
+                side = -1,
+                contour = {
+                    { -0.8185011, -0.5953088, -1.3538839 },
+                    { -0.8186614, -0.4579044, -1.3339585 },
+                    { -0.8188992, -0.3282365, -1.1896547 },
+                    { -0.8188985, -0.2810625, -0.9752269 },
+                    { -0.8187948, -0.3322606, -0.7607991 },
+                    { -0.8187047, -0.4890977, -0.6264852 },
+                    { -0.8185013, -0.6553163, -0.5598177 },
+                },
+            },
+        },
+    },
+    nativeWheelWellTrim = {
+        sides = {
+            {
+                side = 1,
+                inner = 0.4724659,
+                segments = {
+                    { -1.4123694643113152, -1.4123522441068364, -0.5303800880407824, -0.5299042432237645, 0.8165017 },
+                    { -1.4123522441068295, -1.2283635160258253, -0.529904243223757, -0.2730346043121999, 0.8165017 },
+                    { -1.228363516025825, -0.9881532120164734, -0.27303460431219956, -0.22766593210740002, 0.8165017 },
+                    { -0.9881532120164667, -0.9881359918119879, -0.22766593210739874, -0.22766267971647605, 0.736387334540826 },
+                    { -0.9881359918119803, -0.9875074685917966, -0.22766267971647758, -0.22779151681252763, 0.736390723910182 },
+                    { -0.9875074685917966, -0.9862945798721032, -0.22779151681252763, -0.2280401393859808, 0.7365144330881838 },
+                    { -0.9862945798721032, -0.747926371144079, -0.2280401393859808, -0.27690176743242717, 0.8165017 },
+                    { -0.747926371144077, -0.7479093559420323, -0.2769017674324276, -0.2769052552736875, 0.7362939900990876 },
+                    { -0.7479093559420319, -0.7476143288512482, -0.2769052552736881, -0.2772560436021652, 0.7363020142321112 },
+                    { -0.7476143288512482, -0.7446535510817938, -0.2772560436021652, -0.28077641958519933, 0.7364411449115894 },
+                    { -0.7446535510817938, -0.7446268607143393, -0.28077641958519933, -0.28080815453320335, 0.7378374065964207 },
+                    { -0.7446268607143393, -0.7234531849203019, -0.28080815453320335, -0.30598373525624184, 0.737849993403109 },
+                    { -0.7234531849203019, -0.7123567528344298, -0.30598373525624184, -0.31917743503860346, 0.7478352049050522 },
+                    { -0.7123567528344298, -0.6943508518533592, -0.31917743503860346, -0.3405865195097861, 0.7530681281996265 },
+                    { -0.6943508518533592, -0.6939200478205538, -0.3405865195097861, -0.3410987471366375, 0.761559461085231 },
+                    { -0.6939200478205538, -0.6936262830321605, -0.3410987471366375, -0.3414480345827911, 0.7617626222852651 },
+                    { -0.6936262830321603, -0.6928501140331428, -0.3414480345827912, -0.3423709024626796, 0.7619011576804637 },
+                    { -0.6928501140331428, -0.6264846374350275, -0.3423709024626796, -0.4212797055241337, 0.7622671882030726 },
+                    { -0.6264846374349746, -0.6148924005523029, -0.4212797055241965, -0.4350629190880157, 0.793564225463206 },
+                    { -0.6148924005523029, -0.6140958141958182, -0.4350629190880157, -0.4360100632832716, 0.7990309634155601 },
+                    { -0.6140958141958182, -0.5773766459759054, -0.4360100632832716, -0.47966929338556524, 0.7994066224804497 },
+                    { -0.5773766459759054, -0.5773765124291239, -0.47966929338556524, -0.4796694521731943, 0.8165017 },
+                    { -0.5773765124162469, -0.5716220226434586, -0.47966945218850515, -0.48245441395426286, 0.8165017 },
+                    { -0.5716220226434581, -0.506068804241199, -0.48245441395426386, -0.5750922806359483, 0.8165017 },
+                },
+            },
+            {
+                side = -1,
+                inner = 0.4716539,
+                segments = {
+                    { -1.4123700109844732, -1.4123534741214419, -0.5303800880407824, -0.5299042432237645, 0.8165011 },
+                    { -1.4123534741214059, -1.228363789362404, -0.5299042432237163, -0.27303460431219967, 0.8165011 },
+                    { -1.2283637893624002, -0.9881536903554851, -0.2730346043121989, -0.22766598373171265, 0.8165011 },
+                    { -0.98815369035548, -0.988136196814422, -0.22766598373171168, -0.22766267971647605, 0.7357118515199 },
+                    { -0.9881361968144077, -0.9875078727623379, -0.22766267971647902, -0.22779147594964955, 0.7357153365919276 },
+                    { -0.9875078727623379, -0.9862912429728175, -0.22779147594964955, -0.22804086531097847, 0.7358405116247619 },
+                    { -0.9862912429728175, -0.7479265761465113, -0.22804086531097847, -0.27690175342602913, 0.8165011 },
+                    { -0.7479265761465111, -0.7479094926103219, -0.2769017534260292, -0.27690525527368753, 0.7356181654074379 },
+                    { -0.7479094926103218, -0.7476199938241352, -0.27690525527368764, -0.277257735218777, 0.7356264574404721 },
+                    { -0.7476199938241352, -0.7452252143089173, -0.277257735218777, -0.2801735047912313, 0.7357669748059519 },
+                    { -0.7452252143089173, -0.7439003903342682, -0.2801735047912313, -0.2817865474156536, 0.7369299266231356 },
+                    { -0.7439003903342682, -0.7239001646767781, -0.2817865474156536, -0.3061378703845336, 0.737573287082408 },
+                    { -0.7239001646767781, -0.7130392345658222, -0.3061378703845336, -0.3193616220263193, 0.7472857882227668 },
+                    { -0.7130392345658222, -0.6943515763946722, -0.3193616220263193, -0.3421148252876674, 0.752560068518125 },
+                    { -0.6943515763946722, -0.6939205041130463, -0.3421148252876674, -0.34263967838345605, 0.7616351611898896 },
+                    { -0.6939205041130463, -0.6936265563687397, -0.34263967838345605, -0.34299757516823065, 0.7618444983293083 },
+                    { -0.6936265563687277, -0.6928544785943975, -0.3429975751682452, -0.3439376203238242, 0.7619872451088094 },
+                    { -0.6928544785943975, -0.6928499040324372, -0.3439376203238242, -0.343943190092768, 0.762362181191634 },
+                    { -0.6928499040324372, -0.6264851841081753, -0.343943190092768, -0.4247457148387696, 0.7623644026884819 },
+                    { -0.6264851841081753, -0.615174862129746, -0.4247457148387696, -0.4385166246322602, 0.7945924099611196 },
+                    { -0.615174862129746, -0.614892947225461, -0.4385166246322602, -0.4388598708036561, 0.8000849237454418 },
+                    { -0.614892947225461, -0.5809169696816365, -0.4388598708036561, -0.4802274041766225, 0.8002218271422457 },
+                    { -0.5809169696816365, -0.5809169013474917, -0.4802274041766224, -0.4802275391747735, 0.8165011 },
+                    { -0.5809169013474916, -0.571621954309314, -0.48022740417662246, -0.47866074140684417, 0.8165011 },
+                    { -0.5716219543093138, -0.5148239115357942, -0.47866074140684406, -0.588372679998806, 0.8165011 },
+                    { -0.5148239115357942, -0.514806657164243, -0.5888756223557627, -0.5888987162451479, 0.8165011 },
+                },
+            },
+        },
+    },
+    nativeCutPlanes = {
+        { 0, 0, -1, -5.98 },
+        { 0, 0, -1, -21.43 },
+        { 0, 0, -1, -45.467033 },
+    },
     vehicleScale = 1.82,
     vanillaSeats = { "FrontLeft", "FrontRight", "MiddleLeft", "MiddleRight", "RearLeft", "RearRight" },
     cutFront = 0.3,
+    nativeCabCutFront = -0.585,
+    nativeCabCutFrontTop = 0.612146418,
     modelShift = { 0, 0, 0 },
     extraSeats = { "MELensFurnitureLeft1", "MELensFurnitureLeft2" },
     clipBody = true,
+    nativeBodyLining = { 0.8, 0.77, 0.7 },
+    nativeBodyWalls = true,
+    nativeCabPartition = true,
+    nativePlainFinish = true,
+    nativeWallMaterial = { texture = "MELensShell_f700box_walls", height = 1.177714, perimeter = 6.986 },
+    nativeStockMetal = {
+        texture = "vehicle_vanseatsshell",
+        paintUV = { 0.56640625, 0.35546875 },
+        panelUV = { 0.3427734375, 0.2861328125, 0.4970703125, 0.3896484375 },
+        panelWidth = 1.1,
+        panelHeight = 0.7425,
+    },
+    nativeRoofCuts = {
+        {
+            models = { "Vehicles_VanSeats", "Vehicles_VanSeats_NoRandom", "mesh:Vehicles_VanSeats" },
+            maxUp = 0.9,
+            box = {
+                x = { -0.9673658781, 0.9673658781 },
+                y = { 0.5997528, 0.678334996 },
+                z = { -2.1453649427999997, 0.3 },
+            },
+        },
+    },
+    nativeSurfaceCuts = {
+        {
+            models = { "Vehicles_VanSeats", "mesh:Vehicles_VanSeats", "Vehicles_VanSeats_NoRandom" },
+            box = {
+                x = { -0.6508984004999999, 0.6508979905 },
+                y = { -0.5273672819999999, 0.20734616490000002 },
+                z = { -1.2785980191000001, 0.19640487750000002 },
+            },
+            uv = { 0.6691381467999999, 0.6108631623999999, 0.990235375, 0.989532748 },
+        },
+    },
+    nativeNearFaces = {
+        {
+            models = { "Vehicles_VanSeats", "Vehicles_VanSeats_NoRandom" },
+            box = {
+                x = { -0.8190979979, -0.6433227424 },
+                y = { -0.48023840419999997, 0.6081473497000001 },
+                z = { -0.5809179013, -0.5753582854 },
+            },
+            uv = { 0.3446072175, 0.008510185600000001, 0.34470354179999996, 0.1725416647 },
+        },
+        {
+            models = { "Vehicles_VanSeats", "Vehicles_VanSeats_NoRandom" },
+            box = {
+                x = { 0.6359675283999999, 0.8190980663 },
+                y = { -0.4796803876, 0.608147418 },
+                z = { -0.579932318, -0.577375646 },
+            },
+            uv = { 0.34457774300000005, 0.2056549324, 0.3451260792, 0.36942581989999995 },
+        },
+    },
+    nativeEntryOpening = {
+        x = { -0.709, 0.709 },
+        y = { -0.538, 0.65 },
+        z = { -2.275, -1.94 },
+    },
+    nativeEntryNearBounds = {
+        x = { -0.709, 0.709 },
+        y = { -0.538, 0.65 },
+        z = { -2.275, -1.9162164973 },
+    },
+    nativeDoorOpenings = {
+        {
+            part = "DoorMiddleLeft",
+            x = { 0.59, 0.84 },
+            y = { -0.518, 0.65 },
+            z = { -0.572, 0.448 },
+        },
+        {
+            part = "DoorMiddleRight",
+            x = { -0.84, -0.59 },
+            y = { -0.518, 0.65 },
+            z = { -0.572, 0.448 },
+        },
+    },
     windowBoxes = {
         {
             x = { -0.654, 0.654 },
@@ -129,59 +315,59 @@ do
         fitted.factoryLayout = "cargo-service-1"
         fitted.factoryRole = "passenger"
         fitted.factoryUse = {
-        loot = {  },
-        stock = {
-            parcels = {
-                { "Base.WaterBottle", 1 },
-                { "Base.BathTowel", 1 },
-            },
-            equipmentrack = {
-                { "Base.WaterBottle", 1 },
-                { "Base.BathTowel", 1 },
-            },
-            metalcase = {
-                { "Base.WaterBottle", 1 },
-                { "Base.BathTowel", 1 },
-            },
-            medlocker = {
-                { "Base.WaterBottle", 1 },
-                { "Base.BathTowel", 1 },
-            },
-            workbench = {
-                { "Base.WaterBottle", 1 },
-                { "Base.BathTowel", 1 },
-            },
-            medbench = {
-                { "Base.WaterBottle", 1 },
-                { "Base.BathTowel", 1 },
-            },
+    loot = {  },
+    stock = {
+        parcels = {
+            { "Base.WaterBottle", 1 },
+            { "Base.BathTowel", 1 },
         },
-    }
+        equipmentrack = {
+            { "Base.WaterBottle", 1 },
+            { "Base.BathTowel", 1 },
+        },
+        metalcase = {
+            { "Base.WaterBottle", 1 },
+            { "Base.BathTowel", 1 },
+        },
+        medlocker = {
+            { "Base.WaterBottle", 1 },
+            { "Base.BathTowel", 1 },
+        },
+        workbench = {
+            { "Base.WaterBottle", 1 },
+            { "Base.BathTowel", 1 },
+        },
+        medbench = {
+            { "Base.WaterBottle", 1 },
+            { "Base.BathTowel", 1 },
+        },
+    },
+}
         fitted.aisleX = 0.0
         for _,s in ipairs({
-        {
-            wall = "left",
-            x = 0.639,
-            z = -0.38,
-            length = 1.1,
-            depth = 0.4,
-            default = "medbench",
-            factory = true,
-            pieces = { "medbench" },
-            seats = { "MELensFurnitureLeft1" },
-        },
-        {
-            wall = "right",
-            x = -0.639,
-            z = -0.38,
-            length = 1.1,
-            depth = 0.4,
-            default = "medbench",
-            factory = true,
-            pieces = { "medbench" },
-            seats = { "MELensFurnitureLeft2" },
-        },
-    }) do fitted.spots[#fitted.spots+1]=s end
+    {
+        wall = "left",
+        x = 0.639,
+        z = -0.38,
+        length = 1.1,
+        depth = 0.4,
+        default = "medbench",
+        factory = true,
+        pieces = { "medbench" },
+        seats = { "MELensFurnitureLeft1" },
+    },
+    {
+        wall = "right",
+        x = -0.639,
+        z = -0.38,
+        length = 1.1,
+        depth = 0.4,
+        default = "medbench",
+        factory = true,
+        pieces = { "medbench" },
+        seats = { "MELensFurnitureLeft2" },
+    },
+}) do fitted.spots[#fitted.spots+1]=s end
         MELens.Profiles["Base.VanSeats"] = fitted
         MELens.Profiles["Base.VanSeatsAirportShuttle"] = fitted
         MELens.Profiles["Base.VanSeats_Creature"] = fitted
@@ -206,41 +392,41 @@ do
         fitted.factoryLayout = "cargo-service-1"
         fitted.factoryRole = "prisoner"
         fitted.factoryUse = {
-        loot = {  },
-        stock = {
-            parcels = {  },
-            equipmentrack = {  },
-            metalcase = {  },
-            medlocker = {  },
-            workbench = {  },
-            medbench = {  },
-        },
-    }
+    loot = {  },
+    stock = {
+        parcels = {  },
+        equipmentrack = {  },
+        metalcase = {  },
+        medlocker = {  },
+        workbench = {  },
+        medbench = {  },
+    },
+}
         fitted.aisleX = 0.0
         for _,s in ipairs({
-        {
-            wall = "left",
-            x = 0.639,
-            z = -0.38,
-            length = 1.1,
-            depth = 0.4,
-            default = "medbench",
-            factory = true,
-            pieces = { "medbench" },
-            seats = { "MELensFurnitureLeft1" },
-        },
-        {
-            wall = "right",
-            x = -0.639,
-            z = -0.38,
-            length = 1.1,
-            depth = 0.4,
-            default = "medbench",
-            factory = true,
-            pieces = { "medbench" },
-            seats = { "MELensFurnitureLeft2" },
-        },
-    }) do fitted.spots[#fitted.spots+1]=s end
+    {
+        wall = "left",
+        x = 0.639,
+        z = -0.38,
+        length = 1.1,
+        depth = 0.4,
+        default = "medbench",
+        factory = true,
+        pieces = { "medbench" },
+        seats = { "MELensFurnitureLeft1" },
+    },
+    {
+        wall = "right",
+        x = -0.639,
+        z = -0.38,
+        length = 1.1,
+        depth = 0.4,
+        default = "medbench",
+        factory = true,
+        pieces = { "medbench" },
+        seats = { "MELensFurnitureLeft2" },
+    },
+}) do fitted.spots[#fitted.spots+1]=s end
         MELens.Profiles["Base.VanSeats_Prison"] = fitted
     end
     installProfile()

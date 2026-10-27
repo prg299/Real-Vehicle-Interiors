@@ -9,7 +9,19 @@ local profile = {
     floorY = -0.32,
     mesh = { scale = 0.09, lift = 0.666 },
     shell = {
-        models = { "MELensShell_scamp13_floor", "MELensShell_scamp13_walls" },
+        models = { "MELensShell_scamp13_floor", "MELensShell_scamp13_walls", "MELensShell_scamp13_support", "MELensShell_scamp13_panel_legacy", "MELensShell_scamp13_panel_native", "MELensShell_scamp13_floor_perimeter", "MELensShell_scamp13_wheel_floor", "MELensShell_scamp13_wheel_wall", "MELensShell_scamp13_window_return_1", "MELensShell_scamp13_window_return_2", "MELensShell_scamp13_window_return_3", "MELensShell_scamp13_window_return_4" },
+        nativeFloorModel = 6,
+        legacyPanelModel = 4,
+        nativePanelModel = 5,
+        windowReturns = {
+            { model = 9, part = "WindowFrontRight", parent = "DoorFrontRight" },
+            { model = 10, part = "WindowBackLeft" },
+            { model = 11, part = "WindowBackRight" },
+            { model = 12, part = "WindshieldRear" },
+        },
+        wheelCoversModel = 3,
+        wheelFloorModel = 7,
+        wheelWallModel = 8,
     },
     hideKI5 = {
         TrailerKI5camperScamp13Interior = 0.97,
@@ -31,7 +43,7 @@ local profile = {
         ["mesh:scamp16_windshield_rear_a"] = true,
     },
     light = {
-        interiorModels = { "MELensShell_scamp13_floor", "MELensShell_scamp13_walls" },
+        interiorModels = { "MELensShell_scamp13_floor", "MELensShell_scamp13_walls", "MELensShell_scamp13_support", "MELensShell_scamp13_panel_legacy", "MELensShell_scamp13_panel_native", "MELensShell_scamp13_floor_perimeter", "MELensShell_scamp13_wheel_floor", "MELensShell_scamp13_wheel_wall", "MELensShell_scamp13_window_return_1", "MELensShell_scamp13_window_return_2", "MELensShell_scamp13_window_return_3", "MELensShell_scamp13_window_return_4" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,
@@ -107,11 +119,65 @@ local profile = {
     panel = { x = -0.816, y = -0.025, z = 0.849, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
     waterTank = 60,
     fuelTank = 20,
+    nativePanel = { x = -0.849199, y = -0.025, z = 0.849, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
+    nativeWheelArch = {
+        sides = {
+            {
+                side = 1,
+                contour = {
+                    { 0.7723149, -0.3494372, 0.1515956 },
+                    { 0.8012509, -0.2916611, 0.1980871 },
+                    { 0.8184641, -0.2398195, 0.2396656 },
+                    { 0.8375703, -0.1786003, 0.3183782 },
+                    { 0.8438779, -0.1335773, 0.4346626 },
+                    { 0.8437167, -0.1352019, 0.6217523 },
+                    { 0.8376965, -0.1787324, 0.7334392 },
+                    { 0.8197052, -0.2404282, 0.8032119 },
+                    { 0.8020783, -0.2977666, 0.8482647 },
+                    { 0.77156, -0.361172, 0.8968588 },
+                },
+            },
+            {
+                side = -1,
+                contour = {
+                    { -0.7723149, -0.3494372, 0.1515955 },
+                    { -0.8012509, -0.2916611, 0.198087 },
+                    { -0.8184641, -0.2398195, 0.2396654 },
+                    { -0.8375701, -0.1786003, 0.318378 },
+                    { -0.8438777, -0.1335773, 0.4346624 },
+                    { -0.8437165, -0.1352019, 0.6217523 },
+                    { -0.8376964, -0.1787324, 0.7334391 },
+                    { -0.819705, -0.2404282, 0.8032119 },
+                    { -0.8020781, -0.2977666, 0.8482647 },
+                    { -0.7715598, -0.361172, 0.8968586 },
+                },
+            },
+        },
+    },
+    nativeCutPlanes = {
+        { 0, 0, -1, -2.5 },
+        { 0, 0, -1, -5 },
+        { 0, 0, -1, -11.445111 },
+    },
     bodyKeepPlanes = {
         KI5trailersSpare = { 0, 1, 0, 7.32 },
         ["87scampCamperRear0"] = { 0, 0, -1, 4.310444 },
     },
     clipBody = true,
+    nativeBodyWalls = true,
+    nativeBodyTrim = {
+        x = { -0.545, 0.545 },
+        y = { -0.266, -0.088 },
+        z = { 1.802, 2.001 },
+        uv = { 0.539, 0.096, 0.997, 0.999 },
+    },
+    nativeBodyKeepPlanes = {
+        TrailerKI5camperScamp13Interior = { 0, 0, 0, 1 },
+    },
+    nativeWallMaterial = { texture = "MELensShell_scamp13_walls", height = 1.43, perimeter = 7.208041 },
+    nativeLivingLeafModels = { "87scampCamperDoorfr" },
+    nativeBodyModels = { "87scampCamperDoorfr" },
+    nativeBodyLining = { 0.8, 0.76, 0.66 },
     windowBoxes = {
         {
             x = { -1.2, -0.55 },

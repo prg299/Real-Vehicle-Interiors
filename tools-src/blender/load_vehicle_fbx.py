@@ -30,9 +30,24 @@ def load(path):
             continue
         vertices = [tuple(v) for v in source.vertices]
         indices = list(source.vertex_indices)
-        faces = [indices[f.index_begin:f.index_begin + f.num_indices] for f in source.faces if f.num_indices >= 3]
+        source_faces = [f for f in source.faces if f.num_indices >= 3]
+        faces = [indices[f.index_begin:f.index_begin + f.num_indices] for f in source_faces]
         mesh = bpy.data.meshes.new(node.name)
         mesh.from_pydata(vertices, [], faces)
+        # Measurement predicates need corner UVs too. Indexing by control
+        # vertex would collapse atlas seams on ASCII vehicle inputs.
+        assert len(mesh.polygons) == len(source_faces)
+        for uv_set in source.uv_sets:
+            attribute = uv_set.vertex_uv
+            if not attribute.exists:
+                continue
+            layer = mesh.uv_layers.new(name=uv_set.name or "UVMap")
+            values, uv_indices = attribute.values, attribute.indices
+            for polygon, face in zip(mesh.polygons, source_faces):
+                assert len(polygon.loop_indices) == face.num_indices
+                for offset, loop in enumerate(polygon.loop_indices):
+                    uv = values[uv_indices[face.index_begin + offset]]
+                    layer.data[loop].uv = (uv.x, uv.y)
         obj = bpy.data.objects.new(node.name, mesh)
         bpy.context.scene.collection.objects.link(obj)
         m = node.geometry_to_world

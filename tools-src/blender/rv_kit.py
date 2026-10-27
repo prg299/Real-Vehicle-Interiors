@@ -1056,9 +1056,77 @@ def split_rings_at_openings(rings, boxes):
     return out
 
 
+def native_wall_uv(spec, x, y, z, side=False):
+    """Same floor origin, height and physical atlas scale as the native shader."""
+    finish = spec["nativeWallFinish"]
+    if finish["continuous"]:
+        along = x-finish["origin"][0]+z-finish["origin"][1]
+    else:
+        bounds = finish["bodyBounds"]
+        along = z-bounds["min"][2] if side else bounds["max"][0]-x
+    return wall_uv(along/finish["perimeter"], (y-spec["floorY"])/finish["height"])
+
+
+def window_return_objects(name, returns, P, spec):
+    """A shallow lining build-out and gasket meet the fitted native glazing plane.
+
+    This is our parametric trim, using the existing lining and dark swatches.
+    Native panes, apertures and live damage/door animation remain authoritative.
+    """
+    objects = []
+    for index, pane in enumerate(returns, 1):
+        builder = UVBuilder(name + "_window_return_%d" % index)
+        origin, across, up, inward = (Vector(pane[key]) for key in ("origin", "across", "up", "inward"))
+        border, depth, gasket = pane["border"], pane["depth"], pane["gasket"]
+        assert 0 < gasket < border <= .05 and 0 < depth <= .05
+        offsets = pane.get("outerRingOffsets", [-.006]*20)
+        assert len(offsets) == 20 and all(math.isfinite(v) and abs(v) <= .182 for v in offsets)
+
+        def ring(expand, offset):
+            width, height, radius = pane["width"]+2*expand, pane["height"]+2*expand, pane["radius"]+expand
+            assert 0 < radius <= min(width, height)/2
+            result = []
+            for sx, sy, start in ((1,1,0),(-1,1,90),(-1,-1,180),(1,-1,270)):
+                for step in range(5):
+                    angle = math.radians(start+step*22.5)
+                    u = sx*(width/2-radius)+radius*math.cos(angle)
+                    v = sy*(height/2-radius)+radius*math.sin(angle)
+                    contact = offset[len(result)] if isinstance(offset,list) else offset
+                    result.append(origin+across*u+up*v+inward*contact)
+            return result
+
+        # The outer edge blends back into the original wall. The inner lip
+        # reaches the pane's inward face, giving its lining a visible return.
+        rings = [ring(border, offsets), ring(gasket, depth), ring(0, depth), ring(0, .001)]
+        if pane.get("outerRingUV"):
+            # A compound sliding aperture retains its actual measured exterior
+            # corner arcs rather than placing trim across the internal rail.
+            assert len(pane["outerRingUV"]) == 20
+            rings[0] = [origin+across*u+up*v+inward*offset
+                        for (u,v),offset in zip(pane["outerRingUV"],offsets)]
+        for strip, (outer, inner) in enumerate(zip(rings, rings[1:])):
+            for j in range(len(outer)):
+                k = (j+1) % len(outer)
+                points = [outer[j], outer[k], inner[k], inner[j]]
+                corners = [P(*point) for point in points]
+                normal = (corners[1]-corners[0]).cross(corners[2]-corners[0])
+                if normal.length < 1e-9:
+                    continue
+                uv = ([native_wall_uv(spec,*point,side=abs(inward.x)>abs(inward.z)) for point in points]
+                      if strip == 0 and spec.get("nativeWallFinish") else
+                      [wall_uv(.5,.55)]*4 if strip == 0 else [swatch_uv("liner",.5,.5)]*4)
+                builder.poly(corners, uv, normal)
+                builder.poly(corners, uv, -normal)
+        obj = builder.finish()
+        obj["rvi_visual_only"] = True
+        objects.append(obj)
+    return objects
+
+
 def build_shell(measure, spec, tex_dir):
     """Floor and inside walls in passenger space, written as Blender (x = -px, y = pz, z = py),
-    as two objects with their own unwrapped textures: <object>_floor and <object>_walls.
+    with unwrapped floor/wall textures. Optional static supports share the wall texture
+    but use a separate object so native body walls can replace only the broad lining.
     Wall quads face the camper's long axis; the floor faces up. Openings (door, windows)
     leave out the wall quads whose centre falls inside them."""
     floor_y = spec["floorY"]
@@ -1115,6 +1183,16 @@ def build_shell(measure, spec, tex_dir):
         arc.append(arc[-1] + math.hypot(b2[0] - a[0], b2[1] - a[1]))
     perimeter = arc[-1]
     walls = UVBuilder(name + "_walls")
+    # Keep legacy shells identical unless opted in. Static seals and fittings must
+    # remain visible when the native hull replaces the broad authored wall skins.
+    support = UVBuilder(name + "_support") if spec.get("separateShellSupports") else walls
+    # The lining's deep doorway reveals belong to its fallback, not to the
+    # actual hull. Keep utility fittings and low thresholds in support; append
+    # these returns so existing model indices and old-Java rendering survive.
+    separate_returns = spec.get("separateDoorReturns") or (spec.get("nativeSupportSeals") and (
+        not spec["nativeSupportSeals"].get("archSides") or spec.get("rearClosure") or spec.get("entryOpening")
+        or any(d.get("threshold") for d in spec.get("doorLinings", []))))
+    doorway_returns = UVBuilder(name + "_door_returns") if separate_returns else support
     entry = UVBuilder(name + "_entry") if spec.get("entryOpening") else None
     door_linings = [(d['box'], UVBuilder(name+'_'+d['suffix'])) for d in spec.get('doorLinings',[])]
     zs = [z for _, z in rings[-1][1]]
@@ -1157,18 +1235,19 @@ def build_shell(measure, spec, tex_dir):
         z0,z1=lining['box']['z']
         side=1 if inner>0 else -1
         assert bottom<floor_y and side*outer>side*inner
-        def doorway_face(points,normal):
+        def doorway_face(points,normal,builder=None):
             corners=[P(*point) for point in points]
             uv=[wall_uv((point[2]-z0)/perimeter,(point[1]-floor_y)/(top-floor_y)) for point in points]
             # The floor edge, step and jamb returns are exposed from either
             # camera side when the native door is open or missing.
-            walls.poly(corners,uv,normal);walls.poly(corners,uv,-normal)
+            target = support if builder is None else builder
+            target.poly(corners,uv,normal);target.poly(corners,uv,-normal)
         doorway_face([(inner,bottom,z0),(inner,floor_y,z0),(inner,floor_y,z1),(inner,bottom,z1)],P(side,0,0))
         doorway_face([(inner,bottom,z0),(outer,bottom,z0),(outer,bottom,z1),(inner,bottom,z1)],P(0,1,0))
         doorway_face([(inner,underside,z0),(inner,underside,z1),(outer,underside,z1),(outer,underside,z0)],P(0,-1,0))
         doorway_face([(outer,underside,z0),(outer,underside,z1),(outer,bottom,z1),(outer,bottom,z0)],P(side,0,0))
         for z,direction in ((z0,-1),(z1,1)):
-            doorway_face([(inner,underside,z),(outer,underside,z),(outer,top,z),(inner,top,z)],P(0,0,direction))
+            doorway_face([(inner,underside,z),(outer,underside,z),(outer,top,z),(inner,top,z)],P(0,0,direction),doorway_returns)
     for corner_return in spec.get("cornerReturns", []):
         # Angular body outlines omit some real corner turns. Add a narrow
         # opaque skin between the unchanged lining arc and the exact native
@@ -1206,8 +1285,8 @@ def build_shell(measure, spec, tex_dir):
             if (verts[1] - verts[0]).cross(verts[2] - verts[0]).length < 1e-10:
                 return
             # The cutaway can expose either side of this narrow return.
-            walls.poly(verts, uv, normal)
-            walls.poly(verts, uv, -normal)
+            support.poly(verts, uv, normal)
+            support.poly(verts, uv, -normal)
 
         for (h0, r0, c0), (h1, r1, c1) in zip(sampled, sampled[1:]):
             for index in (indices[0], indices[-1]):
@@ -1246,17 +1325,17 @@ def build_shell(measure, spec, tex_dir):
             # Blender versions expose either input indices or Vector points.
             points = [(point.x, point.y) if hasattr(point, "x") else polygon[point] for point in tri]
             for height, upward in ((high, 1), (low, -1)):
-                walls.poly([P(x, height, z) for x, z in points],
+                support.poly([P(x, height, z) for x, z in points],
                            [cowl_uv(x, height, z) for x, z in points], Vector((0, 0, upward)))
         for a, b in zip(polygon, polygon[1:] + polygon[:1]):
             points = [(a[0], low, a[1]), (a[0], high, a[1]), (b[0], high, b[1]), (b[0], low, b[1])]
             normal = P(winding * (b[1] - a[1]), 0, winding * (a[0] - b[0]))
-            walls.poly([P(*point) for point in points], [cowl_uv(*point) for point in points], normal)
+            support.poly([P(*point) for point in points], [cowl_uv(*point) for point in points], normal)
     closure=spec.get('rearClosure')
     if closure:
         rear=closure['z'];rim=.035
         section=closure['section']
-        def rear_section_at(height):
+        def rear_section_at(height, section=section):
             lo=max((s for s in section if s[0]<=height),default=section[0])
             hi=min((s for s in section if s[0]>=height),default=section[-1])
             t=(height-lo[0])/(hi[0]-lo[0]) if hi[0]>lo[0] else 0
@@ -1300,7 +1379,7 @@ def build_shell(measure, spec, tex_dir):
                 uv=[swatch_uv('metal',(x-left)/(right-left),(z-rear)/(join-rear)) for x,y,z in clean]
             else:
                 uv=[wall_uv((x-section[0][1])/perimeter,(y-floor_y)/(top-floor_y)) for x,y,z in clean]
-            builder=walls if builder is None else builder
+            builder=(support if metal else doorway_returns) if builder is None else builder
             builder.poly(corners,uv,facing)
             if double:builder.poly(corners,uv,-facing)
 
@@ -1341,8 +1420,8 @@ def build_shell(measure, spec, tex_dir):
             for direction in (-1,1):builder.poly(corners,uv,Vector((0,direction,0)))
         for a,b in zip(closure['section'],closure['section'][1:]):
             y0,l0,r0=a;y1,l1,r1=b
-            rear_face(walls,[(l0,y0),(l1,y1),(l1+rim,y1),(l0+rim,y0)])
-            rear_face(walls,[(r0-rim,y0),(r1-rim,y1),(r1,y1),(r0,y0)])
+            rear_face(doorway_returns,[(l0,y0),(l1,y1),(l1+rim,y1),(l0+rim,y0)])
+            rear_face(doorway_returns,[(r0-rim,y0),(r1-rim,y1),(r1,y1),(r0,y0)])
             rear_face(entry,[(l0+rim,y0),(l1+rim,y1),(r1-rim,y1),(r0-rim,y0)])
         # The native rear posts stand aft of the flat inside leaf. Follow their
         # measured, height-dependent contour so the cutaway cannot look through
@@ -1390,6 +1469,13 @@ def build_shell(measure, spec, tex_dir):
     # and reaches below the floor so nothing shows through.
     wells = spec.get("wheelWells", [])
     floor_poly = carve_wells(floor_ring, wells)
+    flat_wheel_floor = spec.get("flatWheelFloor", False)
+    if flat_wheel_floor:
+        assert spec.get("separateShellSupports") and spec.get("nativeSupportSeals"), "flat wheel floor needs separate measured supports"
+        assert wells, "flat wheel floor needs existing wheel wells"
+    covers_in_support = flat_wheel_floor and spec.get("nativeSupportSeals", {}).get("reuseSupportAsCovers")
+    wheel_covers = UVBuilder(name + "_wheel_covers") if flat_wheel_floor and not covers_in_support else support
+    well_lids = []
     E = 0.004   # the liner sits just inside the box, so the two never share a plane
     for well in wells:
         xin, xout = well["x"]
@@ -1407,6 +1493,13 @@ def build_shell(measure, spec, tex_dir):
                 xplate = side * max(abs(xin) + 0.1, min(abs(xout), line - 0.004))
         lining = lining_at(rings, top, z0, z1, side)
         xtop = xout if lining is None else side * max(abs(xplate), min(abs(xout), lining - 0.002))
+        if spec.get("nativeWellCapSideX"):
+            # Measured inner native skin, 2mm underlap, visual lid only. Keep
+            # xplate, lower liners, nav box and furniture bounds unchanged.
+            measured = spec["nativeWellCapSideX"]
+            assert abs(xtop) <= measured < abs(xout)+.15
+            xtop = side * (measured-.002)
+        well_lids.append((well, xplate, xtop, side))
         out = P(side, 0, 0) - P(0, 0, 0)
         back, front = P(0, 0, -1) - P(0, 0, 0), P(0, 0, 1) - P(0, 0, 0)
         # each face with its (s, t): s level along the face, t up it (across the top)
@@ -1421,7 +1514,7 @@ def build_shell(measure, spec, tex_dir):
              [(0, 0), (0, 1), (1, 1), (1, 0)], Vector((0, 0, 1))),                      # top
         ]
         for corners, st, facing in box:
-            walls.poly([P(*c) for c in corners], [swatch_uv("metal", s, t) for s, t in st], facing)
+            wheel_covers.poly([P(*c) for c in corners], [swatch_uv("metal", s, t) for s, t in st], facing)
         xl = xin + side * E
         liner = [
             ([(xl, bottom, z0), (xl, top - E, z0), (xl, top - E, z1), (xl, bottom, z1)], out),
@@ -1430,12 +1523,18 @@ def build_shell(measure, spec, tex_dir):
             ([(xl, bottom, z1 - E), (xplate, bottom, z1 - E), (xplate, top - E, z1 - E), (xl, top - E, z1 - E)], back),
         ]
         for corners, facing in liner:
-            walls.poly([P(*c) for c in corners], [swatch_uv("liner", 0, 0), swatch_uv("liner", 0, 1),
-                                                  swatch_uv("liner", 1, 1), swatch_uv("liner", 1, 0)], facing)
+            wheel_covers.poly([P(*c) for c in corners], [swatch_uv("liner", 0, 0), swatch_uv("liner", 0, 1),
+                                                       swatch_uv("liner", 1, 1), swatch_uv("liner", 1, 0)], facing)
+    # Only these original cover faces belong to navigation. The measured wings
+    # appended below were visual-only in the previous support-seals object.
+    wheel_nav_polygons = len(wheel_covers.bm.faces) if flat_wheel_floor else None
 
     # The utility panel by the door: lights switch and the camper's dashboard.
     panel = spec.get("panel")
+    panel_objects = []
     if panel:
+        native_panel = spec.get("nativePanel")
+        panel_builder = UVBuilder(name + "_panel_legacy") if native_panel else support
         px0 = panel["x"]                      # the wall's inside face
         side = 1.0 if px0 > 0 else -1.0
         px1 = px0 - side * panel.get("depth", 0.02)
@@ -1444,7 +1543,7 @@ def build_shell(measure, spec, tex_dir):
         face = [(px1, y0, z0), (px1, y1, z0), (px1, y1, z1), (px1, y0, z1)]
         # the face's u runs along the camper towards the back on the right wall
         su = (lambda z: (z1 - z) / (z1 - z0)) if side < 0 else (lambda z: (z - z0) / (z1 - z0))
-        walls.poly([P(*c) for c in face], [swatch_uv("panel", su(c[2]), (c[1] - y0) / (y1 - y0)) for c in face], inward)
+        panel_builder.poly([P(*c) for c in face], [swatch_uv("panel", su(c[2]), (c[1] - y0) / (y1 - y0)) for c in face], inward)
         edges = [
             ([(px0, y1, z0), (px1, y1, z0), (px1, y1, z1), (px0, y1, z1)], Vector((0, 0, 1))),
             ([(px0, y0, z0), (px1, y0, z0), (px1, y0, z1), (px0, y0, z1)], Vector((0, 0, -1))),
@@ -1452,11 +1551,28 @@ def build_shell(measure, spec, tex_dir):
             ([(px0, y0, z1), (px1, y0, z1), (px1, y1, z1), (px0, y1, z1)], P(0, 0, 1) - P(0, 0, 0)),
         ]
         for corners, facing in edges:
-            walls.poly([P(*c) for c in corners], [swatch_uv("plate", 0, 0), swatch_uv("plate", 0, 1),
+            panel_builder.poly([P(*c) for c in corners], [swatch_uv("plate", 0, 0), swatch_uv("plate", 0, 1),
                                                   swatch_uv("plate", 1, 1), swatch_uv("plate", 1, 0)], facing)
+        if native_panel:
+            panel_objects.append(panel_builder.finish())
+            assert native_panel["y"] == panel["y"] and native_panel["z"] == panel["z"]
+            back = [(native_panel["skinX"][iy][iz] - side * native_panel["inset"], y, z)
+                    for iy, iz, y, z in ((0,0,y0,z0),(1,0,y1,z0),(1,1,y1,z1),(0,1,y0,z1))]
+            front = [(x - side * panel.get("depth", .02), y, z) for x,y,z in back]
+            fitted = UVBuilder(name + "_panel_native")
+            fitted.poly([P(*c) for c in front], [swatch_uv("panel", su(c[2]), (c[1]-y0)/(y1-y0)) for c in front], inward)
+            for i in range(4):
+                j = (i+1) % 4
+                corners = [back[i], back[j], front[j], front[i]]
+                normal = (P(*corners[1])-P(*corners[0])).cross(P(*corners[2])-P(*corners[0]))
+                fitted.poly([P(*c) for c in corners], [swatch_uv("plate", 0,0),swatch_uv("plate",0,1),
+                                                       swatch_uv("plate",1,1),swatch_uv("plate",1,0)], normal)
+            native_object = fitted.finish()
+            native_object["rvi_visual_only"] = True
+            panel_objects.append(native_object)
 
     # Floor: the carved outline, triangulated, mapped flat over its bounds (the wheel-well
-    # boxes' metal tops are part of the walls object).
+    # boxes' metal tops are part of the static supports, sharing the wall texture).
     from mathutils.geometry import tessellate_polygon
     xs = [p[0] for p in floor_poly]
     fz = [p[1] for p in floor_poly]
@@ -1475,7 +1591,8 @@ def build_shell(measure, spec, tex_dir):
     if not spec.get("reuseTexture"):
         floor_texture(os.path.join(tex_dir, "Vehicles", "MELensShell_%s_floor.png" % spec["texture"]),
                       bounds, floor_poly, rng, style)
-    objects = [floor.finish(), walls.finish()]
+    objects = [floor.finish(), walls.finish()] + panel_objects
+    objects.extend(window_return_objects(name, spec.get("nativeWindowReturns", []), P, spec))
     if entry:
         # The original door is a thin exterior mesh. Supply its inside skin at
         # precisely the removed lining segments; Lua hides it for an open/missing door.
@@ -1542,7 +1659,8 @@ def build_shell(measure, spec, tex_dir):
         # Match the lining's wall panels instead of stretching its entire atlas.
         u0 = arc[max(range(n), key=lambda i: floor_ring[i][1])] / perimeter
         cap_height = max(y for x,y in outline)-floor_y
-        uv = [wall_uv(u0+(x-left)/perimeter, (y-floor_y)/cap_height) for x,y in outline]
+        uv = [native_wall_uv(spec,x,y,cargo_face) if spec.get("nativeWallFinish") else
+              wall_uv(u0+(x-left)/perimeter, (y-floor_y)/cap_height) for x,y in outline]
         partition.poly(corners, uv, Vector((0,-1,0)))
         partition.poly([P(x,y,cab_face) for x,y in outline],uv,Vector((0,1,0)))
         for i,(x0,y0) in enumerate(outline):
@@ -1551,7 +1669,342 @@ def build_shell(measure, spec, tex_dir):
             partition.poly([P(x0,y0,cargo_face),P(x1,y1,cargo_face),P(x1,y1,cab_face),P(x0,y0,cab_face)],
                            [uv[i],uv[(i+1)%len(uv)],uv[(i+1)%len(uv)],uv[i]],outward)
         objects.append(partition.finish())
+    support_nav_faces = None
+    returns = spec.get("nativeFloorReturns")
+    if returns:
+        assert support is not walls
+        support_nav_faces = len(support.bm.faces)
+        allowance = returns["underlap"]
+        assert 0 < allowance <= .003
+
+        def return_face(points, facing, builder=None):
+            # Existing metal/black liner swatches; faces below are visual only.
+            corners=[P(*point) for point in points]
+            st=[(0,0),(1,0),(1,1),(0,1)] if len(points)==4 else [(0,0),(1,0),(0,1)]
+            target = builder if builder is not None else support
+            target.poly(corners,[swatch_uv("metal",s,t) for s,t in st],facing)
+            target.poly(corners,[swatch_uv("liner",s,t) for s,t in st],-facing)
+
+        for rows in (returns["rearSides"],returns["frontSides"]):
+            for a,b2 in zip(rows,rows[1:]):
+                za,zb=a[0],b2[0]
+                for side,column in ((-1,1),(1,2)):
+                    xa,xb=ring_crossing(floor_ring,za,side),ring_crossing(floor_ring,zb,side)
+                    assert xa is not None and xb is not None, "floor side return leaves the original longitudinal floor"
+                    oa,ob=a[column]-side*allowance,b2[column]-side*allowance
+                    assert side*oa>side*xa and side*ob>side*xb
+                    return_face([(xa,floor_y-.001,za),(oa,floor_y-.001,za),
+                                 (ob,floor_y-.001,zb),(xb,floor_y-.001,zb)],P(0,1,0))
+        outline=returns["rearOutline"]
+        for tri in tessellate_polygon([[Vector((x,z,0)) for x,z in outline]]):
+            points=[(outline[i][0],floor_y-.001,outline[i][1]) for i in tri]
+            a,b2,c=points
+            if abs((b2[0]-a[0])*(c[2]-a[2])-(c[0]-a[0])*(b2[2]-a[2]))>1e-9:
+                return_face(points,P(0,1,0))
+        rows=returns["capSides"]
+        for well,xplate,xtop,side in well_lids:
+            column=2 if side>0 else 1
+            top=well["top"]
+            for a,b2 in zip(rows,rows[1:]):
+                oa,ob=a[column]-side*allowance,b2[column]-side*allowance
+                assert side*oa>side*xtop and side*ob>side*xtop
+                return_face([(xtop,top,a[0]),(oa,top,a[0]),(ob,top,b2[0]),(xtop,top,b2[0])],P(0,1,0),wheel_covers)
+            for row,floor_row,direction in ((rows[0],returns["rearSides"][-1],-1),
+                                             (rows[-1],returns["frontSides"][0],1)):
+                z=row[0];outer=row[column]-side*allowance;bottom=floor_row[column]-side*allowance
+                return_face([(xplate,floor_y,z),(bottom,floor_y,z),(outer,top,z),(xtop,top,z)],P(0,0,direction),wheel_covers)
+    if support is not walls:
+        if covers_in_support:
+            assert len(support.bm.faces)==wheel_nav_polygons,"reused cover model contains non-wheel support geometry"
+        support_object=support.finish()
+        if support_nav_faces is not None:
+            support_object["rvi_nav_polygon_count"]=support_nav_faces
+        objects.append(support_object)
+    seals_cfg = spec.get("nativeSupportSeals")
+    if seals_cfg:
+        assert spec.get("separateShellSupports"), "native support seals require separate shell supports"
+        seals = UVBuilder(name + "_support_seals")
+        overlap = seals_cfg["overlap"]
+        assert 0 < overlap <= .01, "native support seam allowance must be small and explicit"
+
+        def seal_face(points, facing, axes=(0, 2), builder=None):
+            # Opposite skins use the existing metal/liner swatches. These are
+            # visual returns only, not new floor, furniture or collision bounds.
+            corners = [P(*point) for point in points]
+            lo = [min(point[axis] for point in points) for axis in axes]
+            span = [max(point[axis] for point in points)-low for axis,low in zip(axes,lo)]
+            st = [tuple((point[axis]-low)/length if length > 1e-9 else 0
+                        for axis,low,length in zip(axes,lo,span)) for point in points]
+            target = builder if builder is not None else seals
+            target.poly(corners, [swatch_uv("metal", s, t) for s,t in st], facing)
+            target.poly(corners, [swatch_uv("liner", s, t) for s,t in st], -facing)
+
+        contour = seals_cfg.get("archContour")
+        if flat_wheel_floor and not seals_cfg.get("archSides"):
+            assert contour, "flat wheel floor needs a measured native arch contour"
+        if contour:
+            assert len(contour) >= 2 and all(a[0] < b[0] for a,b in zip(contour,contour[1:])), "arch contour must run rear to front"
+            side_x = seals_cfg["archSideX"]
+            assert side_x > 0
+
+            def arch_height(z):
+                for a,b in zip(contour,contour[1:]):
+                    if a[0]-1e-8 <= z <= b[0]+1e-8:
+                        t = (z-a[0])/(b[0]-a[0])
+                        return a[1]+(b[1]-a[1])*t
+                raise AssertionError("wheel seal exceeds measured arch contour")
+
+            for well,xplate,xtop,side in well_lids:
+                z0,z1 = well["z"]
+                lid_y = well["top"]
+                outer = side*side_x
+                assert contour[0][0] <= z0 < z1 <= contour[-1][0]
+                assert side*xtop < side_x and floor_y < lid_y
+                stations = {z0,z1} | {z for z,y in contour if z0 < z < z1}
+                # Split where the native arch crosses the existing lid height;
+                # only its measured crown needs a slightly rising outer edge.
+                for a,b in zip(contour,contour[1:]):
+                    ay,by = a[1]+overlap,b[1]+overlap
+                    if (ay-lid_y)*(by-lid_y) < 0:
+                        z = a[0]+(b[0]-a[0])*(lid_y-ay)/(by-ay)
+                        if z0 < z < z1:stations.add(z)
+                stations = sorted(stations)
+                arch_target = wheel_covers if flat_wheel_floor else seals
+                for a,b in zip(stations,stations[1:]):
+                    ya,yb = max(lid_y,arch_height(a)+overlap),max(lid_y,arch_height(b)+overlap)
+                    seal_face([(xtop,lid_y,a),(outer,ya,a),(outer,yb,b),(xtop,lid_y,b)], P(0,1,0), builder=arch_target)
+                for z,direction in ((z0,-1),(z1,1)):
+                    high = max(lid_y,arch_height(z)+overlap)
+                    # The native arch reaches below the floor. Continue the
+                    # existing dark well liner across the lateral return too.
+                    lower = min(well["bottom"],arch_height(z)-overlap)
+                    seal_face([(xplate,well["bottom"],z),(outer,lower,z),(outer,high,z),(xtop,lid_y,z)],
+                              P(0,0,direction), axes=(0,1), builder=arch_target)
+
+        if "rearPlane" in seals_cfg:
+            assert closure, "rear support seal needs the existing measured closure"
+            rear = closure["z"]
+            native_rear = seals_cfg["rearPlane"]
+            sill_y = seals_cfg["rearSillTop"]
+            left,right = seals_cfg["rearSpan"]
+            assert left < right and native_rear < rear and sill_y < floor_y
+            _,rim_left,rim_right = rear_section_at(floor_y)
+            assert rim_left+rim <= left < right <= rim_right-rim, "rear seal exceeds static threshold width"
+            lower_y,lower_rear = sill_y-overlap,native_rear+overlap
+            assert lower_rear < rear, "rear seal overlap exceeds measured threshold depth"
+            # The top meets the actual rear plane; the short down-return ends
+            # inside/below the native sill, avoiding a coplanar transom face.
+            seal_face([(left,floor_y,rear),(left,floor_y,native_rear),
+                       (right,floor_y,native_rear),(right,floor_y,rear)], P(0,1,0))
+            seal_face([(left,floor_y,native_rear),(left,lower_y,lower_rear),
+                       (right,lower_y,lower_rear),(right,floor_y,native_rear)], P(0,0,-1), axes=(0,1))
+            seal_face([(left,lower_y,rear),(right,lower_y,rear),
+                       (right,lower_y,lower_rear),(left,lower_y,lower_rear)], P(0,-1,0))
+            seal_face([(left,lower_y,rear),(left,floor_y,rear),
+                       (right,floor_y,rear),(right,lower_y,rear)], P(0,0,1), axes=(0,1))
+            for x,side in ((left,-1),(right,1)):
+                seal_face([(x,floor_y,rear),(x,lower_y,rear),
+                           (x,lower_y,lower_rear),(x,floor_y,native_rear)], P(side,0,0), axes=(2,1))
+        if len(seals.bm.faces):
+            seals_object = seals.finish()
+            seals_object["rvi_visual_only"] = True
+            objects.append(seals_object)
+        else:
+            seals.bm.free()  # arch-only additions live in the cover/floor/wall objects
+    if flat_wheel_floor and not covers_in_support:
+        covers_object = wheel_covers.finish()
+        covers_object["rvi_nav_polygon_count"] = wheel_nav_polygons
+        objects.append(covers_object)
+    curved_arches = seals_cfg.get("archSides") if seals_cfg else None
+    if flat_wheel_floor and not curved_arches:
+        wheel_floor = UVBuilder(name + "_wheel_floor")
+        # Fill only the carved void and the side margin of the measured arch.
+        # The original floor mesh, UV bounds and navigation ring stay unchanged.
+        arch_rear, arch_front = contour[0][0], contour[-1][0]
+        for well,xplate,xtop,side in well_lids:
+            inner = well["x"][0]
+            z0,z1 = well["z"]
+            outer = side*side_x
+            stations = sorted({arch_rear,z0,z1,arch_front}
+                              | {z for x,z in floor_ring if arch_rear < z < arch_front})
+            for a,b in zip(stations,stations[1:]):
+                if b-a < 1e-8:
+                    continue
+                in_well = z0 < (a+b)*.5 < z1
+                xa = inner if in_well else ring_crossing(floor_ring,a,side)
+                xb = inner if in_well else ring_crossing(floor_ring,b,side)
+                assert xa is not None and xb is not None, "wheel floor margin exceeds the existing floor ring"
+                assert side*xa < side_x and side*xb < side_x, "wheel floor exceeds the measured side plane"
+                points = [(xa,a),(outer,a),(outer,b),(xb,b)]
+                wheel_floor.poly([P(x,floor_y,z) for x,z in points],
+                                 [fuv(x,z) for x,z in points], P(0,1,0))
+        # Explicit measured side margins close a floor-to-body join beyond
+        # the wheel contour. They remain visual-only and native-mode-only.
+        for points in floor_margin_points(floor_ring, seals_cfg.get("floorMargins", [])):
+            wheel_floor.poly([P(x,floor_y,z) for x,z in points],
+                             [fuv(x,z) for x,z in points], P(0,1,0))
+        floor_object = wheel_floor.finish()
+        floor_object["rvi_visual_only"] = True
+        objects.append(floor_object)
+        wheel_wall = UVBuilder(name + "_wheel_wall")
+        # Close only the measured arch opening above the floor. The small
+        # inward offset keeps the overlap off the native painted body surface;
+        # the runtime portal mask still uses its actual outer side plane.
+        wall_height = spec.get("top", 1.5)-floor_y
+        assert wall_height > 0 and side_x > overlap
+        stations = {z for z,y in contour}
+        for a,b in zip(contour,contour[1:]):
+            ay,by = a[1]+overlap,b[1]+overlap
+            if (ay-floor_y)*(by-floor_y) < 0:
+                stations.add(a[0]+(b[0]-a[0])*(floor_y-ay)/(by-ay))
+        stations = sorted(stations)
+        for side in sorted({side for well,xplate,xtop,side in well_lids}):
+            x = side*(side_x-overlap)
+            for a,b in zip(stations,stations[1:]):
+                if arch_height((a+b)*.5)+overlap <= floor_y:
+                    continue
+                ya = max(floor_y,arch_height(a)+overlap)
+                yb = max(floor_y,arch_height(b)+overlap)
+                points = [(x,floor_y,a),(x,floor_y,b)]
+                # At an exact floor crossing the face is a triangle, not a
+                # degenerate quad with two coincident vertices.
+                if yb > floor_y+1e-9:
+                    points.append((x,yb,b))
+                if ya > floor_y+1e-9:
+                    points.append((x,ya,a))
+                if len(points) < 3:
+                    continue
+                wheel_wall.poly([P(*point) for point in points],
+                                [native_wall_uv(spec,x,y,z,side=True) if spec.get("nativeWallFinish") else wall_uv((z-arch_rear)/perimeter,(y-floor_y)/wall_height)
+                                 for x,y,z in points], P(-side,0,0))
+        wall_object = wheel_wall.finish()
+        wall_object["rvi_visual_only"] = True
+        objects.append(wall_object)
+    if flat_wheel_floor and curved_arches:
+        wheel_floor = UVBuilder(name + "_wheel_floor")
+        wheel_wall = UVBuilder(name + "_wheel_wall")
+        wall_height = spec.get("top", 1.5)-floor_y
+        assert wall_height > 0 and len(curved_arches) == 2
+
+        def interpolate(rows, z, axis):
+            for a,b in zip(rows,rows[1:]):
+                if a[0]-1e-7 <= z <= b[0]+1e-7:
+                    return a[axis]+(b[axis]-a[axis])*(z-a[0])/(b[0]-a[0])
+            raise AssertionError("curved floor leaves its measured contact chain")
+
+        for measured in curved_arches:
+            side=measured["side"]
+            matches=[w for w,xplate,xtop,s in well_lids if s == side]
+            assert len(matches)==1,"curved floor requires one measured rear well per side"
+            well=matches[0];inner=well["x"][0];z0,z1=well["z"]
+            floor_side=measured["floorSide"]
+            assert floor_side[0][0]<=z0+1e-6 and floor_side[-1][0]>=z1-1e-6
+            assert all(a[0]<b[0] for a,b in zip(floor_side,floor_side[1:]))
+            complete_chain=seals_cfg.get("fullMeasuredFloorChain",False)
+            stations={p[0] for p in floor_side}
+            if complete_chain:
+                # Native contact can continue beyond the obsolete cover. Fill
+                # that measured margin from the unchanged original floor edge.
+                stations|={z for x,z in floor_ring if floor_side[0][0]<z<floor_side[-1][0]}
+                stations|={z for z in (z0,z1) if floor_side[0][0]<z<floor_side[-1][0]}
+                stations|={z for gap in measured.get("floorExclusions",[]) for z in gap["z"]
+                           if floor_side[0][0]<z<floor_side[-1][0]}
+            for a,b in zip(sorted(stations),sorted(stations)[1:]):
+                if complete_chain and any(gap["z"][0]<=(a+b)/2<=gap["z"][1]
+                                          for gap in measured.get("floorExclusions",[])):continue
+                in_well=z0<=(a+b)/2<=z1
+                if not in_well and not complete_chain:continue
+                xa=inner if in_well else ring_crossing(floor_ring,a,side)
+                xb=inner if in_well else ring_crossing(floor_ring,b,side)
+                assert xa is not None and xb is not None,"measured curved floor exceeds original floor span"
+                oa,ob=interpolate(floor_side,a,1),interpolate(floor_side,b,1)
+                assert side*(oa-xa)>=-1e-6 and side*(ob-xb)>=-1e-6,"measured floor contact is inside original floor"
+                if max(side*(oa-xa),side*(ob-xb))<=1e-8:continue
+                points=[(xa,a),(oa,a),(ob,b),(xb,b)]
+                wheel_floor.poly([P(x,floor_y,z) for x,z in points],
+                                 [fuv(x,z) for x,z in points],P(0,1,0))
+            # Whole source boundary retained in3D; the floor chain can follow a
+            # different lower section where the arch closes into the body.
+            contour=[[p[2],p[1],p[0]] for p in measured["contour"]]
+            assert all(a[0]<b[0] for a,b in zip(contour,contour[1:]))
+            stations={p[0] for p in contour}
+            stations|={p[0] for p in floor_side if contour[0][0]<p[0]<contour[-1][0]}
+            for a,b in zip(contour,contour[1:]):
+                ay,by=a[1]+overlap,b[1]+overlap
+                if (ay-floor_y)*(by-floor_y)<0:
+                    stations.add(a[0]+(b[0]-a[0])*(floor_y-ay)/(by-ay))
+            for a,b in zip(sorted(stations),sorted(stations)[1:]):
+                if interpolate(contour,(a+b)/2,1)+overlap<=floor_y:continue
+                ya=max(floor_y,interpolate(contour,a,1)+overlap)
+                yb=max(floor_y,interpolate(contour,b,1)+overlap)
+                points=[(interpolate(floor_side,a,1)-side*overlap,floor_y,a),
+                        (interpolate(floor_side,b,1)-side*overlap,floor_y,b)]
+                if yb>floor_y+1e-9:points.append((interpolate(contour,b,2)-side*overlap,yb,b))
+                if ya>floor_y+1e-9:points.append((interpolate(contour,a,2)-side*overlap,ya,a))
+                if len(points)<3:continue
+                wheel_wall.poly([P(*p) for p in points],
+                    [native_wall_uv(spec,x,y,z,side=True) if spec.get("nativeWallFinish") else wall_uv((z-contour[0][0])/perimeter,(y-floor_y)/wall_height) for x,y,z in points],P(-side,0,0))
+        for builder in (wheel_floor,wheel_wall):
+            if not len(builder.bm.faces):
+                assert builder is wheel_wall and not seals_cfg.get("archWall",True),"unexpected empty curved floor model"
+                builder.bm.free();continue
+            obj=builder.finish();obj["rvi_visual_only"]=True;objects.append(obj)
+    if doorway_returns is not support:
+        objects.append(doorway_returns.finish())
+    if spec.get("nativeFloorPerimeter"):
+        margin_floor = UVBuilder(name + "_floor_perimeter")
+        perimeter_cfg = spec["nativeFloorPerimeter"]
+        polygons = list(floor_margin_points(floor_ring, perimeter_cfg.get("margins", [])))
+        polygons.extend(perimeter_cfg.get("polygons", []))
+        for points in polygons:
+            assert 3 <= len(points) <= 8 and all(len(p)==2 and all(math.isfinite(v) for v in p) for p in points)
+            assert abs(sum(a[0]*b[1]-b[0]*a[1] for a,b in zip(points,points[1:]+points[:1]))) > 1e-10
+            for face, uv in floor_perimeter_uv_faces(points, bounds):
+                margin_floor.poly([P(x,floor_y,z) for x,z in face], uv, P(0,1,0))
+        margin_object = margin_floor.finish()
+        margin_object["rvi_visual_only"] = True
+        objects.append(margin_object)
     return objects
+
+
+def floor_perimeter_uv_faces(points, bounds):
+    """Continue the existing floor at its texel scale with mirrored edge repeats.
+
+    Split at atlas reflection lines so interpolation never collapses a strip to
+    one edge texel or folds a face across that line. Original floor UVs stay exact.
+    """
+    faces = [points]
+    for axis, origin, width in ((0, bounds[0], bounds[1]-bounds[0]),
+                                (1, bounds[2], bounds[3]-bounds[2])):
+        assert width > 0
+        lo = min(p[axis] for face in faces for p in face)
+        hi = max(p[axis] for face in faces for p in face)
+        for repeat in range(math.floor((lo-origin)/width)+1, math.ceil((hi-origin)/width)):
+            boundary = origin+repeat*width
+            split_faces = []
+            for face in faces:
+                if min(p[axis] for p in face) >= boundary-1e-10 or max(p[axis] for p in face) <= boundary+1e-10:
+                    split_faces.append(face)
+                    continue
+                for side in (-1, 1):
+                    clipped = []
+                    for a, b in zip(face, face[1:]+face[:1]):
+                        ia, ib = side*(a[axis]-boundary) <= 0, side*(b[axis]-boundary) <= 0
+                        if ia: clipped.append(a)
+                        if ia != ib:
+                            t = (boundary-a[axis])/(b[axis]-a[axis])
+                            clipped.append([a[i]+t*(b[i]-a[i]) for i in range(2)])
+                    clean = []
+                    for p in clipped:
+                        if not clean or math.dist(p, clean[-1]) > 1e-10: clean.append(p)
+                    if len(clean)>1 and math.dist(clean[0], clean[-1]) < 1e-10: clean.pop()
+                    if len(clean) >= 3: split_faces.append(clean)
+            faces = split_faces
+    def mirror(value):
+        return 1-abs(value % 2-1)
+    for face in faces:
+        yield face, [(mirror((x-bounds[0])/(bounds[1]-bounds[0])),
+                      mirror((z-bounds[2])/(bounds[3]-bounds[2]))) for x,z in face]
 
 
 def ring_crossing(ring, z, side):
@@ -1564,6 +2017,26 @@ def ring_crossing(ring, z, side):
             xs.append(ax + (bx - ax) * (z - az) / (bz - az))
     xs = [x for x in xs if x * side > 0]
     return max(xs, key=lambda x: x * side) if xs else None
+
+
+def floor_margin_points(ring, margins):
+    """Measured side wings, split at every change of either linear boundary."""
+    for margin in margins:
+        side = margin["side"]
+        rear, front = margin["span"]
+        widths = margin["sideX"]
+        widths = widths if isinstance(widths, list) else [widths, widths]
+        assert side in (-1, 1) and math.isfinite(rear) and math.isfinite(front) and rear < front
+        assert len(widths) == 2 and all(math.isfinite(x) and x > 0 for x in widths)
+        outer_a, outer_b = (side*x for x in widths)
+        xa, xb = ring_crossing(ring,rear,side), ring_crossing(ring,front,side)
+        assert xa is not None and xb is not None, "measured margin exceeds floor ring"
+        assert side*xa <= side*outer_a+1e-8 and side*xb <= side*outer_b+1e-8, "measured margin does not reach side plane"
+        assert max(side*(outer_a-xa),side*(outer_b-xb)) > 1e-8, "empty measured floor margin"
+        for z in {z for x,z in ring if rear < z < front}:
+            expected = xa+(xb-xa)*(z-rear)/(front-rear)
+            assert abs(ring_crossing(ring,z,side)-expected) < 1e-6, "split margin at curved floor edge"
+        yield [(xa,rear),(outer_a,rear),(outer_b,front),(xb,front)]
 
 
 def tightest_crossing(ring, z0, z1, side):
@@ -1638,7 +2111,21 @@ def shell_walk_grid(shells, spec, lua_dir):
     cols = int(round((x1 - x0) / cell))
     rows = int(round((z1 - z0) / cell))
     depsgraph = bpy.context.evaluated_depsgraph_get()
-    trees = [BVHTree.FromObject(shell, depsgraph) for shell in shells]
+    trees = []
+    for shell in shells:
+        if shell.get("rvi_visual_only", False):
+            continue
+        count = shell.get("rvi_nav_polygon_count")
+        if count is None:
+            trees.append(BVHTree.FromObject(shell, depsgraph))
+        else:
+            # The opt-in wheel model combines original solid covers with
+            # visual-only native arch wings. Preserve the original BVH union.
+            mesh = shell.data
+            assert 0 < count <= len(mesh.polygons), "invalid navigation polygon prefix"
+            mesh.calc_loop_triangles()
+            triangles = [tuple(tri.vertices) for tri in mesh.loop_triangles if tri.polygon_index < count]
+            trees.append(BVHTree.FromPolygons([vertex.co for vertex in mesh.vertices], triangles, all_triangles=True))
     head = floor_y + g.get("headroom", 1.05)
     free = [[False] * cols for _ in range(rows)]
     for r in range(rows):
@@ -1650,7 +2137,8 @@ def shell_walk_grid(shells, spec, lua_dir):
                 hit = tree.ray_cast(Vector((-px, pz, head)), Vector((0, 0, -1)), head - floor_y + 0.3)
                 if hit[0] is not None and (best is None or hit[3] < best[3]):
                     best = hit
-            if best is not None and abs(best[0].z - floor_y) <= g.get("floorTolerance", 0.04):
+            if (best is not None and abs(best[0].z - floor_y) <= g.get("floorTolerance", 0.04)
+                    and pz <= g.get("frontLimit", float("inf"))):
                 free[r][c] = True
     radius = g["radius"]
     rc = int(math.ceil(radius / cell))

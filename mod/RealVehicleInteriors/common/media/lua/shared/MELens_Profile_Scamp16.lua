@@ -9,7 +9,21 @@ local profile = {
     floorY = -0.32,
     mesh = { scale = 0.09, lift = 0.666 },
     shell = {
-        models = { "MELensShell_scamp16_floor", "MELensShell_scamp16_walls" },
+        models = { "MELensShell_scamp16_floor", "MELensShell_scamp16_walls", "MELensShell_scamp16_support", "MELensShell_scamp16_panel_legacy", "MELensShell_scamp16_panel_native", "MELensShell_scamp16_floor_perimeter", "MELensShell_scamp16_wheel_floor", "MELensShell_scamp16_wheel_wall", "MELensShell_scamp16_window_return_1", "MELensShell_scamp16_window_return_2", "MELensShell_scamp16_window_return_3", "MELensShell_scamp16_window_return_4", "MELensShell_scamp16_window_return_5", "MELensShell_scamp16_window_return_6" },
+        nativeFloorModel = 6,
+        legacyPanelModel = 4,
+        nativePanelModel = 5,
+        windowReturns = {
+            { model = 9, part = "WindowFrontRight", parent = "DoorFrontRight" },
+            { model = 10, part = "WindowBackLeft" },
+            { model = 11, part = "WindowBackRight" },
+            { model = 12, part = "WindshieldRear" },
+            { model = 13, part = "WindowRearLeft" },
+            { model = 14, part = "WindowRearRight" },
+        },
+        wheelCoversModel = 3,
+        wheelFloorModel = 7,
+        wheelWallModel = 8,
     },
     hideKI5 = {
         TrailerKI5camperScamp16Interior = 0.97,
@@ -33,7 +47,7 @@ local profile = {
         ["mesh:scamp16_windshield_rear_a"] = true,
     },
     light = {
-        interiorModels = { "MELensShell_scamp16_floor", "MELensShell_scamp16_walls" },
+        interiorModels = { "MELensShell_scamp16_floor", "MELensShell_scamp16_walls", "MELensShell_scamp16_support", "MELensShell_scamp16_panel_legacy", "MELensShell_scamp16_panel_native", "MELensShell_scamp16_floor_perimeter", "MELensShell_scamp16_wheel_floor", "MELensShell_scamp16_wheel_wall", "MELensShell_scamp16_window_return_1", "MELensShell_scamp16_window_return_2", "MELensShell_scamp16_window_return_3", "MELensShell_scamp16_window_return_4", "MELensShell_scamp16_window_return_5", "MELensShell_scamp16_window_return_6" },
         daylight = 1,
         minimum = 0.18,
         topDown = 0.5,
@@ -120,11 +134,103 @@ local profile = {
     panel = { x = -0.74, y = -0.025, z = 1.655, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
     waterTank = 60,
     fuelTank = 20,
+    nativePanel = { x = -0.839094, y = -0.025, z = 1.655, halfX = 0.05, halfY = 0.075, halfZ = 0.09 },
+    nativeWheelArch = {
+        sides = {
+            {
+                side = 1,
+                contour = {
+                    { 0.7723149, -0.3494371, -0.2026164 },
+                    { 0.8012509, -0.291661, -0.1561249 },
+                    { 0.8184641, -0.2398195, -0.1145464 },
+                    { 0.8375702, -0.1786003, -0.0358338 },
+                    { 0.8438778, -0.1335773, 0.0804506 },
+                    { 0.8437166, -0.1352019, 0.2675403 },
+                    { 0.8376965, -0.1787323, 0.3792272 },
+                    { 0.8197051, -0.2404282, 0.4489999 },
+                    { 0.8020782, -0.2977666, 0.4940528 },
+                    { 0.7715599, -0.3596123, 0.5426468 },
+                },
+            },
+            {
+                side = -1,
+                contour = {
+                    { -0.7723149, -0.3494371, -0.2026164 },
+                    { -0.8012509, -0.291661, -0.1561249 },
+                    { -0.8184641, -0.2398195, -0.1145464 },
+                    { -0.8375702, -0.1786003, -0.0358338 },
+                    { -0.8438778, -0.1335773, 0.0804506 },
+                    { -0.8437166, -0.1352019, 0.2675403 },
+                    { -0.8376965, -0.1787323, 0.3792272 },
+                    { -0.8197051, -0.2404282, 0.4489999 },
+                    { -0.8020782, -0.2977666, 0.4940528 },
+                    { -0.7715599, -0.3596123, 0.5426468 },
+                },
+            },
+        },
+    },
+    nativeCutPlanes = {
+        { 0, 0, -1, -2.5 },
+        { 0, 0, -1, -5 },
+        { 0, 0, -1, -11.445111 },
+    },
     bodyKeepPlanes = {
         KI5trailersSpare = { 0, 1, 0, 16.3 },
         ["87scampCamperRear0"] = { 0, 0, -1, 4.310444 },
     },
     clipBody = true,
+    nativeBodyWalls = true,
+    nativeBodyTrim = {
+        x = { -0.545, 0.545 },
+        y = { -0.266, -0.088 },
+        z = { 1.802, 2.001 },
+        uv = { 0.539, 0.096, 0.997, 0.999 },
+    },
+    nativeBodyKeepPlanes = {
+        TrailerKI5camperScamp16Interior = { 0, 0, 0, 1 },
+    },
+    nativeWallMaterial = { texture = "MELensShell_scamp16_walls", height = 1.43, perimeter = 8.806405 },
+    nativeBodyModels = { "87scampCamperDoorfr" },
+    nativeLivingLeafModels = { "87scampCamperDoorfr" },
+    nativeSurfaceCuts = {
+        {
+            models = { "TrailerKI5camperScamp16body", "mesh:scamp16_body" },
+            box = {
+                x = { -0.8947286, -0.8447313 },
+                y = { -0.0387072, 0.3061662 },
+                z = { 0.1732002, 0.1732203 },
+            },
+            uv = { 0.7747415, 0.1031629, 0.8250227, 0.1071132 },
+        },
+        {
+            models = { "TrailerKI5camperScamp16body", "mesh:scamp16_body" },
+            box = {
+                x = { -0.8947287, -0.8447313 },
+                y = { -0.0387072, 0.3061663 },
+                z = { -0.1704384, -0.1704183 },
+            },
+            uv = { 0.7747415, 0.156946, 0.8250227, 0.1608963 },
+        },
+        {
+            models = { "TrailerKI5camperScamp16body", "mesh:scamp16_body" },
+            box = {
+                x = { 0.4214251, 0.430005 },
+                y = { -0.0469213, 0.0388516 },
+                z = { -1.463508, -1.4076147 },
+            },
+            uv = { 0.3839044, 0.7767631, 0.3945658, 0.7948828 },
+        },
+        {
+            models = { "TrailerKI5camperScamp16body", "mesh:scamp16_body" },
+            box = {
+                x = { -0.430005, -0.4214251 },
+                y = { -0.0469213, 0.0388516 },
+                z = { -1.463508, -1.4076147 },
+            },
+            uv = { 0.3696271, 0.7769891, 0.3802896, 0.795109 },
+        },
+    },
+    nativeBodyLining = { 0.8, 0.76, 0.66 },
     windowBoxes = {
         {
             x = { 0.55, 1.2 },
