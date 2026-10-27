@@ -206,6 +206,22 @@ public final class Hooks {
         }
     }
 
+    @Patch(className = "zombie.characters.IsoPlayer", methodName = "isPlayerMoving", strictMatch = true)
+    public static final class CabinMovement {
+        @Patch.OnExit
+        public static void exit(@Patch.This IsoPlayer player, @Patch.Return(readOnly = false) boolean moving) {
+            moving = Standing.movingFor(player, moving);
+        }
+    }
+
+    @Patch(className = "zombie.characters.IsoGameCharacter", methodName = "isRunning", strictMatch = true)
+    public static final class CabinRunning {
+        @Patch.OnExit
+        public static void exit(@Patch.This IsoGameCharacter character, @Patch.Return(readOnly = false) boolean running) {
+            running = Standing.runningFor(character, running);
+        }
+    }
+
     @Patch(className = "zombie.characters.IsoPlayer", methodName = "checkActionGroup", strictMatch = true)
     public static final class CheckActionGroup {
         @Patch.OnEnter
@@ -223,12 +239,39 @@ public final class Hooks {
     public static final class UpdateWhileInVehicle {
         @Patch.OnEnter
         public static void enter(@Patch.This IsoPlayer player) {
-            Standing.beginChoosing(player);
+            Standing.beginPassengerUpdate(player);
         }
 
         @Patch.OnExit(onThrowable = Throwable.class)
-        public static void exit() {
-            Standing.endChoosing();
+        public static void exit(@Patch.This IsoPlayer player) {
+            Standing.endPassengerUpdate();
+            Standing.updateNativeInput(player);
+        }
+    }
+
+    @Patch(className = "zombie.characters.IsoGameCharacter", methodName = "setForwardDirection", strictMatch = true)
+    public static final class PassengerDirectionReset { // Explicit float arguments select the strict overload.
+        @Patch.OnEnter(skipOn = true)
+        public static boolean enter(@Patch.This IsoGameCharacter character,
+                @Patch.Argument(0) float x, @Patch.Argument(1) float y) {
+            return Standing.skipPassengerDirection(character);
+        }
+    }
+
+    @Patch(className = "zombie.core.skinnedmodel.animation.AnimationPlayer", methodName = "setTargetAndCurrentDirection", strictMatch = true)
+    public static final class PassengerAngleReset { // The Vector2 overload delegates to this float overload.
+        @Patch.OnEnter(skipOn = true)
+        public static boolean enter(@Patch.This zombie.core.skinnedmodel.animation.AnimationPlayer animation,
+                @Patch.Argument(0) float x, @Patch.Argument(1) float y) {
+            return Standing.skipPassengerAngle(animation);
+        }
+    }
+
+    @Patch(className = "zombie.characters.IsoGameCharacter", methodName = "postUpdateAnimating", strictMatch = true)
+    public static final class CabinNativeFacing {
+        @Patch.OnExit
+        public static void exit(@Patch.This IsoGameCharacter character) {
+            Standing.publishFacing(character);
         }
     }
 

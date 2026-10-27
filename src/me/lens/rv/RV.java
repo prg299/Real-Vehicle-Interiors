@@ -18,7 +18,7 @@ import zombie.scripting.objects.VehicleScript;
  */
 @Exposer.LuaClass(name = "MELensRV")
 public final class RV {
-    public static final String VERSION = "2.0.19";
+    public static final String VERSION = "2.0.20";
 
     static volatile BaseVehicle cutVehicle;
     /** Plane in the vehicle body's raw mesh space; fragments with a*x+b*y+c*z+d > 0 are discarded. */
@@ -723,6 +723,27 @@ public final class RV {
 
     public static void clearStanding() {
         Standing.standing.clear();
+    }
+
+    /** Native animation travel for the local standing passenger's current update. */
+    public static float nativeMovementDistance(IsoGameCharacter character) {
+        return character instanceof zombie.characters.IsoPlayer player ? Standing.movementDistance(player) : 0f;
+    }
+
+    public static org.joml.Vector3f nativeMovement(IsoGameCharacter character) {
+        return Standing.movement(character instanceof zombie.characters.IsoPlayer player ? player : null);
+    }
+
+    public static void setNativeFacing(IsoGameCharacter character, double radians, boolean immediate) {
+        if (character instanceof zombie.characters.IsoPlayer player) Standing.targetFacing(player, radians, immediate);
+    }
+
+    public static float nativeFacing(IsoGameCharacter character) {
+        return character instanceof zombie.characters.IsoPlayer player ? Standing.facing(player) : 0f;
+    }
+
+    public static org.joml.Vector3f cabinDirection(BaseVehicle vehicle, double x, double y) {
+        return Standing.direction(vehicle, (float) x, (float) y);
     }
 
     /** Native clip progress keeps vehicle-relative bed motion in step with the animation. */

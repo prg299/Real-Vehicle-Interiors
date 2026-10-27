@@ -107,6 +107,11 @@ def main():
             female=str(a.sex=='female').lower()
             h.lua(f'local p=getPlayer();p:setFemale({female});p:getDescriptor():setFemale({female});p:resetModel();return true')
         if not a.resume: enter(h,a.vehicle,a.heading)
+        # An unattached trailer can roll on the field's slope. Park only this
+        # owned animation fixture so the native moving-vehicle sleep rule does
+        # not turn this into an unrelated vehicle-physics test.
+        h.lua('getPlayer():getVehicle():setPhysicsActive(false);return true')
+        time.sleep(.5)
         h.lua((ROOT/'dev/lua/feature-fixture.lua').read_text())
         h.lua(interior.FIXTURE)
         h.lua(f'MELensBedTestSpotIndex={a.bed_index};return true')

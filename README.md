@@ -2,7 +2,9 @@
 
 Walk around inside supported vanilla vehicles and optional KI5 vehicle packs in **Project Zomboid Build 42.21**. Furnish your vehicle, sleep, cook, wash, store supplies and take your base with you.
 
-**Version: 2.0.19 (published on Steam Workshop).** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541) · [Animals details and testing](docs/ANIMALS.md)
+**Version: 2.0.20.** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541) · [Animals details and testing](docs/ANIMALS.md)
+
+2.0.20 uses the game's normal walking, running, turning and stopping animations inside vehicles. It also fixes cancelled approaches at corners, right-click furniture menus over empty ground, and re-entry when already at the door. Existing vehicle, furniture, loot and utility IDs are preserved.
 
 2.0.19 avoids repeatedly packing unchanged shelf inventories, bounds shelf work by the display limit, retires inactive animal render models and removes outdoor phobia diagnostic allocations. No saved vehicle, furniture, item or utility IDs change. See [performance investigation](docs/PERFORMANCE.md) for measurements and scope.
 

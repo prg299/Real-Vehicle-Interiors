@@ -15,6 +15,17 @@ import zombie.core.skinnedmodel.model.SkinningData;
 public final class Bones {
     private Bones() {}
 
+    /** Native body turn state, also usable as the outside control. */
+    public static String turning(IsoGameCharacter character) {
+        var animation = character == null ? null : character.getAnimationPlayer();
+        if (animation == null || !animation.isReady()) return "{}";
+        return String.format(Locale.ROOT,
+                "{\"angle\":%.6f,\"target\":%.6f,\"rendered\":%.6f,\"turning\":%s,\"around\":%s,\"turn90\":%s,\"momentum\":%.6f,\"stepDelta\":%.6f}",
+                animation.getAngle(), animation.getTargetAngle(), animation.getRenderedAngle(),
+                character.isTurning(), character.isTurningAround(), character.isTurning90(),
+                character.getMomentumScalar(), animation.angleStepDelta);
+    }
+
     /** Developer-only track continuity receipt; AnimationPlayer is not exposed to Lua. */
     public static String tracks(IsoGameCharacter character) {
         AnimationPlayer player = character == null ? null : character.getAnimationPlayer();

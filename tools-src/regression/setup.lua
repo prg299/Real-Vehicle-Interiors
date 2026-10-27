@@ -13,6 +13,11 @@ function completeJava(methods)
     end
     rv.isPartModelVisible=rv.isPartModelVisible or function() return true end
     rv.clearStalePartModels=rv.clearStalePartModels or function() return false end
+    rv.nativeMovementDistance=rv.nativeMovementDistance or function() return 0 end
+    rv.nativeMovement=rv.nativeMovement or function() return Vector3f.new() end
+    rv.setNativeFacing=rv.setNativeFacing or function() end
+    rv.nativeFacing=rv.nativeFacing or function() return 0 end
+    rv.cabinDirection=rv.cabinDirection or function() return Vector3f.new() end
     return rv
 end
 function getScriptManager() return nil end

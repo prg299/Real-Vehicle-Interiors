@@ -22,6 +22,17 @@ do
         check(#declarations>0,"partial Java skipped safe script registration")
     end
     local binds,planes=0,0
+    local legacy=completeJava({});legacy.nativeMovementDistance=nil
+    MELensRV=legacy
+    check(M.java()==nil,"old approved Java accepted without native locomotion support")
+    legacy.nativeMovementDistance=function() return 0 end
+    check(M.java()==legacy,"updated locomotion bridge did not recover")
+    for _,name in ipairs({"nativeMovement","setNativeFacing","nativeFacing","cabinDirection"}) do
+        local method=legacy[name];legacy[name]=nil
+        check(M.java()==nil,"old approved Java accepted without "..name)
+        legacy[name]=method
+        check(M.java()==legacy,"native turn bridge did not recover "..name)
+    end
     MELensRV=completeJava({bindSeatContainer=function() binds=binds+1 end,setKeepPlane=function() planes=planes+1 end})
     check(M.java()==MELensRV,"complete bridge rejected after partial bridge")
     M.addStandingPositions()

@@ -40,6 +40,8 @@ return {username=p and p:getUsername(),vehicleId=v and v:getId() or -1,seat=v an
     forward=key("Forward"),backward=key("Backward"),left=key("Left"),right=key("Right"),
     run=key(KeybindId and KeybindId.RUN or "Run"),interact=key(KeybindId and KeybindId.INTERACT or "Interact"),
     cabin=p and p:getVariableString("MELensCabin") or false,
+    alpha=p:getAlpha(0),targetAlpha=p:getTargetAlpha(0),
+    turnJson=MELensDevBones.turning(p),
     seatFlag=p and p:getVariableBoolean("MELensCabinSeat") or false,
     animOk=ok,anim=ok and anim or tostring(anim),animSetOk=setOk,animSet=setOk and animSet or tostring(animSet),
     trackJson=MELensDevBones.tracks(p)}
@@ -56,6 +58,8 @@ local ok,anim=pcall(function() return MELensRV.animInfo(target) end)
 local setOk,animSet=pcall(function() return target:GetAnimSetName() end)
 return {ready=true,vehicleId=v and v:getId() or -1,seat=seat,standing=standing,
     cabin=target:getVariableString("MELensCabin") or false,seatFlag=target:getVariableBoolean("MELensCabinSeat"),
+    alpha=target:getAlpha(0),targetAlpha=target:getTargetAlpha(0),
+    turnJson=MELensDevBones.turning(target),
     animOk=ok,anim=ok and anim or tostring(anim),animSetOk=setOk,animSet=setOk and animSet or tostring(animSet),
     received=r and r.received or false,
     renderX=r and r.renderX or false,renderZ=r and r.renderZ or false,
@@ -110,12 +114,15 @@ def advancing_clip(samples, expected):
         first = parsed[start]
         for track in first:
             name = str(track.get("name", ""))
-            if token not in name.lower() or track.get("blend", 0) < .75:
+            # The native run state blends Bob_Run at .65 with Bob_Walk at .35
+            # in the uninjured outside control. Require an advancing contributing
+            # track rather than incorrectly requiring it to replace the blend.
+            if token not in name.lower() or track.get("blend", 0) < .05:
                 continue
             chain = [track]
             for rows in parsed[start + 1:start + 3]:
                 match = next((row for row in rows if row.get("id") == track.get("id")
-                              and row.get("name") == track.get("name") and row.get("blend", 0) >= .75), None)
+                              and row.get("name") == track.get("name") and row.get("blend", 0) >= .05), None)
                 if match is None:
                     break
                 chain.append(match)
@@ -173,6 +180,7 @@ class MotionLab:
     def record_rest_seat(self, side):
         """Use native context-menu clicks to sit in a real existing interior seat."""
         api = self.h if side == "A" else self.b
+        api.lua('ISUIHandler.setVisibleAllUI(true);return true')
         before = self.lab.all_states()
         point = api.lua(self.ui.SEAT_POINT)
         self.h.check(point, f"{side} has no visible, available interior seat for the Rest test")
@@ -282,6 +290,22 @@ class MotionLab:
         # Start the movement chord and Run binding in one endpoint dispatch so
         # diagonal movement keys overlap for the full measured interval.
         hold_calls = ";".join(f"MEMCNativeLab.holdKey({int(code)},{duration})" for code in codes)
+        self.h.lua(f'MELensMedia.clip("clip-mp-{kind}-actor",4);return true')
+        self.b.lua(f'MELensMedia.clip("clip-mp-{kind}-observer",4);return true')
+        # Measure rendered steps every frame. Separate HTTP reads can skip
+        # several frames and must not be mistaken for an instantaneous jump.
+        self.b.lua('''if RVI_MPFrameMotion then Events.OnPostRender.Remove(RVI_MPFrameMotion.tick) end
+RVI_MPFrameMotion={rows={}}
+local T=RVI_MPFrameMotion
+T.tick=function()
+ if #T.rows>=400 then return end
+ local ps=getOnlinePlayers();local target
+ for i=0,ps:size()-1 do local p=ps:get(i);if p:getUsername()=="MELensAdmin" then target=p;break end end
+ local r=target and MELens.Sync.remote[target:getOnlineID()]
+ if r and r.renderX then T.rows[#T.rows+1]={t=getTimestampMs(),x=r.renderX,z=r.renderZ,f=r.renderF,
+   targetX=r.x,targetZ=r.z,snap=r.snap,alpha=target:getAlpha(0),targetAlpha=target:getTargetAlpha(0)} end
+end
+Events.OnPostRender.Add(T.tick);return true''')
         self.h.lua(hold_calls + ";return true")
         for code in codes:
             h.REPORT["inputs"].append({"client": "A", "api": "holdKey", "key": int(code),
@@ -292,7 +316,10 @@ class MotionLab:
         actor, remote = [], []
         while time.monotonic() < end:
             actor.append(self.state("A")); remote.append(self.remote("B", NAMES["A"])); time.sleep(.045)
+        frames=self.h._sequence(self.b.lua('local T=RVI_MPFrameMotion;Events.OnPostRender.Remove(T.tick);return T.rows'))
         self.h.check(any(s.get("moving") for s in actor), f"native {kind} key chord made no cabin movement")
+        self.h.check(all(s.get('alpha')==1 and s.get('targetAlpha')==1 for s in actor+remote),
+                     f'{kind}: local or observer opacity changed')
         expected = "Run" if kind == "run" else "Walk"
         self.h.check(any(s.get("pose") == expected and s.get("moving") for s in actor),
                      f"native {kind} chord failed to produce local {expected} pose")
@@ -307,9 +334,11 @@ class MotionLab:
         points = [(s.get("x"), s.get("z")) for s in actor if isinstance(s.get("x"), (int, float))
                   and isinstance(s.get("z"), (int, float))]
         displacement = math.dist(points[0], points[-1]) if len(points) > 1 else 0
-        render = [(s["renderX"], s["renderZ"]) for s in remote if isinstance(s.get("renderX"), (int, float))
-                  and isinstance(s.get("renderZ"), (int, float))]
+        render = [(s['x'],s['z']) for s in frames]
         steps = [math.dist(a, b) for a, b in zip(render, render[1:])]
+        h.REPORT.setdefault('renderFrameSamples',{})[kind]=frames
+        h.check(len(frames)>10,'insufficient observer render frames')
+        h.check(all(s['alpha']==1 and s['targetAlpha']==1 for s in frames),'observer opacity changed between polls')
         interpolated = [s for s in remote if s.get("snap") is False
                         and isinstance(s.get("renderX"), (int, float)) and isinstance(s.get("targetX"), (int, float))
                         and math.dist((s["renderX"], s["renderZ"]), (s["targetX"], s["targetZ"])) > .0005]
@@ -319,6 +348,7 @@ class MotionLab:
         h.check(interpolated, f"observer sampled no intermediate interpolated {kind} position")
         result = {"before": before, "durationMs": duration, "displacement": displacement,
                   "actorSamples": actor, "remoteSamples": remote, "remoteInterpolationSamples": interpolated,
+                  "remoteRenderFrames":frames,
                   "animationTrackEvidence":{"local":local_clip,"remote":remote_clip},
                   "remoteMaxStep": max(steps, default=0), "route": route}
         h.record(f"native-{kind}-same-open-cabin-route", before, actor[-1], durationMs=duration,
@@ -362,6 +392,9 @@ class MotionLab:
                                      "walk setup reaches a point along the chosen open route")
         walk_start = self.fixture_to(start["x"], start["z"], "walk setup restores exact movement origin")
         start = dict(start, facing=walk_start.get("facing"))
+        self.lab.wait(lambda: self.h.lua(f'return MELens.facePoint(getPlayer(),{start["x"]+route["dx"]},{start["z"]+route["dz"]})'),
+                      bool, 'native walk setup faces the measured route')
+        start['facing'] = self.state('A')['facing']
         h.check(start.get("facing") is not None, "walk setup did not establish the movement facing")
         walk = self.move_test("walk", route)
         self.exit_native("A")
@@ -372,9 +405,12 @@ class MotionLab:
                         "setup reaches a point along the chosen open route")
         same_start = self.fixture_to(start["x"], start["z"], "setup restores exact movement origin")
         same_start = self.state("A")
+        self.lab.wait(lambda: self.h.lua(f'return MELens.facePoint(getPlayer(),{start["x"]+route["dx"]},{start["z"]+route["dz"]})'),
+                      bool, 'native run setup faces the same measured route')
+        same_start = self.state("A")
         self.h.check(math.dist((same_start["x"], same_start["z"]), (start["x"], start["z"])) < .04,
                      "setup failed to restore the exact route origin")
-        self.h.check(abs((same_start.get("facing") or 0) - start["facing"]) < .01,
+        self.h.check(abs(((same_start.get("facing") or 0) - start["facing"] + math.pi) % (2*math.pi) - math.pi) < .04,
                      f"walk/run setup facing differs: walk={start['facing']}, run={same_start.get('facing')}")
         run = self.move_test("run", route)
         h.check(walk["durationMs"] == run["durationMs"], "walk and run durations differ")
@@ -382,6 +418,10 @@ class MotionLab:
                 f"Run was not faster along the scanned open route: walk={walk['displacement']:.3f}, run={run['displacement']:.3f}")
         h.record("equal-duration-open-route-run-faster", walk, run,
                  route=route, routeScan=route_info["scan"], speedRatio=run["displacement"] / max(walk["displacement"], .0001))
+        return self.transitions()
+
+    def transitions(self):
+        h,lab=self.h,self.lab
         # Seating is the transition that reaches MELens_Sync.release while the
         # character remains in the same vehicle. Observe flags from the other client.
         for side in ("A", "B"):
@@ -395,6 +435,9 @@ class MotionLab:
         h.REPORT["final"] = final
         # Restore the owned starting fixture for the next independent driver.
         # Exit acceptance is retained above before either re-entry occurs.
+        # Both exits share one world marker. Move the waiting fixture actor
+        # aside so this measures entry rather than two players overlapping.
+        self.b.lua('local p=getPlayer();p:setX(p:getX()-2);p:setLastX(p:getX());return true')
         for side in ("A", "B"):
             lab.enter_e(side)
         restored = lab.wait(lab.all_states,
@@ -434,7 +477,7 @@ def main():
     finally:
         if lab is not None:
             for api in (lab.h, lab.b):
-                try: api.lua("MEMCNativeLab.releaseKeys();return true")
+                try: api.lua("MEMCNativeLab.releaseKeys();if RVI_MPFrameMotion then Events.OnPostRender.Remove(RVI_MPFrameMotion.tick) end;return true")
                 except Exception: pass
 
 

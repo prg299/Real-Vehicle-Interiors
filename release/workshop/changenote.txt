@@ -1,7 +1,10 @@
-2.0.19 - Interior performance fixes
+2.0.20 - Native interior movement
 
-- Fixed severe lag in vehicles with stocked shelves. Unchanged inventories reuse their display layout, and the item display limit now also bounds packing work.
-- Fixed interior animal render models being retained after removal or leaving the vehicle. Queued animations finish before their resources are released.
-- Removed unnecessary outdoor player-update allocations and repeated loose-item travel speed queries.
+- Walking, running and turning now use the game's normal movement states and animation blending, including native stopping travel and aiming/strafe input.
+- Fixed automatic approaches being cancelled when a turning stride briefly touches a wall.
+- Fixed right-click furniture menus failing when there is no underlying world object to pick.
+- Fixed re-entry being cancelled by a tiny pathfinding step when already standing at the door.
 
 Existing vehicle, furniture, loot and utility IDs are unchanged. This update does not require starting a new save.
+
+Restart the game after updating and approve the updated Java component in ZombieBuddy when prompted.
