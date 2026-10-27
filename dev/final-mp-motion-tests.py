@@ -180,6 +180,7 @@ class MotionLab:
     def record_rest_seat(self, side):
         """Use native context-menu clicks to sit in a real existing interior seat."""
         api = self.h if side == "A" else self.b
+        api.lua('ISUIHandler.setVisibleAllUI(true);return true')
         before = self.lab.all_states()
         point = api.lua(self.ui.SEAT_POINT)
         self.h.check(point, f"{side} has no visible, available interior seat for the Rest test")
@@ -417,6 +418,10 @@ Events.OnPostRender.Add(T.tick);return true''')
                 f"Run was not faster along the scanned open route: walk={walk['displacement']:.3f}, run={run['displacement']:.3f}")
         h.record("equal-duration-open-route-run-faster", walk, run,
                  route=route, routeScan=route_info["scan"], speedRatio=run["displacement"] / max(walk["displacement"], .0001))
+        return self.transitions()
+
+    def transitions(self):
+        h,lab=self.h,self.lab
         # Seating is the transition that reaches MELens_Sync.release while the
         # character remains in the same vehicle. Observe flags from the other client.
         for side in ("A", "B"):
@@ -430,6 +435,9 @@ Events.OnPostRender.Add(T.tick);return true''')
         h.REPORT["final"] = final
         # Restore the owned starting fixture for the next independent driver.
         # Exit acceptance is retained above before either re-entry occurs.
+        # Both exits share one world marker. Move the waiting fixture actor
+        # aside so this measures entry rather than two players overlapping.
+        self.b.lua('local p=getPlayer();p:setX(p:getX()-2);p:setLastX(p:getX());return true')
         for side in ("A", "B"):
             lab.enter_e(side)
         restored = lab.wait(lab.all_states,

@@ -22,7 +22,7 @@ local P = M.Parts
 require "MELens_Bed"
 local B = M.Bed
 
-M.VERSION = "2.0.19"
+M.VERSION = "2.0.20"
 
 local CABIN_VAR = "MELensCabin"      -- "Idle" / "Walk": the standing poses
 local SEAT_VAR = "MELensCabinSeat"   -- "true" while entering, standing in or leaving
@@ -1555,7 +1555,19 @@ function M.walkIn(player, vehicle)
     end
     M.pendingUse = nil
     local seat = M.freeStandingSeat(vehicle, M.profileFor(vehicle))
-    ISTimedActionQueue.add(ISPathFindAction:pathToVehicleSeat(player, vehicle, seat))
+    -- An exit can leave the player a few centimetres inside the navigation
+    -- boundary at the outside marker. Re-pathing that tiny distance can fail
+    -- and cancel entry even though the player is already at the door.
+    local outside = vehicle:getPassengerPosition(seat, "outside")
+    local atDoor = false
+    if outside then
+        local point = Vector3f.new()
+        vehicle:getPassengerPositionWorldPos(outside, point)
+        atDoor = player:DistToSquared(point:x(), point:y()) <= 0.25 * 0.25
+    end
+    if not atDoor then
+        ISTimedActionQueue.add(ISPathFindAction:pathToVehicleSeat(player, vehicle, seat))
+    end
     local doorPart = vehicle:getPassengerDoor(seat)
     if doorPart and doorPart:getDoor() and doorPart:getInventoryItem() then
         local door = doorPart:getDoor()

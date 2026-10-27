@@ -84,4 +84,23 @@ do
     check(not a:isValid(), "lost vehicle membership kept entry valid")
     a:update()
     check(not a.forced, "entry completed after vehicle membership was lost")
+
+    local oldCan,oldFree=MELens.canWalkIn,MELens.freeStandingSeat
+    local oldQueue,oldPath=ISTimedActionQueue,ISPathFindAction
+    MELens.canWalkIn=function() return true end
+    MELens.freeStandingSeat=function() return 3 end
+    local queued={}
+    ISTimedActionQueue={add=function(action) queued[#queued+1]=action end}
+    ISPathFindAction={pathToVehicleSeat=function() return {fixturePath=true} end}
+    for _,distance in ipairs({0.04,0.25,0.26,3}) do
+        queued={};p,v=fixture(distance)
+        function v:getPassengerDoor() return nil end
+        check(MELens.walkIn(p,v),'valid entry was not queued')
+        local atDoor=distance<=.25
+        check(#queued==(atDoor and 1 or 2),'door reach selected the wrong approach path')
+        check((queued[1].fixturePath==true)==not atDoor,'near-door entry repeated the failing tiny path')
+        check(queued[#queued].character==p and queued[#queued].vehicle==v,'entry bypassed the native timed action')
+    end
+    MELens.canWalkIn,MELens.freeStandingSeat=oldCan,oldFree
+    ISTimedActionQueue,ISPathFindAction=oldQueue,oldPath
 end

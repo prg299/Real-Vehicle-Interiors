@@ -330,16 +330,19 @@ return enc(r)'''
                                  'near=MELens.nearWayIn(p,MELensTest.vehicle,MELens.profileFor(MELensTest.vehicle))}'),
                   lambda s: s["idle"] and s["near"], f"{side} at F700 rear entrance")
         # Path arrival alone does not face the door. Vanilla E requires a facing
-        # dot above 0.5; orientation is fixture setup, entry remains native input.
+        # dot above 0.5. Face the inside, since the reached point may already be
+        # slightly inward of the outside marker. Entry remains native input.
         observe("beforeFacing")
         api.lua('local p=getPlayer(); local v=MELensTest.vehicle; local q=MELens.profileFor(v); '
-                'local outside=v:getPassengerPosition(MELens.cabinSeat(v,q),"outside"); local point=Vector3f.new(); '
-                'v:getPassengerPositionWorldPos(outside,point); p:faceLocation(point:x(),point:y()); return true')
+                'local inside=v:getPassengerPosition(MELens.cabinSeat(v,q),"inside"); local point=Vector3f.new(); '
+                'v:getPassengerPositionWorldPos(inside,point); p:faceLocation(point:x(),point:y()); return true')
         def usable(state):
             row = state.get("usablePart", {})
-            return row.get("ok") and row.get("value") == state.get("vehicle", {}).get("door")
+            near=state.get('nearVehicle',{})
+            forward=state.get('forward',{}).get('value',{})
+            return row.get("ok") and row.get("value") == state.get("vehicle", {}).get("door") and near.get('value')==self.vid and not forward.get('turning')
         self.wait(lambda: observe("beforeE"), usable, f"{side} faces usable entrance before native E")
-        self.input(side, key=int(diagnostic["beforeE"]["keybind"]["value"]))
+        self.input(side, key=int(diagnostic["beforeE"]["keybind"]["value"]),milliseconds=350)
         return self.wait(lambda: self.state(side),
                          lambda s: s.get("ready") and s["players"]["MELensAdmin" if side == "A" else "MELensGuest"]["vehicleId"] == self.vid,
                          f"{side} native E entry")
