@@ -18,9 +18,9 @@ Beta3's `PatchEngine.buildAdviceMethodMatcher` silently matches no zero-argument
 
 The [generator report](https://steamcommunity.com/workshop/filedetails/discussion/3811728541/574930338697137312/?ctp=2#c564798191048952436) is confirmed by the native baseline: a 40 kg `Base.Generator` is rejected by ordinary inventory capacity even when the character carries only 1.065 kg.
 
-The existing Grab action now delegates a generator's authoritative transfer/equip work to the game's `ISEquipHeavyItem.complete`. The same item moves from Floor storage into both hands; the loose-position record is removed afterward. The UI queues normal unequip actions first and takes one heavy item per batch. A changed hand state, lost vehicle membership, removed item or lost reach rejects completion without dropping or duplicating items. Ordinary items retain capacity checks.
+The existing Grab action now delegates a generator's authoritative transfer/equip work to the game's `ISEquipHeavyItem.complete`. The same item moves from Floor storage into both hands; the loose-position record is removed afterward. The UI queues normal unequip actions first and takes one heavy item per batch. If either hand already holds a force-drop heavy item, it queues nothing and asks the player to put that item down first: native unequip would otherwise drop it on the exterior world square. A changed hand state, lost vehicle membership, removed item or lost reach rejects completion without dropping or duplicating items. Ordinary items retain capacity checks.
 
-Production-Lua regressions load the actual native heavy-item action and check accepted base/tagged generators, normal capacity rejection, stale hand state, removed items, exit and reach rejection. Actual mouse pickup, held-item presentation and two-client transfer still need testing.
+Production-Lua regressions load the actual native heavy-item action and check accepted base/tagged generators, normal capacity rejection, stale hand state, removed items, exit and reach rejection. The real menu callback is also exercised with engine doubles: ordinary hands, carried heavy items in either hand, a changed hand state during approach, a cancelled approach and Grab All. Actual mouse pickup, held-item presentation and two-client transfer still need testing.
 
 ## Other reports
 
@@ -35,7 +35,7 @@ Production-Lua regressions load the actual native heavy-item action and check ac
 
 ## Evidence and remaining gate
 
-Prepared candidate checks pass: 130 normal/debug Lua compilations, 190,685 Lua assertions, 285 cutaway/state checks, 22 vision checks, 46 optional-camera checks, all 31 beta hook matches, repository validation and 76 PowerShell parses. Lua tests use explicit engine doubles and the native heavy-item action's actual Lua source. No corrected-build gameplay, visual or multiplayer acceptance is claimed.
+Prepared candidate checks pass: 130 normal/debug Lua compilations, 190,693 Lua assertions, 285 cutaway/state checks, 22 vision checks, 46 optional-camera checks, all 31 beta hook matches, repository validation and 76 PowerShell parses. Lua tests use explicit engine doubles and the native heavy-item action's actual Lua source. No corrected-build gameplay, visual or multiplayer acceptance is claimed.
 
 Local intake and baseline evidence: `build/rv/workshop-reports-20261103` and `build/rv/workshop-bugs-20261103-beta-a`. The baseline exits zero and retains native screenshots, render samples, the actual generator rejection and the downloaded dependency's identity. The disposable beta session was stopped. A later native admission was deferred because the owner's game was running; no attempt was made to take over or terminate it.
 

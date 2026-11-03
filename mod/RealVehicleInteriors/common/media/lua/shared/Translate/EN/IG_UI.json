@@ -122,5 +122,6 @@
     "IGUI_VehiclePartMELensRV_parcels": "Stacked Delivery Parcels",
     "IGUI_VehiclePartMELensRV_medlocker": "Medical Supply Cabinet",
     "IGUI_VehiclePartMELensRV_medbench": "Utility Bench Seat",
-    "IGUI_VehiclePartMELensRV_equipmentrack": "Equipment Rack"
+    "IGUI_VehiclePartMELensRV_equipmentrack": "Equipment Rack",
+    "IGUI_MELens_PutHeavyItemDown": "Put the item you are carrying down first."
 }

@@ -731,9 +731,15 @@ local function grabNow(player, vehicle, profile, entries)
                 local proto = V.proto(e.t)
                 local heavy = proto and MELensGrabLoose.isHeavy(proto)
                 if heavy then
-                    -- Match the native heavy-item menu: put existing hand items
-                    -- away before the authoritative two-handed pickup completes.
                     local primary, secondary = player:getPrimaryHandItem(), player:getSecondaryHandItem()
+                    -- Native unequip drops force-drop items onto the world
+                    -- square, outside this interior. Leave them in hand until
+                    -- the player explicitly places them on the interior floor.
+                    if (primary and isForceDropHeavyItem(primary)) or (secondary and isForceDropHeavyItem(secondary)) then
+                        say(player, "IGUI_MELens_PutHeavyItemDown")
+                        return
+                    end
+                    -- Ordinary hand items can safely return to inventory.
                     if primary then ISTimedActionQueue.add(ISUnequipAction:new(player, primary, 50)) end
                     if secondary and secondary ~= primary then
                         ISTimedActionQueue.add(ISUnequipAction:new(player, secondary, 50))
