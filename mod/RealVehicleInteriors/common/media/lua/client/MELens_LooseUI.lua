@@ -729,7 +729,18 @@ local function grabNow(player, vehicle, profile, entries)
         M.walkTo(player, sx, sz, function()
             for _, e in ipairs(entries) do
                 local proto = V.proto(e.t)
+                local heavy = proto and MELensGrabLoose.isHeavy(proto)
+                if heavy then
+                    -- Match the native heavy-item menu: put existing hand items
+                    -- away before the authoritative two-handed pickup completes.
+                    local primary, secondary = player:getPrimaryHandItem(), player:getSecondaryHandItem()
+                    if primary then ISTimedActionQueue.add(ISUnequipAction:new(player, primary, 50)) end
+                    if secondary and secondary ~= primary then
+                        ISTimedActionQueue.add(ISUnequipAction:new(player, secondary, 50))
+                    end
+                end
                 ISTimedActionQueue.add(MELensGrabLoose:new(player, vehicle, e.id, proto and proto:getActualWeight() or 1))
+                if heavy then break end -- Carry one heavy item; never auto-drop it for the next.
             end
             V.refresh()
         end)

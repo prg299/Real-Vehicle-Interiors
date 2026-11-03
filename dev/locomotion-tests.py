@@ -27,6 +27,10 @@ def main():
         report['cases'][label]={'input':keys,'rows':rows};save()
         if label.startswith('inside-'):
             assert h.lua('return MELens.isStanding(getPlayer())'),'native input unexpectedly left the interior'
+            assert all(row['animSet']=='player' for row in rows), 'standing passenger still uses seated animation set'
+            if label in ('inside-walk','inside-run'):
+                expected='run' if label.endswith('run') else 'movement'
+                assert any(row['state']==expected for row in rows), 'native '+expected+' state never selected'
         print(label,'frames',len(rows),'alpha',min(row['alpha'] for row in rows),flush=True)
     try:
         package=run/'home/Zomboid/mods/RealVehicleInteriors'

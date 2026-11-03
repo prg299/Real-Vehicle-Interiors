@@ -22,13 +22,16 @@ public final class Hooks {
     /** Retired animal drawers may finish after the last vehicle draw, including
      * while returning to the menu. Release their animation players on the main
      * thread once the render thread has finished all queued states. */
-    @Patch(className = "zombie.GameWindow", methodName = "frameStep", strictMatch = true)
+    // ZombieBuddy 3 beta3's strict zero-argument matcher reports installation
+    // but matches no method. These names have a single, zero-argument target
+    // on 42.21; argument-bearing hooks below retain strict overload selection.
+    @Patch(className = "zombie.GameWindow", methodName = "frameStep")
     public static final class RetiredAnimalModels {
         @Patch.OnExit
         public static void exit() { Animals.releaseRetired(); }
     }
 
-    @Patch(className = "zombie.inventory.ItemContainer", methodName = "isFridge", strictMatch = true)
+    @Patch(className = "zombie.inventory.ItemContainer", methodName = "isFridge")
     public static final class InteriorFridgeType {
         @Patch.OnExit
         public static void exit(@Patch.This zombie.inventory.ItemContainer container,
@@ -37,7 +40,7 @@ public final class Hooks {
         }
     }
 
-    @Patch(className = "zombie.inventory.ItemContainer", methodName = "isPowered", strictMatch = true)
+    @Patch(className = "zombie.inventory.ItemContainer", methodName = "isPowered")
     public static final class InteriorFridgePower {
         @Patch.OnExit
         public static void exit(@Patch.This zombie.inventory.ItemContainer container,
@@ -46,7 +49,7 @@ public final class Hooks {
         }
     }
 
-    @Patch(className = "zombie.inventory.ItemContainer", methodName = "getTemperature", strictMatch = true)
+    @Patch(className = "zombie.inventory.ItemContainer", methodName = "getTemperature")
     public static final class InteriorFridgeTemperature {
         @Patch.OnExit
         public static void exit(@Patch.This zombie.inventory.ItemContainer container,
@@ -55,7 +58,7 @@ public final class Hooks {
         }
     }
 
-    @Patch(className = "zombie.inventory.ItemContainer", methodName = "getSourceGrid", strictMatch = true)
+    @Patch(className = "zombie.inventory.ItemContainer", methodName = "getSourceGrid")
     public static final class InteriorFridgeSquare {
         @Patch.OnExit
         public static void exit(@Patch.This zombie.inventory.ItemContainer container,
@@ -73,7 +76,7 @@ public final class Hooks {
         public static void exit(@Patch.Argument(0) boolean force) { Refrigeration.end(); }
     }
 
-    @Patch(className = "zombie.iso.IsoGridSquare", methodName = "haveElectricity", strictMatch = true)
+    @Patch(className = "zombie.iso.IsoGridSquare", methodName = "haveElectricity")
     public static final class InteriorFoodElectricity {
         @Patch.OnExit
         public static void exit(@Patch.This zombie.iso.IsoGridSquare square,
@@ -100,7 +103,7 @@ public final class Hooks {
         }
     }
 
-    @Patch(className = "zombie.characters.IsoZombie", methodName = "isTargetVisible", strictMatch = true)
+    @Patch(className = "zombie.characters.IsoZombie", methodName = "isTargetVisible")
     public static final class InteriorTargetSight {
         @Patch.OnExit
         public static void exit(@Patch.This zombie.characters.IsoZombie zombie,
@@ -109,7 +112,7 @@ public final class Hooks {
         }
     }
 
-    @Patch(className = "zombie.iso.weather.fx.ParticleRectangle", methodName = "render", strictMatch = true)
+    @Patch(className = "zombie.iso.weather.fx.ParticleRectangle", methodName = "render")
     public static final class CabinWeatherParticles {
         // Keep the typed receiver: ZB must resolve this class before transforming
         // WeatherParticle, whose parent field otherwise loads it during advice installation.
@@ -193,7 +196,7 @@ public final class Hooks {
     }
 
     /** The world camera of an animated model sets the model's depth from its own square; the animals inside take the cabin's. */
-    @Patch(className = "zombie.core.skinnedmodel.advancedanimation.AnimatedModel$WorldModelCamera", methodName = "Begin", strictMatch = true)
+    @Patch(className = "zombie.core.skinnedmodel.advancedanimation.AnimatedModel$WorldModelCamera", methodName = "Begin")
     public static final class AnimalDepth {
         @Patch.OnExit
         public static void exit() {
@@ -217,7 +220,7 @@ public final class Hooks {
         }
     }
 
-    @Patch(className = "zombie.characters.IsoPlayer", methodName = "isPlayerMoving", strictMatch = true)
+    @Patch(className = "zombie.characters.IsoPlayer", methodName = "isPlayerMoving")
     public static final class CabinMovement {
         @Patch.OnExit
         public static void exit(@Patch.This IsoPlayer player, @Patch.Return(readOnly = false) boolean moving) {
@@ -225,7 +228,7 @@ public final class Hooks {
         }
     }
 
-    @Patch(className = "zombie.characters.IsoGameCharacter", methodName = "isRunning", strictMatch = true)
+    @Patch(className = "zombie.characters.IsoGameCharacter", methodName = "isRunning")
     public static final class CabinRunning {
         @Patch.OnExit
         public static void exit(@Patch.This IsoGameCharacter character, @Patch.Return(readOnly = false) boolean running) {
@@ -233,7 +236,7 @@ public final class Hooks {
         }
     }
 
-    @Patch(className = "zombie.characters.IsoPlayer", methodName = "checkActionGroup", strictMatch = true)
+    @Patch(className = "zombie.characters.IsoPlayer", methodName = "checkActionGroup")
     public static final class CheckActionGroup {
         @Patch.OnEnter
         public static void enter(@Patch.This IsoPlayer player) {
@@ -246,7 +249,7 @@ public final class Hooks {
         }
     }
 
-    @Patch(className = "zombie.characters.IsoPlayer", methodName = "updateWhileInVehicle", strictMatch = true)
+    @Patch(className = "zombie.characters.IsoPlayer", methodName = "updateWhileInVehicle")
     public static final class UpdateWhileInVehicle {
         @Patch.OnEnter
         public static void enter(@Patch.This IsoPlayer player) {
@@ -278,7 +281,7 @@ public final class Hooks {
         }
     }
 
-    @Patch(className = "zombie.characters.IsoGameCharacter", methodName = "postUpdateAnimating", strictMatch = true)
+    @Patch(className = "zombie.characters.IsoGameCharacter", methodName = "postUpdateAnimating")
     public static final class CabinNativeFacing {
         @Patch.OnExit
         public static void exit(@Patch.This IsoGameCharacter character) {
@@ -286,7 +289,7 @@ public final class Hooks {
         }
     }
 
-    @Patch(className = "zombie.characters.IsoPlayer", methodName = "GetAnimSetName", strictMatch = true)
+    @Patch(className = "zombie.characters.IsoPlayer", methodName = "GetAnimSetName")
     public static final class AnimSetName {
         @Patch.OnExit
         public static void exit(@Patch.This IsoPlayer player, @Patch.Return(readOnly = false) String name) {
@@ -304,7 +307,7 @@ public final class Hooks {
 
     /** Scope native trait lookups to a single player update so the panic replacement
      * cannot affect trait reads elsewhere in the game. */
-    @Patch(className = "zombie.characters.IsoGameCharacter", methodName = "updateInternal", strictMatch = true)
+    @Patch(className = "zombie.characters.IsoGameCharacter", methodName = "updateInternal")
     public static final class PhobiaUpdate {
         @Patch.OnEnter
         public static void enter(@Patch.This IsoGameCharacter character) {

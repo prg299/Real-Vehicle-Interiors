@@ -4,6 +4,7 @@
 -- arguments of new()) and in the normal way in single player.
 --
 require "TimedActions/ISBaseTimedAction"
+require "TimedActions/ISEquipHeavyItem"
 require "TimedActions/ISWashYourself"
 require "TimedActions/ISWashClothing"
 require "MELens_Utilities"
@@ -774,6 +775,10 @@ end
 
 MELensGrabLoose = ISBaseTimedAction:derive("MELensGrabLoose")
 
+function MELensGrabLoose.isHeavy(item)
+    return item:getType() == "Generator" or item:hasTag(ItemTag.GENERATOR)
+end
+
 function MELensGrabLoose:isValid()
     if not inCamper(self.character, self.vehicle) then return false end
     local floor = Lo().floorContainer(self.vehicle)
@@ -782,7 +787,7 @@ function MELensGrabLoose:isValid()
     if entry and not reaches(self.character, self.vehicle, entry.x, entry.z) then return false end
     local item = floor:getItemById(self.itemId)
     if item then
-        return self.character:getInventory():hasRoomFor(self.character, item)
+        return MELensGrabLoose.isHeavy(item) or self.character:getInventory():hasRoomFor(self.character, item)
     end
     -- a client may not hold the Floor's items yet: the position says it is there
     return isClient() and Lo().entry(self.vehicle, self.itemId) ~= nil
@@ -810,11 +815,21 @@ function MELensGrabLoose:complete()
         return false
     end
     local inventory = self.character:getInventory()
-    if not inventory:hasRoomFor(self.character, item) then return false end
-    floor:Remove(item)
-    sendRemoveItemFromContainer(floor, item)
-    inventory:AddItem(item)
-    sendAddItemToContainer(inventory, item)
+    if MELensGrabLoose.isHeavy(item) then
+        -- The UI queues native unequip actions first. Reject a changed hand
+        -- state instead of letting vanilla drop a newly held item outside.
+        if self.character:getPrimaryHandItem() or self.character:getSecondaryHandItem() then return false end
+        -- Vanilla generators are carried in both hands, rather than fitting
+        -- into normal inventory capacity. Retain its transfer/equip protocol.
+        self.item = item
+        if not ISEquipHeavyItem.complete(self) then return false end
+    else
+        if not inventory:hasRoomFor(self.character, item) then return false end
+        floor:Remove(item)
+        sendRemoveItemFromContainer(floor, item)
+        inventory:AddItem(item)
+        sendAddItemToContainer(inventory, item)
+    end
     local part = Lo().remove(self.vehicle, self.itemId)
     if part then
         U().transmit(self.vehicle, part)
@@ -824,6 +839,9 @@ end
 
 function MELensGrabLoose:getDuration()
     if self.character:isTimedActionInstant() then return 1 end
+    local floor = Lo().floorContainer(self.vehicle)
+    local item = floor and floor:getItemById(self.itemId)
+    if item and MELensGrabLoose.isHeavy(item) then return 100 end
     local time = 20 + 8 * math.min(self.weight or 1, 3)
     if self.character:hasTrait(CharacterTrait.DEXTROUS) then
         time = time * 0.5

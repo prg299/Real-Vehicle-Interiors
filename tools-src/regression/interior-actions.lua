@@ -3,7 +3,8 @@
 do
     local M,P,L=MELens,MELens.Parts,MELens.Loose
     local saved={}; for k,v in pairs(L) do saved[k]=v end
-    local oldClient,oldRemove,oldAdd=isClient,sendRemoveItemFromContainer,sendAddItemToContainer
+    local oldClient,oldRemove,oldAdd,oldTags=isClient,sendRemoveItemFromContainer,sendAddItemToContainer,ItemTag
+    ItemTag=ItemTag or {GENERATOR="fixture-generator-tag"}
     isClient=function() return false end
     sendRemoveItemFromContainer=function() end; sendAddItemToContainer=function() end
     L.floorContainer=function(v) return v.floor end
@@ -19,6 +20,8 @@ do
         local c={items={}}
         function c:AddItem(item) self.items[item.id]=item; item.owner=self; return item end
         function c:Remove(item) self.items[item.id]=nil; item.owner=nil end
+        c.DoRemoveItem=c.Remove
+        function c:getParent() return nil end
         function c:contains(item) return self.items[item.id]==item end
         function c:hasRoomFor() return not self.full end
         function c:getItemById(id) return self.items[id] end
@@ -40,10 +43,15 @@ do
         function p:getInventory() return self.inventory end
         function p:isTimedActionInstant() return true end
         function p:removeFromHands() end
+        function p:setPrimaryHandItem(item) self.primary=item end
+        function p:setSecondaryHandItem(item) self.secondary=item end
+        function p:getPrimaryHandItem() return self.primary end
+        function p:getSecondaryHandItem() return self.secondary end
         local item={id=nextId,full=full or "Base.Hammer"}
         function item:getID() return self.id end
         function item:getFullType() return self.full end
         function item:getType() return string.match(self.full,"%.(.+)$") end
+        function item:hasTag(tag) return self.generator==true and tag==ItemTag.GENERATOR end
         function item:getContainer() return self.owner end
         p.inventory:AddItem(item)
         local profile=M.profileFor(v); local part,index
@@ -123,11 +131,40 @@ do
     check(not a:complete() and f.v.floor:getItemById(f.item.id)==f.item,"exited player grabbed camper item")
     f.p.vehicle=f.v
     check(a:complete() and f.p.inventory:contains(f.item) and not f.v.positions[f.item.id],"valid loose grab no longer transfers")
+    local oldForce,oldEquip=forceDropHeavyItems,sendEquip
+    forceDropHeavyItems=function() end
+    sendEquip=function(player) player.equipPackets=(player.equipPackets or 0)+1 end
+    for _,full in ipairs({"Base.Generator","Base.Generator_Yellow"}) do
+        f=fixture(full);f.item.generator=true
+        f.p.inventory:Remove(f.item);f.v.floor:AddItem(f.item);f.v.positions[f.item.id]={x=0,z=0}
+        f.p.inventory.full=true
+        a=MELensGrabLoose:new(f.p,f.v,f.item.id,40)
+        check(a:isValid(),"heavy generator rejected by normal bag capacity")
+        check(a:complete() and f.p.inventory:contains(f.item) and f.p.primary==f.item and f.p.secondary==f.item
+            and not f.v.floor:getItemById(f.item.id) and not f.v.positions[f.item.id],"native heavy pickup lost identity/equipment/loose cleanup")
+    end
+    f=fixture();f.p.inventory:Remove(f.item);f.v.floor:AddItem(f.item);f.v.positions[f.item.id]={x=0,z=0}
+    f.p.inventory.full=true;a=MELensGrabLoose:new(f.p,f.v,f.item.id,1)
+    check(not a:isValid() and not a:complete() and f.v.floor:getItemById(f.item.id)==f.item,
+        "heavy pickup bypassed normal capacity for an ordinary item")
+    f=fixture("Base.Generator");f.p.inventory:Remove(f.item);f.v.floor:AddItem(f.item);f.v.positions[f.item.id]={x=0,z=0}
+    a=MELensGrabLoose:new(f.p,f.v,f.item.id,40);f.p.vehicle=nil
+    check(not a:complete() and f.v.floor:getItemById(f.item.id)==f.item,"exited player grabbed heavy generator")
+    f.p.vehicle=f.v;f.v.floor:Remove(f.item)
+    check(not a:complete() and not f.p.inventory:contains(f.item),"stale heavy pickup resurrected removed generator")
+    f=fixture("Base.Generator");f.p.inventory:Remove(f.item);f.v.floor:AddItem(f.item);f.v.positions[f.item.id]={x=0,z=0}
+    a=MELensGrabLoose:new(f.p,f.v,f.item.id,40);f.p.primary={changedHand=true}
+    check(not a:complete() and f.v.floor:getItemById(f.item.id)==f.item and f.p.primary.changedHand,
+        "stale heavy pickup dropped a newly equipped item")
+    f.p.primary=nil;f.v.x=5
+    check(not a:complete() and f.v.floor:getItemById(f.item.id)==f.item,
+        "out-of-reach heavy pickup bypassed cabin geometry")
+    forceDropHeavyItems,sendEquip=oldForce,oldEquip
     f=fixture(); f.p.inventory:Remove(f.item); f.v.floor:AddItem(f.item); f.v.positions[f.item.id]={x=0,z=0,r=10}
     a=MELensTurnLoose:new(f.p,f.v,f.item.id,90); f.p.vehicle=nil
     check(not a:complete() and f.v.positions[f.item.id].r==10,"exited player rotated camper item")
     f.p.vehicle=f.v
     check(a:complete() and f.v.positions[f.item.id].r==100,"valid loose rotation no longer commits")
     for k in pairs(L) do L[k]=nil end; for k,v in pairs(saved) do L[k]=v end
-    isClient,sendRemoveItemFromContainer,sendAddItemToContainer=oldClient,oldRemove,oldAdd
+    isClient,sendRemoveItemFromContainer,sendAddItemToContainer,ItemTag=oldClient,oldRemove,oldAdd,oldTags
 end
