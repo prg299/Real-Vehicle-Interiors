@@ -2,6 +2,8 @@
 
 Qualified on 4 November 2026 for Project Zomboid 42.21, stable ZombieBuddy 2.3.4 and 3.0.0-beta3. The candidate repairs sixteen skipped beta hooks and generator pickup from the interior Floor. Existing geometry, profiles, furniture, utility schemas and saved IDs retain their released contracts. No new dependency or signed component is introduced.
 
+Published to Workshop `3811728541` on 4 November through the owner-checked SteamUGC API after [PR #21](https://github.com/prg299/Real-Vehicle-Interiors/pull/21) merged as `037ba59aa5ddaaf1dc1a2c90823d3bd1cfcc820d`. Steam returned EResult 1; official manifest `9197371615592702872` matches all 219 frozen files. Fresh before/after owner queries preserve title, description, cover, all ten gallery entries/order, visibility and the sole ZombieBuddy requirement. Publication receipts are `build/rv/release-2.0.22.source.json`, `.desktop.json` and `.published.json`. Distribution verification does not establish which version an already-running player/server has loaded; restart after updating and approve the changed Java component.
+
 ## Native input
 
 - Beta: cold-start entry, idle, walking, running and directional controls use the normal player animation set; sampled opacity remains 1.

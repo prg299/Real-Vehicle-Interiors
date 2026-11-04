@@ -1,6 +1,6 @@
 # Workshop reports — 3 November 2026
 
-Candidate **2.0.22** is based on released 2.0.21 (`754c364`). The owner deferred game testing on 3 November and requested testing and release on 4 November. Corrected stable/beta native input and dedicated-server checks now pass; see [release qualification](release-2.0.22.md). Original saves, enabled mods, the installed framework and the separate rendering checkout are unchanged.
+Released **2.0.22** is based on 2.0.21 (`754c364`). The owner deferred game testing on 3 November and requested testing and release on 4 November. Corrected stable/beta native input and dedicated-server checks pass; the official download matches the qualified package. See [release qualification](release-2.0.22.md). Original saves, enabled mods, the installed framework and the separate rendering checkout are unchanged.
 
 ## Fixes prepared
 
