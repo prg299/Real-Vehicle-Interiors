@@ -4,6 +4,8 @@ Walk around inside supported vanilla vehicles and optional KI5 vehicle packs in 
 
 **Current release: 2.0.21.** [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3811728541) · [Animals details and testing](docs/ANIMALS.md)
 
+**Next update: 2.0.22, qualified for release.** Repairs ZombieBuddy beta hook matching and generator pickup from the interior floor. Native stable/beta checks and dedicated-server transfer checks pass. See [release qualification](docs/release-2.0.22.md) and [report triage](docs/workshop-bugs-2026-11-03.md).
+
 2.0.21 updates native interior walls, window surrounds, cab separation and floor coverage. The E150 partition clears the side door; vanilla walls follow the vehicle’s painted metal finish. Existing furniture, storage, loose items and utilities retain their save identities. The [save compatibility notes](docs/vehicles.md#save-compatibility) explain the F350 shelf coordinate handling. See the [release qualification](docs/release-2.0.21.md).
 
 2.0.20 uses the game's normal walking, running, turning and stopping animations inside vehicles. It also fixes cancelled approaches at corners, right-click furniture menus over empty ground, and re-entry when already at the door. Existing vehicle, furniture, loot and utility IDs are preserved.

@@ -3,7 +3,7 @@ param([string]$Run = 'workshop-20261017', [switch]$GroundOnly, [string]$Scenario
     [switch]$FreshProfile, [ValidateRange(1,60)][int]$ReviewMinutes = 30,
     [switch]$LowMemory, [string]$ProfilePath, [switch]$PreserveClock,
     [string]$Driver, [string[]]$DriverArguments = @(),
-    [switch]$Uncapped, [switch]$StopAfterDriver,
+    [switch]$Uncapped, [switch]$StopAfterDriver, [string]$ZombieBuddyJar,
     [switch]$AllowOtherGames, [switch]$SyncOwnedWorldMods) # isolated owned desktop/profile only
 . (Join-Path $PSScriptRoot '..\scripts\common.ps1')
 if ($ProfilePath) {
@@ -58,12 +58,18 @@ if ($Uncapped) {
 $zbConfig = Join-Path $homeDir 'zombie_buddy'
 $java = Join-Path $Lens.GameRoot 'jre64\bin\java.exe'
 $heap = if ($LowMemory) { '-Xmx2048m' } else { '-Xmx3072m' }
+$agent = "-agentlib:zbNative=policy=allow-all,verbosity=1,config_dir=$zbConfig"
+if ($ZombieBuddyJar) {
+    $resolvedAgent = (Resolve-Path -LiteralPath $ZombieBuddyJar -ErrorAction Stop).Path
+    if (-not (Test-Path -LiteralPath $resolvedAgent -PathType Leaf)) { throw 'Test agent must be a JAR file' }
+    $agent = "-javaagent:${resolvedAgent}=policy=allow-all,verbosity=1,config_dir=$zbConfig"
+}
 $command = @($java, '-Xms256m', $heap, '-XX:MaxDirectMemorySize=256m', '-XX:ReservedCodeCacheSize=192m',
     '--enable-native-access=ALL-UNNAMED', '--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED',
     '-Djava.awt.headless=true', '-Djava.library.path=win64/;.', '-XX:-OmitStackTraceInFastThrow',
     '-Dzomboid.steam=0', "-Duser.home=$homeDir", '-Dpzopt.enabled=false', '-Dpzopt.gcMode=stock', '-Dpzopt.jitSteady=false', '-Dpzopt.aotCache=false',
     '-Dpzopt.updateCheck=false', '-Dmelens.dev.port=18470',
-    "-agentlib:zbNative=policy=allow-all,verbosity=1,config_dir=$zbConfig", '-cp', 'projectzomboid.jar;.',
+    $agent, '-cp', 'projectzomboid.jar;.',
     'zombie.gameStates.MainScreenState', '-nosteam', "-cachedir=$cache")
 $configPath = Join-Path $runPath 'native-session.json'
 @{ command = $command; cwd = $Lens.GameRoot } | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath $configPath -Encoding utf8

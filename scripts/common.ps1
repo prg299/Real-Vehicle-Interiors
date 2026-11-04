@@ -25,6 +25,10 @@ $Lens.TestHome = Join-Path $Lens.Out 'testhome'
 $Lens.Dependencies = @(
     @{ Id = 'ZombieBuddy'; Item = '3619862853'; Folder = 'ZombieBuddy' }
 )
+if ($env:RVI_TEST_ZOMBIEBUDDY_ITEM) {
+    if ($env:RVI_TEST_ZOMBIEBUDDY_ITEM -notin @('3619862853', '3812624292')) { throw 'Unknown test ZombieBuddy item' }
+    $Lens.Dependencies[0].Item = $env:RVI_TEST_ZOMBIEBUDDY_ITEM
+}
 # Existing regression labs use the original fleet by default. A new disposable
 # profile can explicitly test the core mod without any vehicle packs or damnlib.
 if ($env:RVI_TEST_CORE_ONLY -ne '1') { $Lens.Dependencies += @(

@@ -1,5 +1,6 @@
 -- Load-time services for production LooseUI. These are engine doubles, not UI input evidence.
-MELensLooseUISaved={ISUIElement=ISUIElement,events={}}
+MELensLooseUISaved={ISUIElement=ISUIElement,events={},LooseView=MELens.LooseView}
+MELens.LooseView=MELens.LooseView or {}
 ISUIElement={}
 function ISUIElement:derive(name)
     local child={Type=name};setmetatable(child,{__index=self});return child
